@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { CoinChart } from "@/components/coin-detail/coin-chart";
 import { CoinStats } from "@/components/coin-detail/coin-stats";
+import { WatchlistStar } from "@/components/watchlist-star";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCoin } from "@/hooks/use-coin";
@@ -65,6 +66,7 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
                 {coin.market_cap_rank ? (
                   <Badge variant="secondary">Rank #{coin.market_cap_rank}</Badge>
                 ) : null}
+                <WatchlistStar id={id} className="ml-1" />
               </div>
               <div className="mt-1 flex items-baseline gap-3">
                 <span className="text-3xl font-semibold tabular-nums">

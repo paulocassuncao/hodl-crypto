@@ -75,3 +75,29 @@ export interface ChartPoint {
   time: number;
   price: number;
 }
+
+/** Crypto Fear & Greed index reading (alternative.me). */
+export interface FearGreed {
+  value: number;
+  classification: string;
+  timestamp: number;
+}
+
+/** A coin match from `/search`. */
+export interface SearchCoin {
+  id: string;
+  name: string;
+  symbol: string;
+  thumb: string;
+  market_cap_rank: number | null;
+}
+
+/** A market sector from `/coins/categories`. */
+export interface Category {
+  id: string;
+  name: string;
+  market_cap: number | null;
+  market_cap_change_24h: number | null;
+  volume_24h: number | null;
+  top_3_coins: string[];
+}

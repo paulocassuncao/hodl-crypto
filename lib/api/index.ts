@@ -1,9 +1,12 @@
 import type {
+  Category,
   ChartPoint,
   Coin,
   CoinDetail,
   Currency,
+  FearGreed,
   GlobalData,
+  SearchCoin,
   TrendingCoin,
 } from "@/lib/types";
 
@@ -34,3 +37,12 @@ export const fetchCoinChart = async (
   currency: Currency,
 ): Promise<ChartPoint[]> =>
   toJson(await fetch(`/api/coins/${id}/chart?days=${days}&vs_currency=${currency}`));
+
+export const fetchFearGreed = async (): Promise<FearGreed> =>
+  toJson(await fetch("/api/fear-greed"));
+
+export const searchCoins = async (query: string): Promise<SearchCoin[]> =>
+  toJson(await fetch(`/api/search?query=${encodeURIComponent(query)}`));
+
+export const fetchCategories = async (): Promise<Category[]> =>
+  toJson(await fetch("/api/categories"));

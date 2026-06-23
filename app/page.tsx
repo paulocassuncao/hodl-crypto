@@ -1,3 +1,4 @@
+import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { GainersLosers } from "@/components/gainers-losers";
 import { GlobalStatsBar } from "@/components/global-stats-bar";
 import { MarketTable } from "@/components/market-table/market-table";
@@ -7,7 +8,8 @@ import { TrendingSection } from "@/components/trending-section";
 const HomePage = (): React.ReactNode => (
   <div className="space-y-8">
     <GlobalStatsBar />
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <FearGreedGauge />
       <TrendingSection />
       <GainersLosers />
     </div>

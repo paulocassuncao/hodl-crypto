@@ -49,6 +49,10 @@ const renderTable = (): void => {
   );
 };
 
+// The component renders both a mobile card list and the md+ table, so coin
+// names appear twice in jsdom. Scope name lookups to the <table> for clarity.
+const table = (): HTMLElement => screen.getByRole("table");
+
 const bodyRowNames = (): string[] =>
   screen
     .getAllByRole("row")
@@ -56,33 +60,42 @@ const bodyRowNames = (): string[] =>
     .map((row) => within(row).queryByRole("link")?.textContent ?? "");
 
 describe("MarketTable", () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.localStorage.clear();
+  });
 
   it("renders the top coins once data loads", async () => {
     renderTable();
-    expect(await screen.findByText("Bitcoin")).toBeInTheDocument();
-    expect(screen.getByText("Ethereum")).toBeInTheDocument();
-    expect(screen.getByText("Solana")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(table()).getByText("Bitcoin")).toBeInTheDocument(),
+    );
+    expect(within(table()).getByText("Ethereum")).toBeInTheDocument();
+    expect(within(table()).getByText("Solana")).toBeInTheDocument();
   });
 
   it("filters rows by the search query", async () => {
     renderTable();
-    await screen.findByText("Bitcoin");
+    await waitFor(() =>
+      expect(within(table()).getByText("Bitcoin")).toBeInTheDocument(),
+    );
 
     fireEvent.change(screen.getByLabelText("Search coins"), {
       target: { value: "eth" },
     });
 
-    expect(screen.getByText("Ethereum")).toBeInTheDocument();
-    expect(screen.queryByText("Bitcoin")).not.toBeInTheDocument();
-    expect(screen.queryByText("Solana")).not.toBeInTheDocument();
+    expect(within(table()).getByText("Ethereum")).toBeInTheDocument();
+    expect(within(table()).queryByText("Bitcoin")).not.toBeInTheDocument();
+    expect(within(table()).queryByText("Solana")).not.toBeInTheDocument();
   });
 
   it("sorts by price when the Price header is toggled", async () => {
     renderTable();
-    await screen.findByText("Bitcoin");
+    await waitFor(() =>
+      expect(within(table()).getByText("Bitcoin")).toBeInTheDocument(),
+    );
 
-    const priceHeader = screen.getByRole("button", { name: /price/i });
+    const priceHeader = screen.getByRole("button", { name: /^price$/i });
 
     // First click → descending (highest price first).
     fireEvent.click(priceHeader);
@@ -91,5 +104,29 @@ describe("MarketTable", () => {
     // Second click → ascending (lowest price first).
     fireEvent.click(priceHeader);
     await waitFor(() => expect(bodyRowNames()[0]).toContain("Solana"));
+  });
+
+  it("filters to starred coins when the Watchlist tab is selected", async () => {
+    renderTable();
+    await waitFor(() =>
+      expect(within(table()).getByText("Bitcoin")).toBeInTheDocument(),
+    );
+
+    // Star Bitcoin via its table row's watchlist button.
+    const bitcoinRow = within(table())
+      .getByText("Bitcoin")
+      .closest("tr") as HTMLElement;
+    fireEvent.click(
+      within(bitcoinRow).getByRole("button", { name: /add to watchlist/i }),
+    );
+
+    // Switch to the Watchlist filter.
+    fireEvent.click(screen.getByRole("tab", { name: /watchlist/i }));
+
+    await waitFor(() => {
+      expect(within(table()).getByText("Bitcoin")).toBeInTheDocument();
+      expect(within(table()).queryByText("Ethereum")).not.toBeInTheDocument();
+      expect(within(table()).queryByText("Solana")).not.toBeInTheDocument();
+    });
   });
 });

@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider } from "@/lib/currency";
+import { WatchlistProvider } from "@/lib/watchlist";
 
 /** App-wide client providers: React Query, theme, currency, and toasts. */
 export const Providers = ({ children }: { children: ReactNode }): ReactNode => {
@@ -27,8 +28,10 @@ export const Providers = ({ children }: { children: ReactNode }): ReactNode => {
     <QueryClientProvider client={client}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <CurrencyProvider>
-          {children}
-          <Toaster richColors position="top-right" />
+          <WatchlistProvider>
+            {children}
+            <Toaster richColors position="top-right" />
+          </WatchlistProvider>
         </CurrencyProvider>
       </ThemeProvider>
     </QueryClientProvider>
