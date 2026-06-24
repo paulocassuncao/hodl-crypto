@@ -13,7 +13,7 @@ export const Header = (): React.ReactNode => (
       <div className="flex items-center gap-2 md:gap-6">
         <MobileNav />
         <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-xl font-bold tracking-tight">HODL</span>
+          <span className="text-xl font-bold tracking-tight text-primary">HODL</span>
         </Link>
         <nav className="hidden items-center gap-4 text-sm font-medium md:flex">
           {NAV_LINKS.map((link) => (

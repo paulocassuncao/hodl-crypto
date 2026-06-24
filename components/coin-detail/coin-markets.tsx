@@ -99,7 +99,7 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
                       href={t.tradeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                      className="inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
                     >
                       Trade
                       <ExternalLink className="size-3" />

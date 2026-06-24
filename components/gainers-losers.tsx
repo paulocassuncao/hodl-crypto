@@ -90,7 +90,6 @@ const MoversCard = ({
                   width={20}
                   height={20}
                   className="rounded-full"
-                  unoptimized
                 />
                 <span className="text-sm font-medium">{coin.symbol.toUpperCase()}</span>
               </span>

@@ -42,7 +42,6 @@ export const TrendingSection = (): React.ReactNode => {
                     width={20}
                     height={20}
                     className="rounded-full"
-                    unoptimized
                   />
                   <span className="text-sm font-medium">{coin.name}</span>
                   <span className="text-xs uppercase text-muted-foreground">

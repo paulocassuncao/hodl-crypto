@@ -224,7 +224,6 @@ const CoinIcons = ({ srcs }: { srcs: string[] }): React.ReactNode => (
         width={20}
         height={20}
         className="rounded-full ring-2 ring-card"
-        unoptimized
       />
     ))}
   </div>

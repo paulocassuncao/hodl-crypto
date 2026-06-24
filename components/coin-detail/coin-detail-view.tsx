@@ -58,7 +58,6 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
               width={48}
               height={48}
               className="rounded-full"
-              unoptimized
             />
             <div>
               <div className="flex items-center gap-2">

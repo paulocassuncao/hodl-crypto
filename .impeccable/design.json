@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-24T15:00:00Z",
+  "title": "Design System: HODL",
+  "extensions": {
+    "colorMeta": {
+      "signal": {
+        "role": "primary",
+        "displayName": "Signal Lime",
+        "canonical": "oklch(0.84 0.19 120)",
+        "tonalRamp": [
+          "oklch(0.22 0.06 120)",
+          "oklch(0.34 0.10 120)",
+          "oklch(0.46 0.14 120)",
+          "oklch(0.58 0.17 120)",
+          "oklch(0.70 0.19 120)",
+          "oklch(0.84 0.19 120)",
+          "oklch(0.92 0.13 120)",
+          "oklch(0.97 0.06 120)"
+        ]
+      },
+      "gain": {
+        "role": "secondary",
+        "displayName": "Gain Green",
+        "canonical": "oklch(0.76 0.16 152)",
+        "tonalRamp": [
+          "oklch(0.20 0.05 152)",
+          "oklch(0.32 0.08 152)",
+          "oklch(0.44 0.11 152)",
+          "oklch(0.56 0.14 152)",
+          "oklch(0.66 0.16 152)",
+          "oklch(0.76 0.16 152)",
+          "oklch(0.87 0.12 152)",
+          "oklch(0.95 0.05 152)"
+        ]
+      },
+      "loss": {
+        "role": "secondary",
+        "displayName": "Loss Red",
+        "canonical": "oklch(0.66 0.21 25)",
+        "tonalRamp": [
+          "oklch(0.22 0.07 25)",
+          "oklch(0.33 0.11 25)",
+          "oklch(0.44 0.15 25)",
+          "oklch(0.55 0.19 25)",
+          "oklch(0.66 0.21 25)",
+          "oklch(0.74 0.18 25)",
+          "oklch(0.85 0.12 25)",
+          "oklch(0.94 0.05 25)"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Caution Amber",
+        "canonical": "oklch(0.80 0.13 80)",
+        "tonalRamp": [
+          "oklch(0.24 0.05 80)",
+          "oklch(0.36 0.08 80)",
+          "oklch(0.48 0.10 80)",
+          "oklch(0.60 0.12 80)",
+          "oklch(0.70 0.13 80)",
+          "oklch(0.80 0.13 80)",
+          "oklch(0.89 0.09 80)",
+          "oklch(0.96 0.04 80)"
+        ]
+      },
+      "star": {
+        "role": "status",
+        "displayName": "Favorite Gold",
+        "canonical": "oklch(0.84 0.16 82)",
+        "tonalRamp": [
+          "oklch(0.26 0.06 82)",
+          "oklch(0.38 0.09 82)",
+          "oklch(0.50 0.11 82)",
+          "oklch(0.62 0.13 82)",
+          "oklch(0.73 0.15 82)",
+          "oklch(0.84 0.16 82)",
+          "oklch(0.91 0.11 82)",
+          "oklch(0.97 0.05 82)"
+        ]
+      },
+      "fg-fear": {
+        "role": "status",
+        "displayName": "Fear (Orange)",
+        "canonical": "oklch(0.72 0.17 50)",
+        "tonalRamp": [
+          "oklch(0.24 0.07 50)",
+          "oklch(0.36 0.11 50)",
+          "oklch(0.48 0.14 50)",
+          "oklch(0.60 0.16 50)",
+          "oklch(0.72 0.17 50)",
+          "oklch(0.80 0.14 50)",
+          "oklch(0.89 0.09 50)",
+          "oklch(0.96 0.04 50)"
+        ]
+      },
+      "fg-neutral": {
+        "role": "status",
+        "displayName": "Neutral (Amber)",
+        "canonical": "oklch(0.82 0.15 90)",
+        "tonalRamp": [
+          "oklch(0.26 0.05 90)",
+          "oklch(0.38 0.08 90)",
+          "oklch(0.50 0.11 90)",
+          "oklch(0.62 0.13 90)",
+          "oklch(0.73 0.15 90)",
+          "oklch(0.82 0.15 90)",
+          "oklch(0.90 0.10 90)",
+          "oklch(0.96 0.04 90)"
+        ]
+      },
+      "fg-greed": {
+        "role": "status",
+        "displayName": "Greed (Green)",
+        "canonical": "oklch(0.78 0.18 145)",
+        "tonalRamp": [
+          "oklch(0.22 0.06 145)",
+          "oklch(0.34 0.09 145)",
+          "oklch(0.46 0.12 145)",
+          "oklch(0.58 0.15 145)",
+          "oklch(0.68 0.17 145)",
+          "oklch(0.78 0.18 145)",
+          "oklch(0.88 0.12 145)",
+          "oklch(0.95 0.05 145)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink (Graphite ramp)",
+        "canonical": "oklch(0.96 0.006 140)",
+        "tonalRamp": [
+          "oklch(0.17 0.008 140)",
+          "oklch(0.21 0.009 140)",
+          "oklch(0.25 0.010 140)",
+          "oklch(0.31 0.008 140)",
+          "oklch(0.50 0.012 140)",
+          "oklch(0.70 0.010 140)",
+          "oklch(0.86 0.008 140)",
+          "oklch(0.96 0.006 140)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page-level headings; fixed rem, never fluid." },
+      "title": { "displayName": "Title", "purpose": "Section and card titles (rendered as real h2 headings)." },
+      "body": { "displayName": "Body", "purpose": "Descriptions and prose, capped 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Uppercase tracked column headers and metadata captions only." },
+      "numeric": { "displayName": "Numeric", "purpose": "Geist Mono tabular figures for ALL prices, %, volumes, caps, ranks. Bound to the .tabular-nums hook." }
+    },
+    "shadows": [
+      { "name": "none", "value": "none", "purpose": "Default for in-flow containers. Depth comes from hairline rings and tonal layering, never drop shadows." },
+      { "name": "ring-hairline", "value": "0 0 0 1px oklch(0.96 0.006 140 / 0.10)", "purpose": "The 1px ring that draws cards, the table, the stats strip, and active tabs as crisp planes." },
+      { "name": "overlay-soft", "value": "0 8px 24px oklch(0 0 0 / 0.28)", "purpose": "The ONE permitted drop shadow: floating overlays (dropdowns, popovers, tooltips, dialogs, toasts) that float over arbitrary content. In-flow containers never use it." },
+      { "name": "focus-signal", "value": "0 0 0 3px oklch(0.84 0.19 120 / 0.50)", "purpose": "Keyboard focus only. Glow means focused, nothing else." }
+    ],
+    "motion": [
+      { "name": "ease-out-quart", "value": "cubic-bezier(0.25, 1, 0.5, 1)", "purpose": "Default easing for state transitions and reveals. No bounce, no elastic." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover/focus state changes; users are in flow." },
+      { "name": "duration-base", "value": "200ms", "purpose": "Tab switches, dropdowns, row state." },
+      { "name": "reduced-motion", "value": "@media (prefers-reduced-motion: reduce) → ~0ms", "purpose": "All entrance/zoom/slide animations and long transitions collapse to near-instant." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single highest-emphasis action on a view. Signal Lime fill, near-black text. On touch (coarse pointer) icon variants grow to 44px.",
+      "html": "<button class=\"ds-btn-primary\">Set Alert</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.625rem; border: none; border-radius: 0.625rem; background: oklch(0.84 0.19 120); color: oklch(0.18 0.02 140); font-family: Geist, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 150ms cubic-bezier(0.25,1,0.5,1), transform 150ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-primary:hover { background: oklch(0.80 0.18 120); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px oklch(0.84 0.19 120 / 0.50); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Default toolbar action (sort, currency, search trigger). Hairline border, fills to Surface High on hover.",
+      "html": "<button class=\"ds-btn-outline\">USD</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.625rem; border: 1px solid oklch(0.31 0.008 140); border-radius: 0.625rem; background: oklch(0.17 0.008 140); color: oklch(0.96 0.006 140); font-family: Geist, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 150ms cubic-bezier(0.25,1,0.5,1); } .ds-btn-outline:hover { background: oklch(0.25 0.010 140); } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px oklch(0.84 0.19 120 / 0.50); }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Filter field with leading search glyph. Border + ring shift to Signal on focus.",
+      "html": "<div class=\"ds-field\"><svg class=\"ds-field-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"></circle><path d=\"m21 21-4.3-4.3\"></path></svg><input class=\"ds-input-search\" placeholder=\"Filter the top 100…\" /></div>",
+      "css": ".ds-field { position: relative; display: inline-flex; align-items: center; width: 16rem; } .ds-field-icon { position: absolute; left: 0.625rem; width: 1rem; height: 1rem; color: oklch(0.70 0.010 140); pointer-events: none; } .ds-input-search { height: 2rem; width: 100%; padding: 0.25rem 0.625rem 0.25rem 2rem; border: 1px solid oklch(0.31 0.008 140); border-radius: 0.625rem; background: oklch(0.17 0.008 140); color: oklch(0.96 0.006 140); font-family: Geist, system-ui, sans-serif; font-size: 0.875rem; outline: none; transition: border-color 150ms, box-shadow 150ms; } .ds-input-search::placeholder { color: oklch(0.70 0.010 140); } .ds-input-search:focus-visible { border-color: oklch(0.84 0.19 120); box-shadow: 0 0 0 3px oklch(0.84 0.19 120 / 0.50); }"
+    },
+    {
+      "name": "Count Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Pill marker for counts and live indicators. Signal fill; green/red are never used as a chip brand color.",
+      "html": "<span class=\"ds-badge\">LIVE</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; height: 1.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; background: oklch(0.84 0.19 120); color: oklch(0.18 0.02 140); font-family: Geist, system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Self-contained widget surface. Flat, hairline ring, tonal Surface bg. Uppercase Label caption, numeric value in Geist Mono.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-label\">Total Market Cap</div><div class=\"ds-card-value\">$2.41T</div><div class=\"ds-card-delta\">+1.8% ▲</div></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem; border-radius: 0.875rem; background: oklch(0.21 0.009 140); box-shadow: 0 0 0 1px oklch(0.96 0.006 140 / 0.10); } .ds-card-label { font-family: Geist, system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.70 0.010 140); } .ds-card-value { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 1.5rem; font-weight: 500; font-variant-numeric: tabular-nums; color: oklch(0.96 0.006 140); } .ds-card-delta { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 0.875rem; font-variant-numeric: tabular-nums; color: oklch(0.76 0.16 152); }"
+    },
+    {
+      "name": "Watchlist Star",
+      "kind": "button",
+      "refersTo": "watchlist-star",
+      "description": "Favorite toggle. Gold when active (Favorite Gold status color, tokenized). Hit area grows to 44px on touch via @media (pointer: coarse).",
+      "html": "<button class=\"ds-star is-on\" aria-label=\"Remove from watchlist\" aria-pressed=\"true\"><svg viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polygon points=\"12 2 15.1 8.6 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.6 12 2\" fill=\"currentColor\"></polygon></svg></button>",
+      "css": ".ds-star { display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem; border: none; background: none; border-radius: 0.5rem; color: oklch(0.70 0.010 140); cursor: pointer; transition: color 150ms; } .ds-star svg { width: 1rem; height: 1rem; } .ds-star:hover, .ds-star.is-on { color: oklch(0.84 0.16 82); } @media (pointer: coarse) { .ds-star { width: 2.75rem; height: 2.75rem; padding: 0; } }"
+    },
+    {
+      "name": "Market Table Row",
+      "kind": "custom",
+      "refersTo": "table-row",
+      "description": "Signature component. Rank + coin + price + gain/loss %, all Geist Mono tabular, right-aligned. Direction pairs color WITH a sign. Hover lifts to Surface High.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-row-rank\">3</span><span class=\"ds-row-coin\"><span class=\"ds-row-name\">Solana</span><span class=\"ds-row-sym\">SOL</span></span><span class=\"ds-row-price\">$172.40</span><span class=\"ds-row-up\">+4.21% ▲</span><span class=\"ds-row-down\">−1.06% ▼</span></div>",
+      "css": ".ds-row { display: grid; grid-template-columns: 2rem 1fr auto 5.5rem 5.5rem; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; background: oklch(0.17 0.008 140); border-bottom: 1px solid oklch(0.31 0.008 140); transition: background 150ms cubic-bezier(0.25,1,0.5,1); } .ds-row:hover { background: oklch(0.25 0.010 140); } .ds-row-rank { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 0.875rem; color: oklch(0.70 0.010 140); text-align: right; } .ds-row-coin { display: flex; align-items: baseline; gap: 0.5rem; } .ds-row-name { font-family: Geist, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; color: oklch(0.96 0.006 140); } .ds-row-sym { font-family: Geist, system-ui, sans-serif; font-size: 0.75rem; text-transform: uppercase; color: oklch(0.70 0.010 140); } .ds-row-price { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 0.875rem; color: oklch(0.96 0.006 140); text-align: right; } .ds-row-up { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 0.875rem; color: oklch(0.76 0.16 152); text-align: right; } .ds-row-down { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 0.875rem; color: oklch(0.66 0.21 25); text-align: right; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Trading Terminal",
+    "overview": "HODL is a precision instrument, not a website. The whole system is built around a single job: a trader glances at the screen and, in under a second, reads the state of the market. Surfaces are flat graphite glass; dividers are hairlines; the numbers themselves — in a tabular monospace — are the brightest, most deliberate material on the screen. Color is rationed and semantic: green means up, red means down, and one acid-lime Signal marks the thing you can act on. It rejects the stock-shadcn neutral starter it grew out of, the meme-coin casino, and the navy-and-gold fintech template. Dark-native and composed: an after-hours trading desk, graphite and quiet, with figures ticking in cool light.",
+    "keyCharacteristics": [
+      "Dark-native graphite surface; light theme is a clean daylight equivalent, never an afterthought.",
+      "Monospace tabular numerics treated as the hero material — figures align to the decimal, everywhere.",
+      "One rationed brand color (Signal lime) for interaction only; green/red reserved for market direction.",
+      "Flat by default: hairline rings and tonal layering convey depth, never drop shadows (overlays excepted).",
+      "Sub-second glanceability is the acceptance test for every layout decision."
+    ],
+    "rules": [
+      { "name": "The Three-Channel Rule", "body": "Color carries exactly three meanings and they never trade jobs: Signal Lime = actionable, Green = market up, Red = market down. Signal never colors a number; green/red never color a button. Favorite gold and the Fear & Greed gradient are tokenized status colors, kept off the three channels.", "section": "colors" },
+      { "name": "The Rationed Accent Rule", "body": "Signal Lime appears on ≤10% of any screen. Its scarcity is what makes the live, actionable element findable in a dense grid of figures.", "section": "colors" },
+      { "name": "The Color-Plus-Sign Rule", "body": "Market direction is never conveyed by hue alone. Every gain/loss value pairs its color with a sign and/or arrow so the signal survives color blindness and grayscale.", "section": "colors" },
+      { "name": "The Numbers-Are-Monospace Rule", "body": "If it's a figure a trader compares — price, %, volume, cap, rank — it is Geist Mono with tabular figures, right-aligned in tables, decimal-aligned in columns. Bound once to the .tabular-nums hook.", "section": "typography" },
+      { "name": "The Fixed-Scale Rule", "body": "Type sizes are a fixed rem scale (ratio approx 1.2), never clamp(). A heading that shrinks inside a sidebar or card looks broken, not responsive.", "section": "typography" },
+      { "name": "The Ring-Not-Shadow Rule", "body": "In-flow containers — cards, the table, panels, the stats strip — are separated by hairline rings and tonal steps, never by box-shadow. The one exception is true floating overlays (dropdowns, popovers, tooltips, dialogs, toasts), which pair the ring with a single soft shadow for separation. Everything anchored in the page layout stays flat.", "section": "elevation" },
+      { "name": "The Glow-Is-Focus Rule", "body": "Among in-flow elements the only shadow-like effect permitted is the focus ring — a 3px Signal-tinted ring on keyboard focus. Glow means focused, nothing else.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do set every figure (price, %, volume, market cap, rank) in Geist Mono with tabular-nums, right-aligned in tables and decimal-aligned in columns.",
+      "Do reserve color to three meanings — Signal Lime = actionable, Green = up, Red = down — and keep Signal Lime to ≤10% of any screen.",
+      "Do pair every gain/loss with a sign or arrow (+2.4% ▲ / -1.1% ▼), so direction survives color blindness and grayscale.",
+      "Do convey depth with hairline rings and tonal layering (Background -> Surface -> Surface High); reserve drop shadows for floating overlays only.",
+      "Do use skeleton loaders for data, teaching empty states, tokenized status colors, and a prefers-reduced-motion fallback.",
+      "Do keep type on a fixed rem scale (approx 1.2 ratio); reserve uppercase tracked Labels for column headers and metadata captions; render card/section titles as real headings."
+    ],
+    "donts": [
+      "Don't ship the stock-shadcn chroma-zero neutral palette — the un-branded gray that reads as 'AI made that' is the #1 anti-reference.",
+      "Don't drift toward the meme-coin casino (neon gradients, decorative glow, FOMO energy) or the navy-and-gold fintech template.",
+      "Don't color a number with Signal Lime or color a button with Green/Red. The three channels never trade jobs.",
+      "Don't use box-shadow to separate in-flow containers, or border-left/border-right >1px as a colored stripe accent.",
+      "Don't use background-clip: text gradient text, glassmorphism as decoration, or display fonts in labels/buttons/data.",
+      "Don't use clamp() fluid headings in the app UI, or proportional (non-tabular) digits in a data column.",
+      "Don't wrap the primary data table in a card, and never nest a card inside a card.",
+      "Don't hard-code colors outside the token system; the only exception is white labels on always-saturated data-viz tiles (the heatmap)."
+    ]
+  }
+}

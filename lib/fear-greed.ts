@@ -6,8 +6,8 @@ export interface FearGreedZone {
 
 export const fearGreedZone = (value: number): FearGreedZone => {
   if (value < 25) return { label: "Extreme Fear", colorVar: "var(--loss)" };
-  if (value < 45) return { label: "Fear", colorVar: "oklch(0.7 0.17 50)" };
-  if (value < 56) return { label: "Neutral", colorVar: "oklch(0.8 0.16 90)" };
-  if (value < 75) return { label: "Greed", colorVar: "oklch(0.75 0.18 140)" };
+  if (value < 45) return { label: "Fear", colorVar: "var(--fg-fear)" };
+  if (value < 56) return { label: "Neutral", colorVar: "var(--fg-neutral)" };
+  if (value < 75) return { label: "Greed", colorVar: "var(--fg-greed)" };
   return { label: "Extreme Greed", colorVar: "var(--gain)" };
 };

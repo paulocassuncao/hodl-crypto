@@ -27,12 +27,12 @@ export const WatchlistStar = ({
         toggle(id);
       }}
       className={cn(
-        "rounded-md p-1 text-muted-foreground transition-colors hover:text-amber-400",
-        watched && "text-amber-400",
+        "inline-flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:text-star pointer-coarse:size-11 pointer-coarse:p-0",
+        watched && "text-star",
         className,
       )}
     >
-      <Star className={cn("size-4", watched && "fill-amber-400")} />
+      <Star className={cn("size-4", watched && "fill-star")} />
     </button>
   );
 };

@@ -68,7 +68,6 @@ export const AlertsList = (): React.ReactNode => {
                   width={32}
                   height={32}
                   className="rounded-full"
-                  unoptimized
                 />
                 <div className="min-w-0">
                   <p className="truncate font-medium">{alert.name}</p>

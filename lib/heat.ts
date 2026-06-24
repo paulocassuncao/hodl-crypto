@@ -8,8 +8,8 @@
 /** Percentage magnitude at which a tile reaches full color intensity. */
 const SATURATION_AT = 8;
 
-/** Neutral fill used for missing/zero data. */
-export const HEAT_NEUTRAL = "hsl(220 9% 42%)";
+/** Neutral fill used for missing/zero data — tinted toward the brand hue (≈140°). */
+export const HEAT_NEUTRAL = "hsl(150 8% 42%)";
 
 export const heatColor = (pct: number | null | undefined): string => {
   if (pct === null || pct === undefined || Number.isNaN(pct)) {

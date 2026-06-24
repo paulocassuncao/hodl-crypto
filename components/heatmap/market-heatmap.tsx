@@ -86,6 +86,9 @@ const HeatCell = ({
         strokeWidth={2}
         rx={4}
       />
+      {/* White labels are intentional: tiles are always saturated gain/loss
+          colors (a data encoding, not a themeable surface), so the label color
+          is fixed white for contrast in both themes rather than a token. */}
       {showText ? (
         <text
           x={x + width / 2}

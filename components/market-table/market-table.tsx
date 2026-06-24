@@ -385,7 +385,6 @@ const CoinCard = ({
       width={28}
       height={28}
       className="shrink-0 rounded-full"
-      unoptimized
     />
     <div className="min-w-0 flex-1">
       <div className="truncate font-medium">{coin.name}</div>
@@ -440,7 +439,6 @@ const CoinRow = ({
           width={24}
           height={24}
           className="rounded-full"
-          unoptimized
         />
         <span>{coin.name}</span>
         <span className="text-xs uppercase text-muted-foreground">

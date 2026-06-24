@@ -93,7 +93,6 @@ export const CompareStats = ({ ids }: { ids: string[] }): React.ReactNode => {
                     width={20}
                     height={20}
                     className="rounded-full"
-                    unoptimized
                   />
                   <span className="font-semibold">{coin.symbol.toUpperCase()}</span>
                 </Link>

@@ -57,15 +57,17 @@ export const GlobalStatsBar = (): React.ReactNode => {
         ? Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="h-[68px] animate-pulse rounded-lg border bg-card"
+              className="h-[68px] animate-pulse rounded-xl bg-card ring-1 ring-foreground/10"
             />
           ))
         : stats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-lg border bg-card p-3 shadow-sm"
+              className="rounded-xl bg-card p-3 ring-1 ring-foreground/10"
             >
-              <div className="text-xs text-muted-foreground">{stat.label}</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {stat.label}
+              </div>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="text-lg font-semibold tabular-nums">
                   {stat.value}

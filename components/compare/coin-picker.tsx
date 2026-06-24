@@ -123,7 +123,6 @@ export const CoinPicker = ({
                       width={20}
                       height={20}
                       className="rounded-full"
-                      unoptimized
                     />
                     <span className="font-medium">{coin.name}</span>
                     <span className="text-xs uppercase text-muted-foreground">

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandDialog,
@@ -46,18 +47,19 @@ export const SearchTrigger = (): React.ReactNode => {
 
   return (
     <>
-      <button
-        type="button"
+      <Button
+        variant="outline"
+        size="lg"
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-2 rounded-md border bg-background px-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
         aria-label="Search coins"
+        className="gap-2 text-muted-foreground hover:text-foreground"
       >
         <Search className="size-4" />
         <span className="hidden sm:inline">Search…</span>
         <kbd className="hidden rounded border bg-muted px-1.5 font-mono text-[10px] sm:inline">
           ⌘K
         </kbd>
-      </button>
+      </Button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <Command shouldFilter={false}>
@@ -89,7 +91,6 @@ export const SearchTrigger = (): React.ReactNode => {
                       width={20}
                       height={20}
                       className="rounded-full"
-                      unoptimized
                     />
                     <span className="font-medium">{coin.name}</span>
                     <span className="text-xs uppercase text-muted-foreground">
