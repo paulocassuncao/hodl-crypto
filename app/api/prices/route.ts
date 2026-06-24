@@ -14,6 +14,7 @@ export const GET = (request: NextRequest): Promise<Response> =>
     const { searchParams } = request.nextUrl;
     const ids = searchParams.get("ids")?.trim();
     const currencies = searchParams.get("vs_currency")?.trim() || "usd";
+    const include24h = searchParams.get("include_24hr_change") === "true";
 
     if (!ids) return {} as PriceMap;
 
@@ -21,6 +22,7 @@ export const GET = (request: NextRequest): Promise<Response> =>
       ids,
       vs_currencies: currencies,
     });
+    if (include24h) query.set("include_24hr_change", "true");
 
     return cgFetch<PriceMap>(`/simple/price?${query.toString()}`, {
       revalidate: 60,

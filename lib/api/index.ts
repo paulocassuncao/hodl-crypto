@@ -1,3 +1,4 @@
+import type { PriceMap } from "@/lib/portfolio-core";
 import type {
   Category,
   ChartPoint,
@@ -6,6 +7,7 @@ import type {
   Currency,
   FearGreed,
   GlobalData,
+  NewsItem,
   SearchCoin,
   Ticker,
   TrendingCoin,
@@ -48,6 +50,16 @@ export const searchCoins = async (query: string): Promise<SearchCoin[]> =>
 export const fetchCategories = async (): Promise<Category[]> =>
   toJson(await fetch("/api/categories"));
 
+export const fetchNews = async (filter?: {
+  symbol: string;
+  name: string;
+}): Promise<NewsItem[]> => {
+  const query = filter
+    ? `?symbol=${encodeURIComponent(filter.symbol)}&name=${encodeURIComponent(filter.name)}`
+    : "";
+  return toJson(await fetch(`/api/news${query}`));
+};
+
 export const fetchCoinTickers = async (id: string): Promise<Ticker[]> =>
   toJson(await fetch(`/api/coins/${id}/tickers`));
 
@@ -60,3 +72,15 @@ export const fetchPrices = async (
       `/api/prices?ids=${encodeURIComponent(ids.join(","))}&vs_currency=${encodeURIComponent(currencies)}`,
     ),
   );
+
+/** USD spot prices with 24h change for the given coins (for the portfolio). */
+export const fetchPortfolioPrices = async (
+  ids: string[],
+): Promise<PriceMap> => {
+  if (ids.length === 0) return {};
+  return toJson(
+    await fetch(
+      `/api/prices?ids=${encodeURIComponent(ids.join(","))}&vs_currency=usd&include_24hr_change=true`,
+    ),
+  );
+};

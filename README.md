@@ -57,5 +57,8 @@ All CoinGecko requests are proxied through Next.js route handlers under `app/api
 
 ## Notes / non-goals
 
-- No portfolio, watchlist, or authentication.
-- Search filters the loaded top 100 (global all-coin search is out of scope for v1).
+- Portfolio is local-first (manual entry, stored in your browser) and USD-denominated; no
+  authentication or exchange/wallet sync.
+- The ⌘K command palette searches **all** of CoinGecko; the top-100 table's inline filter
+  narrows the loaded rows.
+- News headlines are aggregated from public RSS feeds (no API key required).

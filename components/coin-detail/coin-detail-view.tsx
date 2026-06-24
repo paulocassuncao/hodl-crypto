@@ -8,6 +8,7 @@ import { AlertButton } from "@/components/alerts/alert-button";
 import { CoinChart } from "@/components/coin-detail/coin-chart";
 import { CoinMarkets } from "@/components/coin-detail/coin-markets";
 import { CoinStats } from "@/components/coin-detail/coin-stats";
+import { NewsFeed } from "@/components/news-feed";
 import { WatchlistStar } from "@/components/watchlist-star";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,6 +106,7 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="markets">Markets</TabsTrigger>
+              <TabsTrigger value="news">News</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -124,6 +126,10 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
 
             <TabsContent value="markets">
               <CoinMarkets id={id} />
+            </TabsContent>
+
+            <TabsContent value="news">
+              <NewsFeed filter={{ symbol: coin.symbol, name: coin.name }} />
             </TabsContent>
           </Tabs>
         </>

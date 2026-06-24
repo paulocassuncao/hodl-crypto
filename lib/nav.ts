@@ -4,5 +4,6 @@ export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/categories", label: "Categories" },
   { href: "/heatmap", label: "Heatmap" },
   { href: "/compare", label: "Compare" },
+  { href: "/portfolio", label: "Portfolio" },
   { href: "/alerts", label: "Alerts" },
 ];

@@ -68,6 +68,20 @@ export const formatPercent = (value: number | null | undefined): string => {
   return `${sign}${value.toFixed(2)}%`;
 };
 
+/** Format an epoch-ms timestamp as a terse relative time, e.g. `3h`, `2d`. */
+export const formatRelativeTime = (value: number | null | undefined): string => {
+  if (value == null || Number.isNaN(value)) return "";
+  const seconds = Math.round((Date.now() - value) / 1000);
+  if (seconds < 60) return "now";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days}d`;
+  return `${Math.round(days / 7)}w`;
+};
+
 /** Tailwind text color class reflecting a gain/loss/neutral change. */
 export const percentColorClass = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return "text-muted-foreground";

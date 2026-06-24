@@ -102,6 +102,54 @@ export interface Category {
   top_3_coins: string[];
 }
 
+/**
+ * Legacy single-position shape (pre-ledger). Kept only so the provider can
+ * migrate old localStorage data into transactions. Not written anymore.
+ */
+export interface Holding {
+  id: string;
+  coinId: string;
+  symbol: string;
+  name: string;
+  image: string;
+  quantity: number;
+  cost: number;
+  createdAt: number;
+}
+
+export type TxType = "buy" | "sell";
+
+/** A single buy or sell, the stored unit of the portfolio ledger. */
+export interface Transaction {
+  id: string;
+  coinId: string;
+  symbol: string;
+  name: string;
+  image: string;
+  type: TxType;
+  /** Units bought or sold. */
+  quantity: number;
+  /** Total USD paid (buy) or received (sell) for this transaction. */
+  amount: number;
+  /** When the trade happened (epoch ms). */
+  date: number;
+  createdAt: number;
+}
+
+/** A coin position derived from its transactions (average-cost basis). */
+export interface Position {
+  coinId: string;
+  symbol: string;
+  name: string;
+  image: string;
+  /** Net units currently held. */
+  quantity: number;
+  /** USD cost basis of the units still held (average cost). */
+  costBasis: number;
+  /** Realized P&L in USD booked from sells. */
+  realized: number;
+}
+
 export type AlertDirection = "above" | "below";
 
 /** A user-defined browser price alert, persisted in localStorage. */
@@ -117,6 +165,18 @@ export interface PriceAlert {
   createdAt: number;
   /** Epoch ms when the threshold was crossed, or null while still active. */
   triggeredAt: number | null;
+}
+
+/** A normalized headline aggregated from crypto news RSS feeds. */
+export interface NewsItem {
+  /** Stable id (feed guid or the article url). */
+  id: string;
+  title: string;
+  url: string;
+  /** Outlet name, e.g. "CoinDesk". */
+  source: string;
+  /** Publish time in epoch ms, or null if the feed omitted a date. */
+  publishedAt: number | null;
 }
 
 /** A single market (exchange listing) trading a coin, from `/coins/:id/tickers`. */

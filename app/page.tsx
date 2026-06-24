@@ -2,6 +2,7 @@ import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { GainersLosers } from "@/components/gainers-losers";
 import { GlobalStatsBar } from "@/components/global-stats-bar";
 import { MarketTable } from "@/components/market-table/market-table";
+import { NewsFeed } from "@/components/news-feed";
 import { TrendingSection } from "@/components/trending-section";
 
 /** Dashboard home: global stats, highlights, and the top 100 table. */
@@ -13,6 +14,7 @@ const HomePage = (): React.ReactNode => (
       <FearGreedGauge />
       <TrendingSection />
       <GainersLosers />
+      <NewsFeed className="sm:col-span-2 xl:col-span-4" />
     </div>
     <MarketTable />
   </div>
