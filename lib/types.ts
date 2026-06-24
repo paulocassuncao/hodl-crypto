@@ -101,3 +101,34 @@ export interface Category {
   volume_24h: number | null;
   top_3_coins: string[];
 }
+
+export type AlertDirection = "above" | "below";
+
+/** A user-defined browser price alert, persisted in localStorage. */
+export interface PriceAlert {
+  id: string;
+  coinId: string;
+  symbol: string;
+  name: string;
+  image: string;
+  direction: AlertDirection;
+  target: number;
+  currency: Currency;
+  createdAt: number;
+  /** Epoch ms when the threshold was crossed, or null while still active. */
+  triggeredAt: number | null;
+}
+
+/** A single market (exchange listing) trading a coin, from `/coins/:id/tickers`. */
+export interface Ticker {
+  exchange: string;
+  base: string;
+  target: string;
+  /** Last price converted to USD. */
+  price: number | null;
+  /** 24h volume converted to USD. */
+  volume: number | null;
+  /** CoinGecko trust score: "green" | "yellow" | "red" | null. */
+  trustScore: string | null;
+  tradeUrl: string | null;
+}

@@ -148,9 +148,9 @@ export const MarketTable = (): React.ReactNode => {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search name or symbol…"
+              placeholder="Filter the top 100…"
               className="pl-8"
-              aria-label="Search coins"
+              aria-label="Filter the top 100 coins by name or symbol"
             />
           </div>
           <MobileSort

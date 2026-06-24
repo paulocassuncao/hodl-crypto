@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 
 import { MarketTable } from "@/components/market-table/market-table";
 import { Providers } from "@/components/providers";
@@ -14,7 +20,9 @@ jest.mock("@/lib/api", () => ({
   fetchMarkets: jest.fn(),
 }));
 
-const makeCoin = (over: Partial<Coin> & Pick<Coin, "id" | "name" | "symbol">): Coin => ({
+const makeCoin = (
+  over: Partial<Coin> & Pick<Coin, "id" | "name" | "symbol">,
+): Coin => ({
   image: "https://example.com/icon.png",
   current_price: 0,
   market_cap: 0,
@@ -35,9 +43,27 @@ const makeCoin = (over: Partial<Coin> & Pick<Coin, "id" | "name" | "symbol">): C
 });
 
 const COINS: Coin[] = [
-  makeCoin({ id: "bitcoin", name: "Bitcoin", symbol: "btc", market_cap_rank: 1, current_price: 60000 }),
-  makeCoin({ id: "ethereum", name: "Ethereum", symbol: "eth", market_cap_rank: 2, current_price: 3000 }),
-  makeCoin({ id: "solana", name: "Solana", symbol: "sol", market_cap_rank: 3, current_price: 150 }),
+  makeCoin({
+    id: "bitcoin",
+    name: "Bitcoin",
+    symbol: "btc",
+    market_cap_rank: 1,
+    current_price: 60000,
+  }),
+  makeCoin({
+    id: "ethereum",
+    name: "Ethereum",
+    symbol: "eth",
+    market_cap_rank: 2,
+    current_price: 3000,
+  }),
+  makeCoin({
+    id: "solana",
+    name: "Solana",
+    symbol: "sol",
+    market_cap_rank: 3,
+    current_price: 150,
+  }),
 ];
 
 const renderTable = (): void => {
@@ -80,9 +106,12 @@ describe("MarketTable", () => {
       expect(within(table()).getByText("Bitcoin")).toBeInTheDocument(),
     );
 
-    fireEvent.change(screen.getByLabelText("Search coins"), {
-      target: { value: "eth" },
-    });
+    fireEvent.change(
+      screen.getByLabelText("Filter the top 100 coins by name or symbol"),
+      {
+        target: { value: "eth" },
+      },
+    );
 
     expect(within(table()).getByText("Ethereum")).toBeInTheDocument();
     expect(within(table()).queryByText("Bitcoin")).not.toBeInTheDocument();

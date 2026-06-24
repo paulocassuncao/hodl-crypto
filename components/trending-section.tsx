@@ -7,13 +7,14 @@ import { Flame } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTrending } from "@/hooks/use-trending";
+import { HIGHLIGHT_COUNT } from "@/lib/constants";
 import { formatPercent, percentColorClass } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** Card listing the currently trending coins. */
 export const TrendingSection = (): React.ReactNode => {
   const { data, isLoading } = useTrending();
-  const coins = data?.slice(0, 7) ?? [];
+  const coins = data?.slice(0, HIGHLIGHT_COUNT) ?? [];
 
   return (
     <Card>
@@ -25,7 +26,7 @@ export const TrendingSection = (): React.ReactNode => {
       </CardHeader>
       <CardContent className="space-y-1">
         {isLoading
-          ? Array.from({ length: 5 }).map((_, i) => (
+          ? Array.from({ length: HIGHLIGHT_COUNT }).map((_, i) => (
               <Skeleton key={i} className="h-8 w-full" />
             ))
           : coins.map((coin) => (

@@ -7,6 +7,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMarkets } from "@/hooks/use-markets";
+import { HIGHLIGHT_COUNT } from "@/lib/constants";
 import { useCurrency } from "@/lib/currency";
 import {
   formatCurrency,
@@ -28,8 +29,8 @@ export const GainersLosers = (): React.ReactNode => {
         (b.price_change_percentage_24h_in_currency ?? 0) -
         (a.price_change_percentage_24h_in_currency ?? 0),
     );
-  const gainers = ranked.slice(0, 5);
-  const losers = ranked.slice(-5).reverse();
+  const gainers = ranked.slice(0, HIGHLIGHT_COUNT);
+  const losers = ranked.slice(-HIGHLIGHT_COUNT).reverse();
 
   return (
     <>
@@ -73,7 +74,7 @@ const MoversCard = ({
     </CardHeader>
     <CardContent className="space-y-1">
       {isLoading
-        ? Array.from({ length: 5 }).map((_, i) => (
+        ? Array.from({ length: HIGHLIGHT_COUNT }).map((_, i) => (
             <Skeleton key={i} className="h-8 w-full" />
           ))
         : coins.map((coin) => (

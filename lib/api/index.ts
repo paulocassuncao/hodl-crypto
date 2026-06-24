@@ -7,6 +7,7 @@ import type {
   FearGreed,
   GlobalData,
   SearchCoin,
+  Ticker,
   TrendingCoin,
 } from "@/lib/types";
 
@@ -46,3 +47,16 @@ export const searchCoins = async (query: string): Promise<SearchCoin[]> =>
 
 export const fetchCategories = async (): Promise<Category[]> =>
   toJson(await fetch("/api/categories"));
+
+export const fetchCoinTickers = async (id: string): Promise<Ticker[]> =>
+  toJson(await fetch(`/api/coins/${id}/tickers`));
+
+export const fetchPrices = async (
+  ids: string[],
+  currencies: string,
+): Promise<Record<string, Record<string, number>>> =>
+  toJson(
+    await fetch(
+      `/api/prices?ids=${encodeURIComponent(ids.join(","))}&vs_currency=${encodeURIComponent(currencies)}`,
+    ),
+  );

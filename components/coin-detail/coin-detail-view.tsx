@@ -4,11 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import { AlertButton } from "@/components/alerts/alert-button";
 import { CoinChart } from "@/components/coin-detail/coin-chart";
+import { CoinMarkets } from "@/components/coin-detail/coin-markets";
 import { CoinStats } from "@/components/coin-detail/coin-stats";
 import { WatchlistStar } from "@/components/watchlist-star";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCoin } from "@/hooks/use-coin";
 import { useCurrency } from "@/lib/currency";
 import {
@@ -88,20 +91,42 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
                 </span>
               </div>
             </div>
+            <div className="ml-auto">
+              <AlertButton
+                coinId={id}
+                symbol={coin.symbol}
+                name={coin.name}
+                image={coin.image.large}
+                currentPrice={coin.market_data.current_price[currency]}
+              />
+            </div>
           </header>
 
-          <CoinChart id={id} />
-          <CoinStats coin={coin} currency={currency} />
+          <Tabs defaultValue="overview" className="gap-4">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="markets">Markets</TabsTrigger>
+            </TabsList>
 
-          {coin.description.en ? (
-            <section className="space-y-2">
-              <h2 className="text-lg font-semibold">About {coin.name}</h2>
-              <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                {toPlainText(coin.description.en).slice(0, 600)}
-                {toPlainText(coin.description.en).length > 600 ? "…" : ""}
-              </p>
-            </section>
-          ) : null}
+            <TabsContent value="overview" className="space-y-6">
+              <CoinChart id={id} />
+              <CoinStats coin={coin} currency={currency} />
+
+              {coin.description.en ? (
+                <section className="space-y-2">
+                  <h2 className="text-lg font-semibold">About {coin.name}</h2>
+                  <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                    {toPlainText(coin.description.en).slice(0, 600)}
+                    {toPlainText(coin.description.en).length > 600 ? "…" : ""}
+                  </p>
+                </section>
+              ) : null}
+            </TabsContent>
+
+            <TabsContent value="markets">
+              <CoinMarkets id={id} />
+            </TabsContent>
+          </Tabs>
         </>
       )}
     </div>

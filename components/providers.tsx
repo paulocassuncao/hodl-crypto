@@ -5,7 +5,9 @@ import { useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 
+import { AlertWatcher } from "@/components/alerts/alert-watcher";
 import { Toaster } from "@/components/ui/sonner";
+import { AlertsProvider } from "@/lib/alerts";
 import { CurrencyProvider } from "@/lib/currency";
 import { WatchlistProvider } from "@/lib/watchlist";
 
@@ -29,8 +31,11 @@ export const Providers = ({ children }: { children: ReactNode }): ReactNode => {
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <CurrencyProvider>
           <WatchlistProvider>
-            {children}
-            <Toaster richColors position="top-right" />
+            <AlertsProvider>
+              {children}
+              <AlertWatcher />
+              <Toaster richColors position="top-right" />
+            </AlertsProvider>
           </WatchlistProvider>
         </CurrencyProvider>
       </ThemeProvider>
