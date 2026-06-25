@@ -61,6 +61,12 @@ export const formatNumber = (value: number | null | undefined): string => {
   }).format(value);
 };
 
+/** Format a coin quantity: trims float residue, groups thousands, up to 8 dp. */
+export const formatQuantity = (value: number | null | undefined): string => {
+  if (value == null || Number.isNaN(value)) return "—";
+  return value.toLocaleString("en-US", { maximumFractionDigits: 8 });
+};
+
 /** Format a percentage change with an explicit sign, e.g. `+1.23%`. */
 export const formatPercent = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return "—";

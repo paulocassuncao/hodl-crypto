@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ResponsiveContainer, Treemap } from "recharts";
 
@@ -45,13 +45,33 @@ interface CellProps {
   height?: number;
   depth?: number;
   id?: string;
+  name?: string;
   symbol?: string;
   pct?: number | null;
   currency?: Currency;
+  timeframe?: Timeframe;
+  /** Tile ids in render order — drives roving-tabindex position. */
+  idOrder?: string[];
+  /** Index of the single tile that is currently in the tab order. */
+  activeIndex?: number;
+  onActiveChange?: (index: number) => void;
   onNavigate?: (id: string) => void;
 }
 
-/** Single treemap tile: colored by % change, navigates to the coin on click. */
+/** Spoken description of a tile's movement — drives both the label and a11y name. */
+const moveDescription = (pct: number | null | undefined): string => {
+  if (pct == null || Number.isNaN(pct)) return "no change data";
+  if (pct > 0) return `up ${formatPercent(pct)}`;
+  if (pct < 0) return `down ${formatPercent(pct)}`;
+  return "unchanged";
+};
+
+/**
+ * Single treemap tile: colored by % change, navigates to the coin.
+ * Keyboard-operable (Tab to focus, Enter/Space to open) with a Signal focus
+ * ring and a spoken label carrying symbol + direction + magnitude, so the
+ * heatmap is fully usable without a mouse and survives grayscale/color blindness.
+ */
 const HeatCell = ({
   x = 0,
   y = 0,
@@ -59,8 +79,13 @@ const HeatCell = ({
   height = 0,
   depth = 0,
   id,
+  name,
   symbol,
   pct,
+  timeframe = "24h",
+  idOrder = [],
+  activeIndex = 0,
+  onActiveChange,
   onNavigate,
 }: CellProps): React.ReactNode => {
   // Recharts renders a root container node (depth 0) plus leaf tiles (depth 1).
@@ -68,13 +93,53 @@ const HeatCell = ({
 
   const showText = width > 44 && height > 26;
   const showPct = width > 56 && height > 40;
+  const hasPct = pct != null && !Number.isNaN(pct);
+  const label = `${name ?? symbol ?? id} (${symbol?.toUpperCase() ?? ""}), ${moveDescription(pct)} over ${timeframe}. Press Enter to view details.`;
+
+  const navigate = (): void => onNavigate?.(id);
+
+  // Roving tabindex: only the active tile is in the tab order, so a keyboard
+  // user reaches the grid in one Tab and steps through tiles with arrow keys —
+  // instead of tabbing past all 100 to leave the page.
+  const myIndex = idOrder.indexOf(id);
+  const lastIndex = idOrder.length - 1;
+  const moveFocus = (target: number): void => {
+    onActiveChange?.(target);
+    document
+      .querySelector<SVGGElement>(`[data-tile-index="${target}"]`)
+      ?.focus();
+  };
 
   return (
     <g
-      onClick={() => onNavigate?.(id)}
-      style={{ cursor: "pointer" }}
+      tabIndex={myIndex === activeIndex ? 0 : -1}
+      data-tile-index={myIndex}
       role="link"
-      aria-label={symbol}
+      aria-label={label}
+      onClick={navigate}
+      onKeyDown={(e) => {
+        // Activate on Enter (link convention) and Space (forgiving).
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate();
+          return;
+        }
+        const next: Record<string, number> = {
+          ArrowRight: Math.min(myIndex + 1, lastIndex),
+          ArrowDown: Math.min(myIndex + 1, lastIndex),
+          ArrowLeft: Math.max(myIndex - 1, 0),
+          ArrowUp: Math.max(myIndex - 1, 0),
+          Home: 0,
+          End: lastIndex,
+        };
+        if (e.key in next) {
+          e.preventDefault();
+          moveFocus(next[e.key]);
+        }
+      }}
+      // Inline presentation attrs (stroke) are overridden by these CSS rules on
+      // focus, raising a Signal-tinted ring over the background hairline.
+      className="cursor-pointer outline-none [&:focus-visible>rect]:stroke-primary [&:focus-visible>rect]:[stroke-width:3]"
     >
       <rect
         x={x}
@@ -97,6 +162,7 @@ const HeatCell = ({
           fill="#fff"
           fontSize={Math.min(16, Math.max(10, width / 6))}
           fontWeight={600}
+          aria-hidden="true"
         >
           {symbol?.toUpperCase()}
         </text>
@@ -108,8 +174,10 @@ const HeatCell = ({
           textAnchor="middle"
           fill="rgba(255,255,255,0.85)"
           fontSize={11}
+          aria-hidden="true"
         >
-          {formatPercent(pct ?? 0)}
+          {/* Truthful: a coin with no change data reads as "—", never "+0.00%". */}
+          {hasPct ? formatPercent(pct) : "—"}
         </text>
       ) : null}
     </g>
@@ -123,10 +191,26 @@ export const MarketHeatmap = (): React.ReactNode => {
   const { data: coins, isLoading, isError, error } = useMarkets();
   const [timeframe, setTimeframe] = useState<Timeframe>("24h");
 
+  // A market-cap treemap of all 100 coins turns the long tail into untappable,
+  // unlabeled 1px slivers on a phone. On small screens we show fewer, larger
+  // tiles (the big movers, which are the glanceable point) and say so honestly;
+  // the full 100 always live in the sortable table. Starts at the full count so
+  // server and first client render match, then narrows once we can measure.
+  const [maxTiles, setMaxTiles] = useState(100);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const apply = (): void => setMaxTiles(mq.matches ? 24 : 100);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   const data = useMemo<HeatNode[]>(
     () =>
       (coins ?? [])
         .filter((c) => c.market_cap > 0)
+        .sort((a, b) => b.market_cap - a.market_cap)
+        .slice(0, maxTiles)
         .map((c) => ({
           id: c.id,
           name: c.name,
@@ -135,8 +219,14 @@ export const MarketHeatmap = (): React.ReactNode => {
           pct: changeFor(c, timeframe),
           price: c.current_price,
         })),
-    [coins, timeframe],
+    [coins, timeframe, maxTiles],
   );
+
+  // Roving-tabindex anchor: which tile currently holds the single tab stop.
+  const idOrder = useMemo(() => data.map((d) => d.id), [data]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  // Clamp so the tab stop stays valid if the tile set shrinks (desktop → mobile).
+  const safeActiveIndex = Math.min(activeIndex, Math.max(0, idOrder.length - 1));
 
   return (
     <section className="space-y-4">
@@ -144,8 +234,8 @@ export const MarketHeatmap = (): React.ReactNode => {
         <div>
           <h1 className="text-2xl font-bold">Market Heatmap</h1>
           <p className="text-sm text-muted-foreground">
-            Top 100 by market cap · tile size = market cap · color ={" "}
-            {timeframe} change
+            Top <span className="tabular-nums">{maxTiles}</span> by market cap ·
+            tile size = market cap · color = {timeframe} change
           </p>
         </div>
         <Tabs
@@ -167,9 +257,13 @@ export const MarketHeatmap = (): React.ReactNode => {
           {error instanceof Error ? error.message : "Failed to load market data."}
         </div>
       ) : isLoading || data.length === 0 ? (
-        <Skeleton className="h-[600px] w-full rounded-lg" />
+        <Skeleton className="h-[70vh] min-h-[26rem] w-full rounded-lg sm:h-[34rem] lg:h-[600px]" />
       ) : (
-        <div className="h-[600px] w-full">
+        <div
+          role="group"
+          aria-label={`Market heatmap, ${data.length} coins by market cap, colored by ${timeframe} change. Tab to enter, arrow keys to move between tiles, Enter to open a coin.`}
+          className="h-[70vh] min-h-[26rem] w-full sm:h-[34rem] lg:h-[600px]"
+        >
           <ResponsiveContainer width="100%" height="100%">
             <Treemap
               data={data}
@@ -178,6 +272,10 @@ export const MarketHeatmap = (): React.ReactNode => {
               content={
                 <HeatCell
                   currency={currency}
+                  timeframe={timeframe}
+                  idOrder={idOrder}
+                  activeIndex={safeActiveIndex}
+                  onActiveChange={setActiveIndex}
                   onNavigate={(id) => router.push(`/coins/${id}`)}
                 />
               }
