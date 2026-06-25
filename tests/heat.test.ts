@@ -7,13 +7,13 @@ describe("heatColor", () => {
     expect(heatColor(Number.NaN)).toBe(HEAT_NEUTRAL);
   });
 
-  it("uses green hue (150) for gains and zero", () => {
-    expect(heatColor(0)).toMatch(/^hsl\(150 /);
-    expect(heatColor(3.5)).toMatch(/^hsl\(150 /);
+  it("uses the brand gain hue (152) for gains and zero", () => {
+    expect(heatColor(0)).toMatch(/ 152\)$/);
+    expect(heatColor(3.5)).toMatch(/ 152\)$/);
   });
 
-  it("uses red hue (0) for losses", () => {
-    expect(heatColor(-3.5)).toMatch(/^hsl\(0 /);
+  it("uses the brand loss hue (25) for losses", () => {
+    expect(heatColor(-3.5)).toMatch(/ 25\)$/);
   });
 
   it("saturates at ±8% (larger magnitudes match the cap)", () => {
@@ -21,10 +21,11 @@ describe("heatColor", () => {
     expect(heatColor(-100)).toBe(heatColor(-8));
   });
 
-  it("increases saturation with magnitude", () => {
+  it("increases chroma with magnitude", () => {
     const small = heatColor(1);
     const large = heatColor(7);
-    const satOf = (c: string): number => Number(c.match(/hsl\(\d+ (\d+)%/)![1]);
-    expect(satOf(large)).toBeGreaterThan(satOf(small));
+    const chromaOf = (c: string): number =>
+      Number(c.match(/oklch\([\d.]+ ([\d.]+) /)![1]);
+    expect(chromaOf(large)).toBeGreaterThan(chromaOf(small));
   });
 });
