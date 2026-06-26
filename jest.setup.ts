@@ -1,5 +1,19 @@
 import "@testing-library/jest-dom";
 
+// Components use the App Router hooks, which aren't mounted under jsdom.
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/",
+}));
+
 // next-themes reads matchMedia for system theme detection.
 if (!window.matchMedia) {
   window.matchMedia = (query: string): MediaQueryList =>

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 
 import { AlertWatcher } from "@/components/alerts/alert-watcher";
+import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Toaster } from "@/components/ui/sonner";
 import { AlertsProvider } from "@/lib/alerts";
 import { CurrencyProvider } from "@/lib/currency";
@@ -36,6 +37,7 @@ export const Providers = ({ children }: { children: ReactNode }): ReactNode => {
               <AlertsProvider>
                 {children}
                 <AlertWatcher />
+                <ServiceWorkerRegister />
                 <Toaster richColors position="top-right" />
               </AlertsProvider>
             </PortfolioProvider>

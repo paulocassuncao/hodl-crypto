@@ -24,6 +24,8 @@ interface PortfolioContextValue {
   /** Coin positions derived from the ledger (average-cost basis). */
   positions: Position[];
   addTransaction: (tx: NewTransaction) => void;
+  /** Append several transactions at once (e.g. a CSV import). */
+  addTransactions: (txs: NewTransaction[]) => void;
   updateTransaction: (id: string, patch: TransactionPatch) => void;
   removeTransaction: (id: string) => void;
   clear: () => void;
@@ -123,6 +125,16 @@ export const PortfolioProvider = ({
     persist([entry, ...transactions]);
   };
 
+  const addTransactions = (txs: NewTransaction[]): void => {
+    const now = Date.now();
+    const entries: Transaction[] = txs.map((tx, i) => ({
+      ...tx,
+      id: crypto.randomUUID(),
+      createdAt: now + i,
+    }));
+    persist([...entries, ...transactions]);
+  };
+
   const updateTransaction = (id: string, patch: TransactionPatch): void => {
     persist(transactions.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   };
@@ -157,6 +169,7 @@ export const PortfolioProvider = ({
         transactions,
         positions,
         addTransaction,
+        addTransactions,
         updateTransaction,
         removeTransaction,
         clear,

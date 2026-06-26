@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CoinPicker, type PickerCoin } from "@/components/compare/coin-picker";
 import { CompareChart } from "@/components/compare/compare-chart";
 import { CompareStats } from "@/components/compare/compare-stats";
+import { ShareButton } from "@/components/share-button";
 import { useCoins } from "@/hooks/use-coins";
 import { MAX_COMPARE } from "@/lib/compare";
 
@@ -57,12 +58,15 @@ export const CompareView = (): React.ReactNode => {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Compare Coins</h1>
-        <p className="text-sm text-muted-foreground">
-          Up to {MAX_COMPARE} coins, side by side. Chart is normalized to %
-          change so different prices are comparable.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Compare Coins</h1>
+          <p className="text-sm text-muted-foreground">
+            Up to {MAX_COMPARE} coins, side by side. Chart is normalized to %
+            change so different prices are comparable.
+          </p>
+        </div>
+        <ShareButton title="Compare coins · HODL" />
       </div>
 
       <CoinPicker selected={coins} onAdd={handleAdd} onRemove={handleRemove} />

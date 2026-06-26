@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowDownUp,
   ArrowUp,
   ChevronsUpDown,
+  Download,
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { AlertButton } from "@/components/alerts/alert-button";
 import { Sparkline } from "@/components/market-table/sparkline";
 import { WatchlistStar } from "@/components/watchlist-star";
 import { Button } from "@/components/ui/button";
@@ -35,6 +38,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMarkets } from "@/hooks/use-markets";
 import { useCurrency } from "@/lib/currency";
+import { download } from "@/lib/download";
+import { marketsToCsv } from "@/lib/markets-csv";
 import { useWatchlist } from "@/lib/watchlist";
 import {
   formatCompact,
@@ -72,6 +77,7 @@ const sortValue = (coin: Coin, key: SortKey): number => {
 
 /** Top 100 markets: a card list on mobile and a full table on md+. */
 export const MarketTable = (): React.ReactNode => {
+  const router = useRouter();
   const { currency } = useCurrency();
   const { ids: watchedIds } = useWatchlist();
   const { data, isLoading, isError, error } = useMarkets();
@@ -80,6 +86,10 @@ export const MarketTable = (): React.ReactNode => {
   const [filter, setFilter] = useState<"all" | "watchlist">("all");
   const [sortKey, setSortKey] = useState<SortKey>("market_cap_rank");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+
+  const filterRef = useRef<HTMLInputElement>(null);
+  const tableWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isError) {
@@ -116,6 +126,51 @@ export const MarketTable = (): React.ReactNode => {
     }
   };
 
+  // Re-sorting/filtering changes which row sits at an index, so drop the cursor.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFocusedIndex(-1);
+  }, [sortKey, sortDir, filter, query]);
+
+  // Move keyboard focus onto the active row whenever the cursor changes.
+  useEffect(() => {
+    if (focusedIndex < 0) return;
+    const el = tableWrapRef.current?.querySelector<HTMLElement>(
+      `[data-row-index="${focusedIndex}"]`,
+    );
+    el?.focus();
+    el?.scrollIntoView({ block: "nearest" });
+  }, [focusedIndex]);
+
+  /** vim-style keyboard navigation for the desktop table. */
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+    const tag = (e.target as HTMLElement).tagName;
+    const typing = tag === "INPUT" || tag === "TEXTAREA";
+    if (e.key === "/" && !typing) {
+      e.preventDefault();
+      filterRef.current?.focus();
+      return;
+    }
+    if (typing || rows.length === 0) return;
+    if (e.key === "j" || e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIndex((i) => Math.min(rows.length - 1, i + 1));
+    } else if (e.key === "k" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIndex((i) => (i <= 0 ? 0 : i - 1));
+    } else if (e.key === "Enter" && focusedIndex >= 0 && rows[focusedIndex]) {
+      router.push(`/coins/${rows[focusedIndex].id}`);
+    }
+  };
+
+  const handleExportCsv = (): void => {
+    download(
+      `hodl-markets-${currency}.csv`,
+      marketsToCsv(rows, currency),
+      "text/csv;charset=utf-8",
+    );
+  };
+
   const emptyMessage =
     filter === "watchlist" && !query
       ? "No coins in your watchlist yet — tap ☆ to add."
@@ -146,13 +201,25 @@ export const MarketTable = (): React.ReactNode => {
           <div className="relative flex-1 sm:w-64 sm:flex-none">
             <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              ref={filterRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Filter the top 100…"
+              placeholder="Filter the top 100…  ( / )"
               className="pl-8"
               aria-label="Filter the top 100 coins by name or symbol"
             />
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-1"
+            onClick={handleExportCsv}
+            disabled={rows.length === 0}
+            title="Export the current view as CSV"
+          >
+            <Download className="size-4" />
+            <span className="hidden sm:inline">CSV</span>
+          </Button>
           <MobileSort
             sortKey={sortKey}
             sortDir={sortDir}
@@ -180,8 +247,15 @@ export const MarketTable = (): React.ReactNode => {
         )}
       </div>
 
-      {/* md+: full data table. */}
-      <div className="hidden overflow-x-auto rounded-lg border md:block">
+      {/* md+: full data table. Focus it, then use j/k (or ↑/↓) and Enter. */}
+      <div
+        ref={tableWrapRef}
+        tabIndex={0}
+        role="grid"
+        aria-label="Top 100 coins. Press j and k to navigate rows, Enter to open, slash to filter."
+        onKeyDown={handleKeyDown}
+        className="hidden overflow-x-auto rounded-lg border outline-none focus-visible:ring-2 focus-visible:ring-ring md:block"
+      >
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -248,24 +322,31 @@ export const MarketTable = (): React.ReactNode => {
               <TableHead className="hidden text-right lg:table-cell">
                 Last 7 Days
               </TableHead>
+              <TableHead className="w-8" aria-label="Alert" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading
               ? Array.from({ length: 15 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={10}>
+                    <TableCell colSpan={11}>
                       <Skeleton className="h-6 w-full" />
                     </TableCell>
                   </TableRow>
                 ))
-              : rows.map((coin) => (
-                  <CoinRow key={coin.id} coin={coin} currency={currency} />
+              : rows.map((coin, i) => (
+                  <CoinRow
+                    key={coin.id}
+                    coin={coin}
+                    currency={currency}
+                    index={i}
+                    onFocus={() => setFocusedIndex(i)}
+                  />
                 ))}
             {isEmpty ? (
               <TableRow>
                 <TableCell
-                  colSpan={10}
+                  colSpan={11}
                   className="py-10 text-center text-muted-foreground"
                 >
                   {emptyMessage}
@@ -411,17 +492,36 @@ const CoinCard = ({
         {formatPercent(coin.price_change_percentage_24h_in_currency)}
       </div>
     </div>
+    <span className="relative z-10 shrink-0">
+      <AlertButton
+        compact
+        coinId={coin.id}
+        symbol={coin.symbol}
+        name={coin.name}
+        image={coin.image}
+        currentPrice={coin.current_price}
+      />
+    </span>
   </li>
 );
 
 const CoinRow = ({
   coin,
   currency,
+  index,
+  onFocus,
 }: {
   coin: Coin;
   currency: Currency;
+  index: number;
+  onFocus: () => void;
 }): React.ReactNode => (
-  <TableRow className="group">
+  <TableRow
+    className="group outline-none focus:bg-muted/50"
+    data-row-index={index}
+    tabIndex={-1}
+    onFocus={onFocus}
+  >
     <TableCell className="pr-0">
       <WatchlistStar id={coin.id} />
     </TableCell>
@@ -483,6 +583,16 @@ const CoinRow = ({
       <div className="flex justify-end">
         <Sparkline prices={coin.sparkline_in_7d?.price ?? []} />
       </div>
+    </TableCell>
+    <TableCell className="pl-0 text-right">
+      <AlertButton
+        compact
+        coinId={coin.id}
+        symbol={coin.symbol}
+        name={coin.name}
+        image={coin.image}
+        currentPrice={coin.current_price}
+      />
     </TableCell>
   </TableRow>
 );

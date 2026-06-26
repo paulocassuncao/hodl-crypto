@@ -5,9 +5,15 @@ A CoinGecko/CoinMarketCap-style dashboard for the top 100 cryptocurrencies, buil
 ## Features
 
 - **Global stats bar** — total market cap (+24h change), 24h volume, BTC/ETH dominance, active coins.
-- **Top 100 table** — rank, coin, price, 1h / 24h / 7d change (color-coded), 24h volume, market cap, and a 7-day sparkline. Sortable columns and live search.
+- **Top 100 table** — rank, coin, price, 1h / 24h / 7d change (color-coded), 24h volume, market cap, and a 7-day sparkline. Sortable columns, live search, per-row alert buttons, `j`/`k`/`Enter`/`/` keyboard navigation, and CSV export.
+- **Ticker tape** — a thin auto-scrolling price strip (your watchlist, or top 24h movers), honoring reduced-motion.
 - **Trending** and **Top Gainers / Losers** highlight cards.
-- **Coin detail page** — interactive price chart (24h / 7d / 30d / 1y), key stats, and description.
+- **On-chain DEX** — trending / new liquidity pools across networks (Ethereum, Solana, Base, BNB, Arbitrum) via the free GeckoTerminal API.
+- **Derivatives** — top perpetual & futures markets by open interest, with funding rates.
+- **Coin detail page** — interactive **line or candlestick (OHLC)** chart (24h / 7d / 30d / 1y), key stats, and description.
+- **Compare** — up to 4 coins side by side, shareable via URL, with dynamic social-preview (OG) images.
+- **Portfolio analytics** — realized vs. unrealized P&L (with %), allocation donut, best/worst performer, a **what-if** calculator, a **DCA backtest** (vs. lump sum), and CSV import/export alongside JSON backup/restore.
+- **Installable PWA** — add to home screen, offline app shell, and price-alert notifications that fire while HODL is open or installed (no account required).
 - **Currency switcher** (USD / EUR / GBP / JPY / BTC / ETH), **light/dark mode**, and **auto-refresh** every 60s.
 
 ## Getting started

@@ -12,7 +12,7 @@ export default function AlertsPage(): React.ReactNode {
         <h1 className="text-2xl font-bold">Price Alerts</h1>
         <p className="text-sm text-muted-foreground">
           Browser notifications when a coin crosses your target. Alerts fire
-          only while a HODL tab is open.
+          while HODL is open or installed as an app.
         </p>
       </div>
       <AlertsList />

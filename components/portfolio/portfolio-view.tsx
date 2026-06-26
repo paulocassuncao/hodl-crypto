@@ -1,49 +1,77 @@
 "use client";
 
 import { useRef } from "react";
-import { Download, Plus, Upload, Wallet } from "lucide-react";
+import { Download, FileDown, FileUp, Plus, Upload, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
+import { AnalyticsSection } from "@/components/portfolio/analytics-section";
+import { DcaDialog } from "@/components/portfolio/dca-dialog";
 import { PortfolioSummary } from "@/components/portfolio/portfolio-summary";
 import { PositionsTable } from "@/components/portfolio/positions-table";
 import { TransactionForm } from "@/components/portfolio/transaction-form";
 import { TransactionsList } from "@/components/portfolio/transactions-list";
+import { WhatIfDialog } from "@/components/portfolio/whatif-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioPrices } from "@/hooks/use-portfolio-prices";
+import { parseTransactionsCsv, transactionsToCsv } from "@/lib/csv";
+import { download } from "@/lib/download";
 import { usePortfolio } from "@/lib/portfolio";
 
 /** Smallest quantity treated as an open position (guards float residue). */
 const DUST = 1e-8;
 
-/** Portfolio page body: summary, positions, transaction ledger, and actions. */
+/** Portfolio page body: summary, analytics, positions, ledger, and actions. */
 export const PortfolioView = (): React.ReactNode => {
-  const { transactions, positions, exportJson, importJson } = usePortfolio();
+  const { transactions, positions, addTransactions, exportJson, importJson } =
+    usePortfolio();
   const open = positions.filter((p) => p.quantity > DUST);
   const { data: prices, isLoading } = usePortfolioPrices(
     open.map((p) => p.coinId),
   );
-  const fileInput = useRef<HTMLInputElement>(null);
+  const csvInput = useRef<HTMLInputElement>(null);
+  const jsonInput = useRef<HTMLInputElement>(null);
 
   const symbolFor = (coinId: string): string =>
     positions.find((p) => p.coinId === coinId)?.symbol ?? coinId;
 
-  const handleExport = (): void => {
-    const blob = new Blob([exportJson()], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "hodl-portfolio.json";
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleCsvExport = (): void => {
+    download(
+      "hodl-portfolio.csv",
+      transactionsToCsv(transactions),
+      "text/csv;charset=utf-8",
+    );
   };
 
-  const handleImport = (file: File): void => {
+  const handleCsvImport = (file: File): void => {
+    void file.text().then((text) => {
+      const { rows, errors } = parseTransactionsCsv(text);
+      if (rows.length > 0) {
+        addTransactions(rows);
+        toast.success(
+          `Imported ${rows.length} transaction${rows.length === 1 ? "" : "s"}.`,
+          errors.length > 0
+            ? { description: `${errors.length} row(s) skipped.` }
+            : undefined,
+        );
+      } else {
+        toast.error(errors[0] ?? "No valid transactions found in that file.");
+      }
+    });
+  };
+
+  const handleJsonExport = (): void => {
+    download("hodl-portfolio.json", exportJson(), "application/json");
+  };
+
+  const handleJsonImport = (file: File): void => {
     void file.text().then((text) => {
       if (importJson(text)) {
         toast.success("Portfolio imported.");
       } else {
-        toast.error("Couldn't read that file — expected a HODL portfolio export.");
+        toast.error(
+          "Couldn't read that file — expected a HODL portfolio export.",
+        );
       }
     });
   };
@@ -58,15 +86,26 @@ export const PortfolioView = (): React.ReactNode => {
             device
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <input
-            ref={fileInput}
+            ref={csvInput}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleCsvImport(file);
+              e.target.value = "";
+            }}
+          />
+          <input
+            ref={jsonInput}
             type="file"
             accept="application/json"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) handleImport(file);
+              if (file) handleJsonImport(file);
               e.target.value = "";
             }}
           />
@@ -76,19 +115,39 @@ export const PortfolioView = (): React.ReactNode => {
                 variant="outline"
                 size="sm"
                 className="gap-1"
-                onClick={handleExport}
+                onClick={handleCsvExport}
               >
-                <Download className="size-4" />
-                <span className="hidden sm:inline">Export</span>
+                <FileDown className="size-4" />
+                <span className="hidden sm:inline">CSV</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 className="gap-1"
-                onClick={() => fileInput.current?.click()}
+                onClick={() => csvInput.current?.click()}
+              >
+                <FileUp className="size-4" />
+                <span className="hidden sm:inline">Import CSV</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={handleJsonExport}
+                title="Export a full JSON backup"
+              >
+                <Download className="size-4" />
+                <span className="hidden sm:inline">Backup</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => jsonInput.current?.click()}
+                title="Restore from a JSON backup (replaces current data)"
               >
                 <Upload className="size-4" />
-                <span className="hidden sm:inline">Import</span>
+                <span className="hidden sm:inline">Restore</span>
               </Button>
             </>
           ) : null}
@@ -132,6 +191,11 @@ export const PortfolioView = (): React.ReactNode => {
                 prices={prices}
                 symbolFor={symbolFor}
               />
+              <AnalyticsSection positions={open} prices={prices} />
+              <div className="flex justify-end gap-2">
+                <WhatIfDialog positions={open} prices={prices} />
+                <DcaDialog positions={open} />
+              </div>
               <PositionsTable positions={open} prices={prices} />
             </>
           ) : null}

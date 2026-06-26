@@ -5,9 +5,12 @@ import type {
   Coin,
   CoinDetail,
   Currency,
+  Derivative,
   FearGreed,
   GlobalData,
   NewsItem,
+  OHLCPoint,
+  Pool,
   SearchCoin,
   Ticker,
   TrendingCoin,
@@ -41,6 +44,13 @@ export const fetchCoinChart = async (
 ): Promise<ChartPoint[]> =>
   toJson(await fetch(`/api/coins/${id}/chart?days=${days}&vs_currency=${currency}`));
 
+export const fetchCoinOhlc = async (
+  id: string,
+  days: number,
+  currency: Currency,
+): Promise<OHLCPoint[]> =>
+  toJson(await fetch(`/api/coins/${id}/ohlc?days=${days}&vs_currency=${currency}`));
+
 export const fetchFearGreed = async (): Promise<FearGreed> =>
   toJson(await fetch("/api/fear-greed"));
 
@@ -62,6 +72,17 @@ export const fetchNews = async (filter?: {
 
 export const fetchCoinTickers = async (id: string): Promise<Ticker[]> =>
   toJson(await fetch(`/api/coins/${id}/tickers`));
+
+export const fetchDexPools = async (
+  network: string,
+  mode: "trending" | "new",
+): Promise<Pool[]> =>
+  toJson(
+    await fetch(`/api/dex?network=${encodeURIComponent(network)}&mode=${mode}`),
+  );
+
+export const fetchDerivatives = async (): Promise<Derivative[]> =>
+  toJson(await fetch("/api/derivatives"));
 
 export const fetchPrices = async (
   ids: string[],

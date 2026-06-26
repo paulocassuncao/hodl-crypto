@@ -50,6 +50,7 @@ export const derivePositions = (transactions: Transaction[]): Position[] => {
         quantity: 0,
         costBasis: 0,
         realized: 0,
+        realizedCost: 0,
       } satisfies Position);
 
     // Refresh metadata from the most recent transaction seen.
@@ -68,6 +69,7 @@ export const derivePositions = (transactions: Transaction[]): Position[] => {
       const proceeds =
         tx.quantity > 0 ? tx.amount * (qtyRemoved / tx.quantity) : 0;
       pos.realized += proceeds - costRemoved;
+      pos.realizedCost += costRemoved;
       pos.quantity -= qtyRemoved;
       pos.costBasis -= costRemoved;
     }
@@ -89,6 +91,10 @@ export interface PortfolioTotals {
   pnlPct: number;
   /** Realized P&L booked from sells. */
   realized: number;
+  /** Cost basis of the units that were sold (denominator for realized %). */
+  realizedCost: number;
+  /** Realized P&L as a percentage of the cost of the units sold. */
+  realizedPct: number;
   /** 24h change in value (USD). */
   change24h: number;
   /** 24h change as a percentage of the value 24h ago. */
@@ -103,6 +109,7 @@ export const portfolioTotals = (
   let value = 0;
   let cost = 0;
   let realized = 0;
+  let realizedCost = 0;
   let value24hAgo = 0;
 
   for (const p of positions) {
@@ -112,6 +119,7 @@ export const portfolioTotals = (
     value += v;
     cost += p.costBasis;
     realized += p.realized;
+    realizedCost += p.realizedCost;
     value24hAgo += change !== -100 ? v / (1 + change / 100) : 0;
   }
 
@@ -122,6 +130,8 @@ export const portfolioTotals = (
     pnl: value - cost,
     pnlPct: pnlPct(value, cost),
     realized,
+    realizedCost,
+    realizedPct: realizedCost > 0 ? (realized / realizedCost) * 100 : 0,
     change24h,
     change24hPct: value24hAgo > 0 ? (change24h / value24hAgo) * 100 : 0,
   };
@@ -147,4 +157,109 @@ export const allocations = (
   return rows
     .map((r) => ({ ...r, pct: total > 0 ? (r.value / total) * 100 : 0 }))
     .sort((a, b) => b.value - a.value);
+};
+
+export interface PerformerStat {
+  coinId: string;
+  symbol: string;
+  name: string;
+  image: string;
+  /** Current market value of the held units. */
+  value: number;
+  /** Unrealized P&L in USD. */
+  pnl: number;
+  /** Unrealized P&L as a percentage of cost. */
+  pnlPct: number;
+}
+
+/**
+ * Best- and worst-performing open positions by unrealized P&L %. Only positions
+ * with held units and a non-zero cost basis qualify; returns nulls when none do.
+ */
+export const bestWorstPerformers = (
+  positions: Position[],
+  prices: PriceMap,
+): { best: PerformerStat | null; worst: PerformerStat | null } => {
+  const stats: PerformerStat[] = positions
+    .filter((p) => p.quantity > 0 && p.costBasis > 0)
+    .map((p) => {
+      const value = holdingValue(p.quantity, prices[p.coinId]?.usd ?? 0);
+      return {
+        coinId: p.coinId,
+        symbol: p.symbol,
+        name: p.name,
+        image: p.image,
+        value,
+        pnl: value - p.costBasis,
+        pnlPct: pnlPct(value, p.costBasis),
+      };
+    });
+
+  if (stats.length === 0) return { best: null, worst: null };
+  let best = stats[0];
+  let worst = stats[0];
+  for (const s of stats) {
+    if (s.pnlPct > best.pnlPct) best = s;
+    if (s.pnlPct < worst.pnlPct) worst = s;
+  }
+  return { best, worst };
+};
+
+export interface WhatIf {
+  coinId: string;
+  addUsd: number;
+  /** Current price used for the projection. */
+  price: number;
+  /** Units the added USD would buy at the current price. */
+  addedUnits: number;
+  /** Projected total portfolio value after the buy. */
+  newValue: number;
+  /** Projected total cost basis after the buy. */
+  newCost: number;
+  /** Projected unrealized P&L after the buy. */
+  newPnl: number;
+  newPnlPct: number;
+  /** Projected average cost for the target coin. */
+  newAvgCost: number;
+  /** Projected allocation share of the target coin (%). */
+  newAllocationPct: number;
+}
+
+/**
+ * Project the portfolio after buying `addUsd` of `coinId` at its current price.
+ * Forward-looking only (uses live prices, no historical data). Returns null when
+ * the price or amount is non-positive.
+ */
+export const whatIf = (
+  positions: Position[],
+  prices: PriceMap,
+  coinId: string,
+  addUsd: number,
+): WhatIf | null => {
+  const price = prices[coinId]?.usd ?? 0;
+  if (price <= 0 || addUsd <= 0) return null;
+
+  const addedUnits = addUsd / price;
+  const current = portfolioTotals(positions, prices);
+  // Units are bought at the current price, so added value equals added cost.
+  const newValue = current.value + addUsd;
+  const newCost = current.cost + addUsd;
+
+  const existing = positions.find((p) => p.coinId === coinId);
+  const newQty = (existing?.quantity ?? 0) + addedUnits;
+  const newCoinCost = (existing?.costBasis ?? 0) + addUsd;
+  const newCoinValue = newQty * price;
+
+  return {
+    coinId,
+    addUsd,
+    price,
+    addedUnits,
+    newValue,
+    newCost,
+    newPnl: newValue - newCost,
+    newPnlPct: pnlPct(newValue, newCost),
+    newAvgCost: newQty > 0 ? newCoinCost / newQty : 0,
+    newAllocationPct: newValue > 0 ? (newCoinValue / newValue) * 100 : 0,
+  };
 };

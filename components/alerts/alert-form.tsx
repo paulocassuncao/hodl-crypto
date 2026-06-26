@@ -91,7 +91,7 @@ export const AlertForm = ({
       <p className="text-xs text-muted-foreground">
         Notify me when {symbol.toUpperCase()} goes{" "}
         <span className="font-medium text-foreground">{direction}</span> the
-        target. Alerts fire only while a HODL tab is open.
+        target. Alerts fire while HODL is open or installed.
       </p>
 
       <Button type="submit" className="w-full">

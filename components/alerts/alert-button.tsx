@@ -20,21 +20,35 @@ interface AlertButtonProps {
   name: string;
   image: string;
   currentPrice: number;
+  /** Render an icon-only ghost button (for dense contexts like table rows). */
+  compact?: boolean;
 }
 
-/** Bell button on the coin header that opens the create-alert dialog. */
-export const AlertButton = (props: AlertButtonProps): React.ReactNode => {
+/** Bell button that opens the create-alert dialog for a coin. */
+export const AlertButton = ({
+  compact = false,
+  ...props
+}: AlertButtonProps): React.ReactNode => {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-1.5" />
+          compact ? (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground"
+              aria-label={`Set price alert for ${props.name}`}
+            />
+          ) : (
+            <Button variant="outline" size="sm" className="gap-1.5" />
+          )
         }
       >
         <Bell className="size-4" />
-        <span className="hidden sm:inline">Set alert</span>
+        {compact ? null : <span className="hidden sm:inline">Set alert</span>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

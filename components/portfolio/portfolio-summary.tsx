@@ -63,6 +63,7 @@ export const PortfolioSummary = ({
     {
       label: "Realized P&L",
       value: signedUsd(totals.realized),
+      sub: totals.realizedCost > 0 ? formatPercent(totals.realizedPct) : undefined,
       tone: totals.realized,
     },
     {

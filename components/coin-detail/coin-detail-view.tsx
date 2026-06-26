@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { AlertButton } from "@/components/alerts/alert-button";
+import { ShareButton } from "@/components/share-button";
 import { CoinChart } from "@/components/coin-detail/coin-chart";
+import { CoinOhlcChart } from "@/components/coin-detail/coin-ohlc-chart";
 import { CoinMarkets } from "@/components/coin-detail/coin-markets";
 import { CoinStats } from "@/components/coin-detail/coin-stats";
 import { NewsFeed } from "@/components/news-feed";
@@ -33,6 +37,7 @@ const toPlainText = (html: string): string =>
 export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
   const { currency } = useCurrency();
   const { data: coin, isLoading, isError, error } = useCoin(id);
+  const [chartType, setChartType] = useState<"line" | "candles">("line");
 
   return (
     <div className="space-y-6">
@@ -91,7 +96,8 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
                 </span>
               </div>
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <ShareButton title={`${coin.name} · HODL`} />
               <AlertButton
                 coinId={id}
                 symbol={coin.symbol}
@@ -110,7 +116,24 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <CoinChart id={id} />
+              <div className="flex justify-end">
+                <Tabs
+                  value={chartType}
+                  onValueChange={(v) =>
+                    setChartType(v as "line" | "candles")
+                  }
+                >
+                  <TabsList>
+                    <TabsTrigger value="line">Line</TabsTrigger>
+                    <TabsTrigger value="candles">Candles</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              {chartType === "line" ? (
+                <CoinChart id={id} />
+              ) : (
+                <CoinOhlcChart id={id} />
+              )}
               <CoinStats coin={coin} currency={currency} />
 
               {coin.description.en ? (

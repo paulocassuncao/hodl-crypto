@@ -1,9 +1,11 @@
 import {
   allocations,
+  bestWorstPerformers,
   derivePositions,
   holdingValue,
   pnlPct,
   portfolioTotals,
+  whatIf,
   type PriceMap,
 } from "@/lib/portfolio-core";
 import type { Position, Transaction } from "@/lib/types";
@@ -31,6 +33,7 @@ const position = (over: Partial<Position>): Position => ({
   quantity: 1,
   costBasis: 100,
   realized: 0,
+  realizedCost: 0,
   ...over,
 });
 
@@ -64,6 +67,7 @@ describe("derivePositions (average cost)", () => {
     expect(pos.quantity).toBe(1);
     expect(pos.costBasis).toBeCloseTo(200);
     expect(pos.realized).toBeCloseTo(50); // 250 − 200
+    expect(pos.realizedCost).toBeCloseTo(200); // cost of the unit sold
   });
 
   it("handles selling the entire position", () => {
@@ -153,5 +157,68 @@ describe("allocations", () => {
   it("returns 0% allocations when total value is zero", () => {
     const rows = allocations([position({ coinId: "x", quantity: 1 })], {});
     expect(rows[0].pct).toBe(0);
+  });
+});
+
+describe("portfolioTotals realized %", () => {
+  it("expresses realized P&L as a percent of the cost of units sold", () => {
+    const positions: Position[] = [
+      position({ coinId: "bitcoin", realized: 50, realizedCost: 200 }),
+    ];
+    const t = portfolioTotals(positions, { bitcoin: { usd: 0 } });
+    expect(t.realizedCost).toBe(200);
+    expect(t.realizedPct).toBeCloseTo(25); // 50 / 200
+  });
+
+  it("is 0% when nothing has been sold", () => {
+    const t = portfolioTotals([position({ realizedCost: 0 })], {});
+    expect(t.realizedPct).toBe(0);
+  });
+});
+
+describe("bestWorstPerformers", () => {
+  const positions: Position[] = [
+    position({ coinId: "bitcoin", quantity: 1, costBasis: 100 }),
+    position({ coinId: "ethereum", quantity: 1, costBasis: 100 }),
+  ];
+  const prices: PriceMap = {
+    bitcoin: { usd: 150 }, // +50%
+    ethereum: { usd: 80 }, // −20%
+  };
+
+  it("picks the highest and lowest unrealized P&L %", () => {
+    const { best, worst } = bestWorstPerformers(positions, prices);
+    expect(best?.coinId).toBe("bitcoin");
+    expect(best?.pnlPct).toBeCloseTo(50);
+    expect(worst?.coinId).toBe("ethereum");
+    expect(worst?.pnlPct).toBeCloseTo(-20);
+  });
+
+  it("ignores closed and zero-cost positions; returns nulls when none qualify", () => {
+    expect(bestWorstPerformers([], {})).toEqual({ best: null, worst: null });
+    const closed = [position({ quantity: 0, costBasis: 0 })];
+    expect(bestWorstPerformers(closed, {})).toEqual({ best: null, worst: null });
+  });
+});
+
+describe("whatIf", () => {
+  const positions: Position[] = [
+    position({ coinId: "bitcoin", quantity: 1, costBasis: 100 }),
+  ];
+  const prices: PriceMap = { bitcoin: { usd: 200 } };
+
+  it("projects added units, blended P&L, and allocation", () => {
+    const result = whatIf(positions, prices, "bitcoin", 200);
+    expect(result?.addedUnits).toBeCloseTo(1); // $200 / $200
+    expect(result?.newValue).toBeCloseTo(400); // 200 held + 200 added
+    expect(result?.newCost).toBeCloseTo(300); // 100 + 200
+    expect(result?.newPnl).toBeCloseTo(100);
+    expect(result?.newAvgCost).toBeCloseTo(150); // (100 + 200) / 2 units
+    expect(result?.newAllocationPct).toBeCloseTo(100); // only holding
+  });
+
+  it("returns null for a non-positive amount or unknown price", () => {
+    expect(whatIf(positions, prices, "bitcoin", 0)).toBeNull();
+    expect(whatIf(positions, {}, "bitcoin", 100)).toBeNull();
   });
 });
