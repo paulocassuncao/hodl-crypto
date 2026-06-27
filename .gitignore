@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# personal portfolio backup (migration source, not for the repo)
+hodl-portfolio-backup.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

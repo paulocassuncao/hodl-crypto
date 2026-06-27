@@ -82,8 +82,8 @@ export const PortfolioView = (): React.ReactNode => {
         <div>
           <h1 className="text-2xl font-bold">Portfolio</h1>
           <p className="text-sm text-muted-foreground">
-            Buy/sell ledger · average cost · values in USD · stored on this
-            device
+            Buy/sell ledger · average cost · values in USD · synced to your
+            account
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -109,6 +109,8 @@ export const PortfolioView = (): React.ReactNode => {
               e.target.value = "";
             }}
           />
+          {/* Export actions need existing data; import/restore must stay
+              available when empty (e.g. first sign-in, restoring a backup). */}
           {transactions.length > 0 ? (
             <>
               <Button
@@ -124,33 +126,33 @@ export const PortfolioView = (): React.ReactNode => {
                 variant="outline"
                 size="sm"
                 className="gap-1"
-                onClick={() => csvInput.current?.click()}
-              >
-                <FileUp className="size-4" />
-                <span className="hidden sm:inline">Import CSV</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
                 onClick={handleJsonExport}
                 title="Export a full JSON backup"
               >
                 <Download className="size-4" />
                 <span className="hidden sm:inline">Backup</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => jsonInput.current?.click()}
-                title="Restore from a JSON backup (replaces current data)"
-              >
-                <Upload className="size-4" />
-                <span className="hidden sm:inline">Restore</span>
-              </Button>
             </>
           ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => csvInput.current?.click()}
+          >
+            <FileUp className="size-4" />
+            <span className="hidden sm:inline">Import CSV</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => jsonInput.current?.click()}
+            title="Restore from a JSON backup (replaces current data)"
+          >
+            <Upload className="size-4" />
+            <span className="hidden sm:inline">Restore</span>
+          </Button>
           <TransactionForm
             trigger={
               <Button size="sm" className="gap-1">

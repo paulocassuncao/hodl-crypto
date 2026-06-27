@@ -9,10 +9,17 @@ import {
   type ReactNode,
 } from "react";
 
-import { derivePositions } from "@/lib/portfolio-core";
-import type { Holding, Position, Transaction } from "@/lib/types";
+import { toast } from "sonner";
 
-const STORAGE_KEY = "hodl:portfolio";
+import { useAuth } from "@/lib/auth";
+import { derivePositions } from "@/lib/portfolio-core";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  toRow,
+  toTransaction,
+  type TransactionRow,
+} from "@/lib/supabase/types";
+import type { Holding, Position, Transaction } from "@/lib/types";
 
 type NewTransaction = Omit<Transaction, "id" | "createdAt">;
 type TransactionPatch = Partial<
@@ -77,8 +84,8 @@ const holdingToTransaction = (h: Holding): Transaction => ({
   createdAt: h.createdAt,
 });
 
-/** Parse stored JSON into transactions, migrating the legacy holding shape. */
-const parseStored = (raw: string): Transaction[] | null => {
+/** Parse imported JSON into transactions, migrating the legacy holding shape. */
+const parseImport = (raw: string): Transaction[] | null => {
   const parsed = JSON.parse(raw) as unknown;
   if (isTransactionArray(parsed)) return parsed;
   if (isHoldingArray(parsed)) return parsed.map(holdingToTransaction);
@@ -86,34 +93,60 @@ const parseStored = (raw: string): Transaction[] | null => {
 };
 
 /**
- * Provides the user's portfolio transaction ledger, persisted to localStorage,
- * and the positions derived from it. All reads/writes go through this provider
- * so the storage layer can later be swapped for a backend. Mirrors the
- * watchlist/alerts providers; migrates pre-ledger `Holding[]` data on load.
+ * Provides the signed-in user's transaction ledger, persisted to Supabase
+ * (row-level-security scoped per user), and the positions derived from it.
+ * All reads/writes go through this provider. Mutations update local state
+ * optimistically, then sync to Supabase; on failure they re-fetch to resync.
+ * Mirrors the watchlist/alerts providers' context shape so consumers are
+ * unchanged. Replaces the previous localStorage-backed implementation.
  */
 export const PortfolioProvider = ({
   children,
 }: {
   children: ReactNode;
 }): React.ReactNode => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const supabase = getSupabaseBrowserClient();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const migrated = parseStored(stored);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (migrated) setTransactions(migrated);
-      } catch {
-        // ignore malformed storage
-      }
+  const reload = async (): Promise<void> => {
+    if (!userId) {
+      setTransactions([]);
+      return;
     }
-  }, []);
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .order("date", { ascending: false });
+    if (error) {
+      toast.error("Couldn't load your portfolio.", {
+        description: error.message,
+      });
+      return;
+    }
+    setTransactions((data ?? []).map(toTransaction));
+  };
 
-  const persist = (next: Transaction[]): void => {
-    setTransactions(next);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  useEffect(() => {
+    void reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  /** Run a Supabase write; on failure surface a toast and re-sync from server. */
+  const persist = <T extends { error: { message: string } | null }>(
+    op: () => PromiseLike<T>,
+  ): void => {
+    if (!userId) {
+      toast.error("Sign in to save your portfolio.");
+      return;
+    }
+    void Promise.resolve(op()).then(({ error }) => {
+      if (error) {
+        toast.error("Couldn't save changes.", { description: error.message });
+        void reload();
+      }
+    });
   };
 
   const addTransaction = (tx: NewTransaction): void => {
@@ -122,7 +155,10 @@ export const PortfolioProvider = ({
       id: crypto.randomUUID(),
       createdAt: Date.now(),
     };
-    persist([entry, ...transactions]);
+    setTransactions((prev) => [entry, ...prev]);
+    persist(() =>
+      supabase.from("transactions").insert(toRow(entry, userId!)),
+    );
   };
 
   const addTransactions = (txs: NewTransaction[]): void => {
@@ -132,30 +168,69 @@ export const PortfolioProvider = ({
       id: crypto.randomUUID(),
       createdAt: now + i,
     }));
-    persist([...entries, ...transactions]);
+    setTransactions((prev) => [...entries, ...prev]);
+    persist(() =>
+      supabase
+        .from("transactions")
+        .insert(entries.map((e) => toRow(e, userId!))),
+    );
   };
 
   const updateTransaction = (id: string, patch: TransactionPatch): void => {
-    persist(transactions.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    );
+    const rowPatch: Partial<TransactionRow> = {};
+    if (patch.type !== undefined) rowPatch.type = patch.type;
+    if (patch.quantity !== undefined) rowPatch.quantity = patch.quantity;
+    if (patch.amount !== undefined) rowPatch.amount = patch.amount;
+    if (patch.date !== undefined)
+      rowPatch.date = new Date(patch.date).toISOString();
+    persist(() =>
+      supabase.from("transactions").update(rowPatch).eq("id", id),
+    );
   };
 
   const removeTransaction = (id: string): void => {
-    persist(transactions.filter((t) => t.id !== id));
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    persist(() => supabase.from("transactions").delete().eq("id", id));
   };
 
-  const clear = (): void => persist([]);
+  const clear = (): void => {
+    setTransactions([]);
+    persist(() =>
+      supabase.from("transactions").delete().eq("user_id", userId!),
+    );
+  };
 
   const exportJson = (): string => JSON.stringify(transactions, null, 2);
 
   const importJson = (text: string): boolean => {
+    let parsed: Transaction[] | null;
     try {
-      const migrated = parseStored(text);
-      if (!migrated) return false;
-      persist(migrated);
-      return true;
+      parsed = parseImport(text);
     } catch {
       return false;
     }
+    if (!parsed) return false;
+    // Replace: optimistic swap, then delete-all + insert in Supabase.
+    const next = parsed.map((t) => ({
+      ...t,
+      id: t.id || crypto.randomUUID(),
+    }));
+    setTransactions(next);
+    persist(async () => {
+      if (!userId) return { error: { message: "Not signed in" } };
+      const del = await supabase
+        .from("transactions")
+        .delete()
+        .eq("user_id", userId);
+      if (del.error) return del;
+      return supabase
+        .from("transactions")
+        .insert(next.map((t) => toRow(t, userId)));
+    });
+    return true;
   };
 
   const positions = useMemo(

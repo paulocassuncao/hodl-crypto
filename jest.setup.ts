@@ -1,5 +1,10 @@
 import "@testing-library/jest-dom";
 
+// Supabase browser client (used by AuthProvider/PortfolioProvider) needs these
+// at construction time. Dummy values are fine: tests don't hit the network.
+process.env.NEXT_PUBLIC_SUPABASE_URL ??= "https://test.supabase.co";
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= "test-anon-key";
+
 // Components use the App Router hooks, which aren't mounted under jsdom.
 jest.mock("next/navigation", () => ({
   useRouter: () => ({

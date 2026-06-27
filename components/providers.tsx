@@ -9,6 +9,7 @@ import { AlertWatcher } from "@/components/alerts/alert-watcher";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { Toaster } from "@/components/ui/sonner";
 import { AlertsProvider } from "@/lib/alerts";
+import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/lib/currency";
 import { PortfolioProvider } from "@/lib/portfolio";
 import { WatchlistProvider } from "@/lib/watchlist";
@@ -31,18 +32,20 @@ export const Providers = ({ children }: { children: ReactNode }): ReactNode => {
   return (
     <QueryClientProvider client={client}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <CurrencyProvider>
-          <WatchlistProvider>
-            <PortfolioProvider>
-              <AlertsProvider>
-                {children}
-                <AlertWatcher />
-                <ServiceWorkerRegister />
-                <Toaster richColors position="top-right" />
-              </AlertsProvider>
-            </PortfolioProvider>
-          </WatchlistProvider>
-        </CurrencyProvider>
+        <AuthProvider>
+          <CurrencyProvider>
+            <WatchlistProvider>
+              <PortfolioProvider>
+                <AlertsProvider>
+                  {children}
+                  <AlertWatcher />
+                  <ServiceWorkerRegister />
+                  <Toaster richColors position="top-right" />
+                </AlertsProvider>
+              </PortfolioProvider>
+            </WatchlistProvider>
+          </CurrencyProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

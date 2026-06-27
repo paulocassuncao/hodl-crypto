@@ -4,6 +4,7 @@ import { CurrencySwitcher } from "@/components/currency-switcher";
 import { MobileNav } from "@/components/mobile-nav";
 import { SearchTrigger } from "@/components/search-trigger";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { NAV_LINKS } from "@/lib/nav";
 
 /** Top navigation bar: brand, section links, search, currency, and theme. */
@@ -34,6 +35,7 @@ export const Header = (): React.ReactNode => (
         <SearchTrigger />
         <CurrencySwitcher />
         <ThemeToggle />
+        <UserMenu />
       </div>
     </div>
   </header>
