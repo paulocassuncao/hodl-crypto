@@ -164,6 +164,36 @@
 }
 
 /*
+ * Discrete scrollbars for capped, in-page scroll areas (e.g. the expandable
+ * transactions ledger). A thin rail with a transparent track and a faint thumb
+ * that only gains contrast on hover — so a scrolling panel reads as content,
+ * not chrome. Firefox uses the standard scrollbar-* properties; WebKit/Blink
+ * get the ::-webkit-scrollbar treatment, where a transparent padding-box border
+ * keeps the visible thumb inset and pill-shaped.
+ */
+@utility scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    background-clip: padding-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
+}
+
+/*
  * Reduced motion is not optional. Collapse entrance/zoom/slide animations
  * (overlays, skeleton pulse, chart draws) and long transitions to near-instant
  * for users who ask for it, while leaving instant state changes intact.
