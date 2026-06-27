@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCoinTickers } from "@/hooks/use-coin-tickers";
-import { formatCompact, formatCurrency } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
 import { cn } from "@/lib/utils";
 
 const trustDotClass = (score: string | null): string => {
@@ -46,9 +46,10 @@ const TradeLink = ({ url }: { url: string | null }): React.ReactNode =>
     <span className="text-muted-foreground">—</span>
   );
 
-/** Markets (exchanges) table for a coin. Prices/volume shown in USD. */
+/** Markets (exchanges) table for a coin, in the active display currency. */
 export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
   const { data: tickers, isLoading, isError, error } = useCoinTickers(id);
+  const money = useMoney();
 
   if (isError) {
     return (
@@ -77,7 +78,8 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
   return (
     <div className="space-y-2">
       <p className="text-xs text-muted-foreground">
-        Top {tickers.length} markets · prices &amp; volume in USD
+        Top {tickers.length} markets · prices &amp; volume in{" "}
+        {money.currency.toUpperCase()}
       </p>
 
       {/* Mobile: stacked cards instead of a horizontally scrolling table. */}
@@ -97,11 +99,11 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
             <div className="mt-2 flex items-center justify-between gap-2">
               <div className="text-xs text-muted-foreground">
                 <span className="tabular-nums text-foreground">
-                  {t.price === null ? "—" : formatCurrency(t.price, "usd")}
+                  {t.price === null ? "—" : money.format(t.price)}
                 </span>
                 {" · Vol "}
                 <span className="tabular-nums">
-                  {t.volume === null ? "—" : formatCompact(t.volume, "usd")}
+                  {t.volume === null ? "—" : money.formatCompact(t.volume)}
                 </span>
               </div>
               <TradeLink url={t.tradeUrl} />
@@ -131,10 +133,10 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
                   {t.base}/{t.target}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {t.price === null ? "—" : formatCurrency(t.price, "usd")}
+                  {t.price === null ? "—" : money.format(t.price)}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {t.volume === null ? "—" : formatCompact(t.volume, "usd")}
+                  {t.volume === null ? "—" : money.formatCompact(t.volume)}
                 </TableCell>
                 {showTrust && (
                   <TableCell>

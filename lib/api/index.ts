@@ -84,6 +84,10 @@ export const fetchDexPools = async (
 export const fetchDerivatives = async (): Promise<Derivative[]> =>
   toJson(await fetch("/api/derivatives"));
 
+/** USD→currency conversion multipliers for the active display currency. */
+export const fetchFxRates = async (): Promise<Record<Currency, number>> =>
+  toJson(await fetch("/api/fx"));
+
 export const fetchPrices = async (
   ids: string[],
   currencies: string,

@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
-import { formatCurrency, formatPercent, percentColorClass } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
+import { formatPercent, percentColorClass } from "@/lib/format";
 import {
   bestWorstPerformers,
   type PerformerStat,
@@ -25,7 +26,9 @@ const PerformerCard = ({
   label: string;
   icon: React.ReactNode;
   stat: PerformerStat;
-}): React.ReactNode => (
+}): React.ReactNode => {
+  const money = useMoney();
+  return (
   <div className="rounded-lg border bg-card p-4">
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {icon}
@@ -55,10 +58,11 @@ const PerformerCard = ({
       </span>
     </div>
     <div className="mt-1 text-right text-xs tabular-nums text-muted-foreground">
-      {formatCurrency(stat.value, "usd")}
+      {money.format(stat.value)}
     </div>
   </div>
-);
+  );
+};
 
 /** Best- and worst-performing open positions by unrealized P&L %. */
 export const AnalyticsSection = ({

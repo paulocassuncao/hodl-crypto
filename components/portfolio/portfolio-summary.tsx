@@ -2,7 +2,8 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
-import { formatCurrency, formatPercent, percentColorClass } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
+import { formatPercent, percentColorClass } from "@/lib/format";
 import {
   allocations,
   portfolioTotals,
@@ -19,12 +20,6 @@ const CHART_COLORS = [
   "var(--chart-5)",
 ];
 
-/** Format a signed USD amount with an explicit +/− sign. */
-const signedUsd = (value: number): string => {
-  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
-  return `${sign}${formatCurrency(Math.abs(value), "usd")}`;
-};
-
 interface PortfolioSummaryProps {
   positions: Position[];
   prices: PriceMap;
@@ -38,8 +33,15 @@ export const PortfolioSummary = ({
   prices,
   symbolFor,
 }: PortfolioSummaryProps): React.ReactNode => {
+  const money = useMoney();
   const totals = portfolioTotals(positions, prices);
   const alloc = allocations(positions, prices).filter((a) => a.value > 0);
+
+  // Signed amount with an explicit +/− sign, formatted in the active currency.
+  const signed = (value: number): string => {
+    const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+    return `${sign}${money.format(Math.abs(value))}`;
+  };
 
   const stats: {
     label: string;
@@ -50,25 +52,25 @@ export const PortfolioSummary = ({
   }[] = [
     {
       label: "Total Value",
-      value: formatCurrency(totals.value, "usd"),
+      value: money.format(totals.value),
       tone: 0,
       muted: true,
     },
     {
       label: "Unrealized P&L",
-      value: signedUsd(totals.pnl),
+      value: signed(totals.pnl),
       sub: formatPercent(totals.pnlPct),
       tone: totals.pnl,
     },
     {
       label: "Realized P&L",
-      value: signedUsd(totals.realized),
+      value: signed(totals.realized),
       sub: totals.realizedCost > 0 ? formatPercent(totals.realizedPct) : undefined,
       tone: totals.realized,
     },
     {
       label: "24h Change",
-      value: signedUsd(totals.change24h),
+      value: signed(totals.change24h),
       sub: formatPercent(totals.change24hPct),
       tone: totals.change24h,
     },

@@ -24,9 +24,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMoney } from "@/hooks/use-money";
 import { fetchCoinChart } from "@/lib/api";
 import { simulateDca } from "@/lib/dca";
-import { formatCurrency, formatPercent, percentColorClass } from "@/lib/format";
+import { formatPercent, percentColorClass } from "@/lib/format";
 import type { Position } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -52,15 +53,18 @@ export const DcaDialog = ({ positions }: DcaDialogProps): React.ReactNode => {
   const [amount, setAmount] = useState("100");
   const [freqDays, setFreqDays] = useState<number>(30);
   const [rangeDays, setRangeDays] = useState<number>(365);
+  const money = useMoney();
 
-  // Portfolio math is USD-only, so backtest in USD regardless of display currency.
+  // Portfolio math is USD-only, so backtest in USD regardless of display
+  // currency: the entered amount is interpreted in the active currency and
+  // converted to USD, and all results are formatted back via `money.format`.
   const { data: series, isLoading } = useQuery({
     queryKey: ["dca-chart", coinId, rangeDays],
     queryFn: () => fetchCoinChart(coinId, rangeDays, "usd"),
     enabled: coinId !== "",
   });
 
-  const perBuy = Number(amount);
+  const perBuy = money.toUsd(Number(amount));
   const result =
     series && perBuy > 0 && Number.isFinite(perBuy)
       ? simulateDca(series, perBuy, freqDays)
@@ -99,7 +103,7 @@ export const DcaDialog = ({ positions }: DcaDialogProps): React.ReactNode => {
             </label>
             <label className="block space-y-1">
               <span className="text-xs text-muted-foreground">
-                Amount per buy (USD)
+                Amount per buy ({money.currency.toUpperCase()})
               </span>
               <Input
                 type="number"
@@ -206,13 +210,13 @@ export const DcaDialog = ({ positions }: DcaDialogProps): React.ReactNode => {
 
               <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border text-sm">
                 {[
-                  { label: "Invested", value: formatCurrency(result.invested, "usd") },
+                  { label: "Invested", value: money.format(result.invested) },
                   { label: "Buys", value: String(result.buys) },
                   {
                     label: "Final value",
-                    value: formatCurrency(result.finalValue, "usd"),
+                    value: money.format(result.finalValue),
                   },
-                  { label: "Avg cost", value: formatCurrency(result.avgCost, "usd") },
+                  { label: "Avg cost", value: money.format(result.avgCost) },
                 ].map((s) => (
                   <div key={s.label} className="bg-card p-2.5">
                     <dt className="text-xs text-muted-foreground">{s.label}</dt>
@@ -245,7 +249,7 @@ export const DcaDialog = ({ positions }: DcaDialogProps): React.ReactNode => {
                 </div>
               </dl>
               <p className="text-xs text-muted-foreground">
-                Hypothetical: buys {formatCurrency(perBuy, "usd")} every{" "}
+                Hypothetical: buys {money.format(perBuy)} every{" "}
                 {freqDays} days over the window. Past performance isn&apos;t
                 indicative of future results.
               </p>

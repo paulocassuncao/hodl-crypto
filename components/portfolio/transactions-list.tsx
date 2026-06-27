@@ -13,7 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatQuantity } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
+import { formatQuantity } from "@/lib/format";
 import { usePortfolio } from "@/lib/portfolio";
 import type { Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ export const TransactionsList = ({
   transactions: Transaction[];
 }): React.ReactNode => {
   const { removeTransaction } = usePortfolio();
+  const money = useMoney();
   const ordered = [...transactions].sort(
     (a, b) => b.date - a.date || b.createdAt - a.createdAt,
   );
@@ -84,7 +86,7 @@ export const TransactionsList = ({
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium tabular-nums">
-                  {formatCurrency(t.amount, "usd")}
+                  {money.format(t.amount)}
                 </span>
                 <TxActions transaction={t} onRemove={removeTransaction} />
               </div>
@@ -136,7 +138,7 @@ export const TransactionsList = ({
                   {formatQuantity(t.quantity)}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {formatCurrency(t.amount, "usd")}
+                  {money.format(t.amount)}
                 </TableCell>
                 <TableCell className="text-right">
                   <TxActions transaction={t} onRemove={removeTransaction} />

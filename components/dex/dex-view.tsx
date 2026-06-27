@@ -14,12 +14,8 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDexPools } from "@/hooks/use-dex-pools";
-import {
-  formatCompact,
-  formatCurrency,
-  formatPercent,
-  percentColorClass,
-} from "@/lib/format";
+import { useMoney, type Money } from "@/hooks/use-money";
+import { formatPercent, percentColorClass } from "@/lib/format";
 import type { Pool } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +32,7 @@ export const DexView = (): React.ReactNode => {
   const [network, setNetwork] = useState<string>("eth");
   const [mode, setMode] = useState<"trending" | "new">("trending");
   const { data, isLoading, isError, error } = useDexPools(network, mode);
+  const money = useMoney();
 
   return (
     <section className="space-y-4">
@@ -98,7 +95,9 @@ export const DexView = (): React.ReactNode => {
                 </TableRow>
               ))
             ) : data && data.length > 0 ? (
-              data.map((pool) => <PoolRow key={pool.id} pool={pool} />)
+              data.map((pool) => (
+                <PoolRow key={pool.id} pool={pool} money={money} />
+              ))
             ) : (
               <TableRow>
                 <TableCell
@@ -116,14 +115,20 @@ export const DexView = (): React.ReactNode => {
   );
 };
 
-const PoolRow = ({ pool }: { pool: Pool }): React.ReactNode => (
+const PoolRow = ({
+  pool,
+  money,
+}: {
+  pool: Pool;
+  money: Money;
+}): React.ReactNode => (
   <TableRow>
     <TableCell>
       <div className="font-medium">{pool.name}</div>
       <div className="text-xs text-muted-foreground">{pool.dex}</div>
     </TableCell>
     <TableCell className="text-right tabular-nums">
-      {formatCurrency(pool.priceUsd, "usd")}
+      {money.format(pool.priceUsd)}
     </TableCell>
     <TableCell
       className={cn(
@@ -134,10 +139,10 @@ const PoolRow = ({ pool }: { pool: Pool }): React.ReactNode => (
       {formatPercent(pool.priceChange24h)}
     </TableCell>
     <TableCell className="hidden text-right tabular-nums sm:table-cell">
-      {formatCompact(pool.volume24h, "usd")}
+      {money.formatCompact(pool.volume24h)}
     </TableCell>
     <TableCell className="text-right tabular-nums">
-      {formatCompact(pool.liquidityUsd, "usd")}
+      {money.formatCompact(pool.liquidityUsd)}
     </TableCell>
     <TableCell className="text-right">
       <a

@@ -14,7 +14,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { formatCurrency, formatPercent, formatQuantity } from "@/lib/format";
+import { useMoney } from "@/hooks/use-money";
+import { formatPercent, formatQuantity } from "@/lib/format";
 import { whatIf, type PriceMap } from "@/lib/portfolio-core";
 import type { Position } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -31,8 +32,10 @@ export const WhatIfDialog = ({
 }: WhatIfDialogProps): React.ReactNode => {
   const [coinId, setCoinId] = useState(positions[0]?.coinId ?? "");
   const [amount, setAmount] = useState("");
+  const money = useMoney();
 
-  const usd = Number(amount);
+  // The entered amount is in the active currency; convert to USD for the math.
+  const usd = money.toUsd(Number(amount));
   const result =
     coinId && usd > 0 && Number.isFinite(usd)
       ? whatIf(positions, prices, coinId, usd)
@@ -41,14 +44,14 @@ export const WhatIfDialog = ({
   const rows: { label: string; value: string }[] = result
     ? [
         { label: "Buys", value: `${formatQuantity(result.addedUnits)} units` },
-        { label: "New avg cost", value: formatCurrency(result.newAvgCost, "usd") },
+        { label: "New avg cost", value: money.format(result.newAvgCost) },
         {
           label: "New total value",
-          value: formatCurrency(result.newValue, "usd"),
+          value: money.format(result.newValue),
         },
         {
           label: "Unrealized P&L",
-          value: `${formatCurrency(result.newPnl, "usd")} (${formatPercent(result.newPnlPct)})`,
+          value: `${money.format(result.newPnl)} (${formatPercent(result.newPnlPct)})`,
         },
         {
           label: "New allocation",
@@ -90,7 +93,7 @@ export const WhatIfDialog = ({
 
           <label className="block space-y-1">
             <span className="text-xs text-muted-foreground">
-              Amount to invest (USD)
+              Amount to invest ({money.currency.toUpperCase()})
             </span>
             <Input
               type="number"

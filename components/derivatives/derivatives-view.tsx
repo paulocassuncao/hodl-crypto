@@ -13,12 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useDerivatives } from "@/hooks/use-derivatives";
-import {
-  formatCompact,
-  formatCurrency,
-  formatPercent,
-  percentColorClass,
-} from "@/lib/format";
+import { useMoney, type Money } from "@/hooks/use-money";
+import { formatPercent, percentColorClass } from "@/lib/format";
 import type { Derivative } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +40,7 @@ export const DerivativesView = (): React.ReactNode => {
   const { data, isLoading, isError, error } = useDerivatives();
   const [sortKey, setSortKey] = useState<SortKey>("openInterestUsd");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const money = useMoney();
 
   const rows = useMemo(() => {
     if (!data) return [];
@@ -122,7 +119,13 @@ export const DerivativesView = (): React.ReactNode => {
                 </TableRow>
               ))
             ) : (
-              rows.map((d, i) => <DerivativeRow key={`${d.market}-${d.symbol}-${i}`} d={d} />)
+              rows.map((d, i) => (
+                <DerivativeRow
+                  key={`${d.market}-${d.symbol}-${i}`}
+                  d={d}
+                  money={money}
+                />
+              ))
             )}
           </TableBody>
         </Table>
@@ -131,7 +134,13 @@ export const DerivativesView = (): React.ReactNode => {
   );
 };
 
-const DerivativeRow = ({ d }: { d: Derivative }): React.ReactNode => (
+const DerivativeRow = ({
+  d,
+  money,
+}: {
+  d: Derivative;
+  money: Money;
+}): React.ReactNode => (
   <TableRow>
     <TableCell>
       <div className="font-medium">{d.symbol}</div>
@@ -141,7 +150,7 @@ const DerivativeRow = ({ d }: { d: Derivative }): React.ReactNode => (
       </div>
     </TableCell>
     <TableCell className="text-right tabular-nums">
-      {formatCurrency(d.price, "usd")}
+      {money.format(d.price)}
     </TableCell>
     <TableCell
       className={cn(
@@ -152,10 +161,10 @@ const DerivativeRow = ({ d }: { d: Derivative }): React.ReactNode => (
       {d.fundingRatePct === null ? "—" : formatPercent(d.fundingRatePct)}
     </TableCell>
     <TableCell className="text-right tabular-nums">
-      {formatCompact(d.openInterestUsd, "usd")}
+      {money.formatCompact(d.openInterestUsd)}
     </TableCell>
     <TableCell className="hidden text-right tabular-nums sm:table-cell">
-      {formatCompact(d.volume24hUsd, "usd")}
+      {money.formatCompact(d.volume24hUsd)}
     </TableCell>
   </TableRow>
 );

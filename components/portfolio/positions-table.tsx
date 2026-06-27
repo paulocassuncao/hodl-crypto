@@ -14,8 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useMoney, type Money } from "@/hooks/use-money";
 import {
-  formatCurrency,
   formatPercent,
   formatQuantity,
   percentColorClass,
@@ -68,6 +68,7 @@ export const PositionsTable = ({
   positions,
   prices,
 }: PositionsTableProps): React.ReactNode => {
+  const money = useMoney();
   const allocByCoin = new Map(
     allocations(positions, prices).map((a) => [a.coinId, a.pct]),
   );
@@ -81,6 +82,7 @@ export const PositionsTable = ({
             key={p.coinId}
             position={p}
             derived={derivePosition(p, prices, allocByCoin.get(p.coinId) ?? 0)}
+            money={money}
           />
         ))}
       </ul>
@@ -133,13 +135,13 @@ export const PositionsTable = ({
                 {formatQuantity(p.quantity)}
               </TableCell>
               <TableCell className="text-right tabular-nums">
-                {formatCurrency(avgCost, "usd")}
+                {money.format(avgCost)}
               </TableCell>
               <TableCell className="text-right tabular-nums">
-                {formatCurrency(price, "usd")}
+                {money.format(price)}
               </TableCell>
               <TableCell className="text-right tabular-nums">
-                {formatCurrency(value, "usd")}
+                {money.format(value)}
               </TableCell>
               <TableCell
                 className={cn(
@@ -147,7 +149,7 @@ export const PositionsTable = ({
                   percentColorClass(unrealized),
                 )}
               >
-                <div>{formatCurrency(unrealized, "usd")}</div>
+                <div>{money.format(unrealized)}</div>
                 <div className="text-xs">{formatPercent(pct)}</div>
               </TableCell>
               <TableCell
@@ -158,7 +160,7 @@ export const PositionsTable = ({
                     : "text-muted-foreground",
                 )}
               >
-                {p.realized !== 0 ? formatCurrency(p.realized, "usd") : "—"}
+                {p.realized !== 0 ? money.format(p.realized) : "—"}
               </TableCell>
               <TableCell
                 className={cn(
@@ -204,9 +206,11 @@ export const PositionsTable = ({
 const PositionCard = ({
   position: p,
   derived,
+  money,
 }: {
   position: Position;
   derived: DerivedPosition;
+  money: Money;
 }): React.ReactNode => {
   const { price, change24h, value, unrealized, pct, avgCost, alloc } = derived;
 
@@ -257,13 +261,13 @@ const PositionCard = ({
         <div>
           <div className="text-xs text-muted-foreground">Value</div>
           <div className="text-lg font-semibold tabular-nums">
-            {formatCurrency(value, "usd")}
+            {money.format(value)}
           </div>
         </div>
         <div className="text-right">
           <div className="text-xs text-muted-foreground">Unrealized P&L</div>
           <div className={cn("tabular-nums", percentColorClass(unrealized))}>
-            {formatCurrency(unrealized, "usd")}
+            {money.format(unrealized)}
             <span className="ml-1.5 text-xs">{formatPercent(pct)}</span>
           </div>
         </div>
@@ -276,12 +280,12 @@ const PositionCard = ({
           value={formatPercent(change24h)}
           className={percentColorClass(change24h)}
         />
-        <Meta label="Avg cost" value={formatCurrency(avgCost, "usd")} />
-        <Meta label="Price" value={formatCurrency(price, "usd")} />
+        <Meta label="Avg cost" value={money.format(avgCost)} />
+        <Meta label="Price" value={money.format(price)} />
         {p.realized !== 0 ? (
           <Meta
             label="Realized"
-            value={formatCurrency(p.realized, "usd")}
+            value={money.format(p.realized)}
             className={percentColorClass(p.realized)}
           />
         ) : null}
