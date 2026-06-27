@@ -36,6 +36,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Mirrors the dark `--background` token (oklch(0.17 0.008 140)) as a literal
+  // hex — the PWA/browser chrome theme color can't read a CSS variable. Keep
+  // this in sync with `--background` (.dark) in app/globals.css if it changes.
   themeColor: "#1a1c19",
 };
 

@@ -8,11 +8,14 @@ import { NAV_LINKS } from "@/lib/nav";
 
 /** Top navigation bar: brand, section links, search, currency, and theme. */
 export const Header = (): React.ReactNode => (
-  <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header className="sticky top-0 z-(--z-sticky) border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
     <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
       <div className="flex items-center gap-2 md:gap-6">
         <MobileNav />
         <Link href="/" className="flex items-baseline gap-2">
+          {/* Signal Lime on white clears the 3:1 large-text bar only because the
+              wordmark is 20px bold — never reuse `text-primary` for body-size
+              text in light mode (it falls below 4.5:1). */}
           <span className="text-xl font-bold tracking-tight text-primary">HODL</span>
         </Link>
         <nav className="hidden items-center gap-4 text-sm font-medium md:flex">

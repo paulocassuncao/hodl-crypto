@@ -94,6 +94,11 @@ const HeatCell = ({
   const showText = width > 44 && height > 26;
   const showPct = width > 56 && height > 40;
   const hasPct = pct != null && !Number.isNaN(pct);
+  // Direction glyph: on the smallest tiles the % label doesn't fit, so a tile
+  // would otherwise convey up/down by fill color alone. The arrow keeps the
+  // signal alive for color-blind and grayscale viewers (WCAG 1.4.1).
+  const arrow =
+    pct == null || Number.isNaN(pct) ? "" : pct > 0 ? "▲" : pct < 0 ? "▼" : "";
   const label = `${name ?? symbol ?? id} (${symbol?.toUpperCase() ?? ""}), ${moveDescription(pct)} over ${timeframe}. Press Enter to view details.`;
 
   const navigate = (): void => onNavigate?.(id);
@@ -165,6 +170,21 @@ const HeatCell = ({
           aria-hidden="true"
         >
           {symbol?.toUpperCase()}
+          {!showPct && arrow ? ` ${arrow}` : ""}
+        </text>
+      ) : null}
+      {/* Tiny tiles with no room for the symbol still get a bare arrow. */}
+      {!showText && arrow && width > 16 && height > 12 ? (
+        <text
+          x={x + width / 2}
+          y={y + height / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill="rgba(255,255,255,0.9)"
+          fontSize={Math.min(12, Math.max(8, width / 3))}
+          aria-hidden="true"
+        >
+          {arrow}
         </text>
       ) : null}
       {showPct ? (
