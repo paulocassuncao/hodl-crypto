@@ -47,3 +47,4 @@ next-env.d.ts
 # tooling caches / local config
 .serena/
 .claude/settings.local.json
+.impeccable/hook.cache.json
