@@ -20,6 +20,7 @@ const coin = (over: Partial<Coin> = {}): Coin => ({
   price_change_percentage_1h_in_currency: 0.5,
   price_change_percentage_24h_in_currency: -2.5,
   price_change_percentage_7d_in_currency: 10,
+  price_change_percentage_30d_in_currency: 25,
   sparkline_in_7d: null,
   ...over,
 });
