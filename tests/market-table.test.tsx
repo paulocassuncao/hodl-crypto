@@ -38,6 +38,7 @@ const makeCoin = (
   price_change_percentage_1h_in_currency: 0,
   price_change_percentage_24h_in_currency: 0,
   price_change_percentage_7d_in_currency: 0,
+  price_change_percentage_30d_in_currency: 0,
   sparkline_in_7d: { price: [1, 2] },
   ...over,
 });

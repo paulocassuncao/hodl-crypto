@@ -14,7 +14,7 @@ export const GET = (request: NextRequest): Promise<Response> =>
       per_page: "100",
       page: "1",
       sparkline: "true",
-      price_change_percentage: "1h,24h,7d",
+      price_change_percentage: "1h,24h,7d,30d",
     });
     return cgFetch<Coin[]>(`/coins/markets?${params.toString()}`, {
       revalidate: 60,
