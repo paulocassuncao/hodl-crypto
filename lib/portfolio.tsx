@@ -130,6 +130,10 @@ export const PortfolioProvider = ({
   };
 
   useEffect(() => {
+    // Fetch the user's ledger on sign-in and clear it on sign-out — a
+    // deliberate data-sync effect keyed on userId (mirrors the watchlist/
+    // alerts providers). reload() owns the setState here by design.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
