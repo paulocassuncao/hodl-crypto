@@ -20,7 +20,8 @@ describe("formatPercent", () => {
 describe("percentColorClass", () => {
   it("maps sign to gain/loss/neutral classes", () => {
     expect(percentColorClass(1)).toBe("text-gain");
-    expect(percentColorClass(0)).toBe("text-gain");
+    // An exactly-flat change is neutral, not a gain — never tint "0.00%" green.
+    expect(percentColorClass(0)).toBe("text-muted-foreground");
     expect(percentColorClass(-1)).toBe("text-loss");
     expect(percentColorClass(null)).toBe("text-muted-foreground");
   });

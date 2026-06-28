@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef } from "react";
+import dynamic from "next/dynamic";
 import { Download, FileDown, FileUp, Plus, Upload, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 import { AnalyticsSection } from "@/components/portfolio/analytics-section";
-import { DcaDialog } from "@/components/portfolio/dca-dialog";
 import { PortfolioSummary } from "@/components/portfolio/portfolio-summary";
 import { PositionsTable } from "@/components/portfolio/positions-table";
 import { TransactionForm } from "@/components/portfolio/transaction-form";
@@ -17,6 +17,19 @@ import { usePortfolioPrices } from "@/hooks/use-portfolio-prices";
 import { parseTransactionsCsv, transactionsToCsv } from "@/lib/csv";
 import { download } from "@/lib/download";
 import { usePortfolio } from "@/lib/portfolio";
+
+// The DCA backtest dialog carries a recharts mini-chart; defer its chunk so it
+// loads only when a user reaches for it. The fallback mirrors the trigger's
+// footprint (icon-only on phones, labelled on sm+) to avoid a toolbar shift.
+const DcaDialog = dynamic(
+  () => import("@/components/portfolio/dca-dialog").then((m) => m.DcaDialog),
+  {
+    ssr: false,
+    loading: () => (
+      <Skeleton className="h-7 w-9 rounded-lg pointer-coarse:h-11 sm:w-32" />
+    ),
+  },
+);
 
 /** Smallest quantity treated as an open position (guards float residue). */
 const DUST = 1e-8;

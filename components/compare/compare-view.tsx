@@ -1,14 +1,22 @@
 "use client";
 
 import { useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { CoinPicker, type PickerCoin } from "@/components/compare/coin-picker";
-import { CompareChart } from "@/components/compare/compare-chart";
 import { CompareStats } from "@/components/compare/compare-stats";
 import { ShareButton } from "@/components/share-button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCoins } from "@/hooks/use-coins";
 import { MAX_COMPARE } from "@/lib/compare";
+
+// Defer recharts so the picker and stats render first; the chart loads its own
+// chunk behind a height-matched skeleton (no layout shift on swap-in).
+const CompareChart = dynamic(
+  () => import("@/components/compare/compare-chart").then((m) => m.CompareChart),
+  { ssr: false, loading: () => <Skeleton className="h-[340px] w-full" /> },
+);
 
 const DEFAULT_IDS = ["bitcoin", "ethereum"];
 

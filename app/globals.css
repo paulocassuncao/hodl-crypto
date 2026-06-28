@@ -32,13 +32,19 @@
   --muted-foreground: oklch(0.49 0.013 140);
   --accent: oklch(0.96 0.004 140);
   --accent-foreground: oklch(0.18 0.01 140);
-  --destructive: oklch(0.55 0.21 27);
+  --destructive: oklch(0.52 0.21 27);
   --border: oklch(0.9 0.005 140);
   --input: oklch(0.9 0.005 140);
   --ring: oklch(0.62 0.15 128);
   /* Market semantics: green for gains, red for losses (paired with sign/arrow in UI) */
   --gain: oklch(0.5 0.14 152);
   --loss: oklch(0.56 0.2 25);
+  /* Ink shades for gain/loss TEXT sitting on a soft same-hue tint (the buy/sell
+     pills, bg-{gain,loss}/15). The full-strength tokens above clear AA on solid
+     backgrounds but dip to ~3.9–4.3:1 over a 15% tint — too low for small text.
+     These darker (light) / brighter (dark) shades restore ≥4.9:1 on the tint. */
+  --gain-ink: oklch(0.46 0.15 152);
+  --loss-ink: oklch(0.5 0.18 25);
   --warning: oklch(0.7 0.13 80);
   /* Watchlist "favorite" gold — a status color, not a brand channel.
      Deepened in light so the active (filled) star clears the 3:1 non-text
@@ -61,6 +67,9 @@
    * header must sit above it (50 > 40); toasts surface over modals; tooltips
    * win last. These are theme-independent, so they live only here.
    */
+  /* Table-internal sticky header: only needs to sit above its own scrolling
+     tbody rows (which have no z-index), so it lives below the page chrome scale. */
+  --z-table-header: 10;
   --z-sticky: 40;
   --z-dropdown: 50;
   --z-modal: 60;
@@ -84,12 +93,14 @@
   --muted-foreground: oklch(0.7 0.01 140);
   --accent: oklch(0.25 0.01 140);
   --accent-foreground: oklch(0.96 0.006 140);
-  --destructive: oklch(0.68 0.2 25);
+  --destructive: oklch(0.73 0.2 25);
   --border: oklch(0.3 0.008 140);
   --input: oklch(0.32 0.008 140);
   --ring: oklch(0.84 0.19 120);
   --gain: oklch(0.76 0.16 152);
   --loss: oklch(0.66 0.21 25);
+  --gain-ink: oklch(0.82 0.17 152);
+  --loss-ink: oklch(0.72 0.19 25);
   --warning: oklch(0.8 0.13 80);
   --star: oklch(0.84 0.16 82);
   --fg-fear: oklch(0.72 0.17 50);
@@ -127,6 +138,8 @@
   --color-ring: var(--ring);
   --color-gain: var(--gain);
   --color-loss: var(--loss);
+  --color-gain-ink: var(--gain-ink);
+  --color-loss-ink: var(--loss-ink);
   --color-warning: var(--warning);
   --color-star: var(--star);
   --color-fg-fear: var(--fg-fear);
@@ -160,6 +173,36 @@
   .tabular-nums {
     font-family: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
     letter-spacing: -0.01em;
+  }
+}
+
+/*
+ * Discrete scrollbars for capped, in-page scroll areas (e.g. the expandable
+ * transactions ledger). A thin rail with a transparent track and a faint thumb
+ * that only gains contrast on hover — so a scrolling panel reads as content,
+ * not chrome. Firefox uses the standard scrollbar-* properties; WebKit/Blink
+ * get the ::-webkit-scrollbar treatment, where a transparent padding-box border
+ * keeps the visible thumb inset and pill-shaped.
+ */
+@utility scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    background-clip: padding-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
   }
 }
 

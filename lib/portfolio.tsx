@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner";
 
 import { useAuth } from "@/lib/auth";
+import { formatQuantity } from "@/lib/format";
 import { derivePositions } from "@/lib/portfolio-core";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
@@ -129,6 +130,10 @@ export const PortfolioProvider = ({
   };
 
   useEffect(() => {
+    // Fetch the user's ledger on sign-in and clear it on sign-out — a
+    // deliberate data-sync effect keyed on userId (mirrors the watchlist/
+    // alerts providers). reload() owns the setState here by design.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
@@ -192,8 +197,30 @@ export const PortfolioProvider = ({
   };
 
   const removeTransaction = (id: string): void => {
+    const removed = transactions.find((t) => t.id === id);
+    if (!removed) return;
+    // Optimistic removal — the row leaves the table immediately and the delete
+    // is committed to Supabase. Undo re-inserts the exact row (id, createdAt and
+    // all), so a misclick is reversible without keeping soft-deleted rows around.
     setTransactions((prev) => prev.filter((t) => t.id !== id));
     persist(() => supabase.from("transactions").delete().eq("id", id));
+    toast("Transaction deleted", {
+      duration: 6000,
+      description: `${removed.type === "buy" ? "Buy" : "Sell"} of ${formatQuantity(
+        removed.quantity,
+      )} ${removed.symbol.toUpperCase()}`,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          setTransactions((prev) =>
+            prev.some((t) => t.id === removed.id) ? prev : [removed, ...prev],
+          );
+          persist(() =>
+            supabase.from("transactions").insert(toRow(removed, userId!)),
+          );
+        },
+      },
+    });
   };
 
   const clear = (): void => {

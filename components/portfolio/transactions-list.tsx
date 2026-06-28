@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 
 import { TransactionForm } from "@/components/portfolio/transaction-form";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,16 @@ const formatDate = (ms: number): string =>
     day: "numeric",
   });
 
-/** Buy/sell pill — green for buys, red for sells, in both table and card. */
+/**
+ * Buy/sell pill — green for buys, red for sells, in both table and card.
+ *
+ * This is a deliberate, sanctioned extension of the gain/loss direction channel:
+ * a buy accumulates (green) and a sell reduces (red), which reads the same way a
+ * trader already parses the market. The literal "Buy"/"Sell" text carries the
+ * meaning independent of hue, so the signal survives color blindness/grayscale
+ * (it never relies on color alone). Text uses the `-ink` shades so it clears AA
+ * (≥4.5:1) on the soft same-hue tint, where the full-strength tokens fell short.
+ */
 const TypeBadge = ({
   type,
 }: {
@@ -35,7 +45,7 @@ const TypeBadge = ({
   <span
     className={cn(
       "rounded px-1.5 py-0.5 text-xs font-medium capitalize",
-      type === "buy" ? "bg-gain/15 text-gain" : "bg-loss/15 text-loss",
+      type === "buy" ? "bg-gain/15 text-gain-ink" : "bg-loss/15 text-loss-ink",
     )}
   >
     {type}
@@ -50,17 +60,28 @@ export const TransactionsList = ({
 }): React.ReactNode => {
   const { removeTransaction } = usePortfolio();
   const money = useMoney();
+  const [showAll, setShowAll] = useState(false);
   const ordered = [...transactions].sort(
     (a, b) => b.date - a.date || b.createdAt - a.createdAt,
   );
+
+  const COLLAPSED_LIMIT = 10;
+  const hasMore = ordered.length > COLLAPSED_LIMIT;
+  const visible = showAll ? ordered : ordered.slice(0, COLLAPSED_LIMIT);
 
   return (
     <section className="space-y-2">
       <h2 className="text-sm font-medium text-muted-foreground">Transactions</h2>
 
-      {/* Mobile: stacked cards instead of a 6-column horizontal scroll. */}
-      <ul className="space-y-2 md:hidden">
-        {ordered.map((t) => (
+      {/* Mobile: stacked cards instead of a 6-column horizontal scroll.
+          When expanded, cap the height so the page stays compact. */}
+      <ul
+        className={cn(
+          "space-y-2 md:hidden",
+          showAll && "scrollbar-subtle max-h-[60vh] overflow-y-auto",
+        )}
+      >
+        {visible.map((t) => (
           <li key={t.id} className="rounded-lg border bg-card p-3">
             <div className="flex items-center gap-2">
               {t.image ? (
@@ -95,10 +116,17 @@ export const TransactionsList = ({
         ))}
       </ul>
 
-      {/* md+: full ledger table. */}
-      <div className="hidden md:block">
+      {/* md+: full ledger table. When expanded, cap the container height and
+          let it scroll with a sticky header so it never runs off the page. */}
+      <div
+        className={cn(
+          "hidden md:block",
+          showAll &&
+            "[&_[data-slot=table-container]]:scrollbar-subtle [&_[data-slot=table-container]]:max-h-[60vh] [&_[data-slot=table-container]]:overflow-y-auto",
+        )}
+      >
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-(--z-table-header) bg-background [&_th]:bg-background">
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Coin</TableHead>
@@ -109,7 +137,7 @@ export const TransactionsList = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {ordered.map((t) => (
+            {visible.map((t) => (
               <TableRow key={t.id}>
                 <TableCell className="tabular-nums text-muted-foreground">
                   {formatDate(t.date)}
@@ -148,6 +176,26 @@ export const TransactionsList = ({
           </TableBody>
         </Table>
       </div>
+
+      {/* Collapse the ledger to the most recent rows by default; reveal the
+          rest on demand so it doesn't dominate the page. */}
+      {hasMore ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-muted-foreground"
+          aria-expanded={showAll}
+          onClick={() => setShowAll((prev) => !prev)}
+        >
+          {showAll ? "Show less" : `Show all ${ordered.length} transactions`}
+          <ChevronDown
+            className={cn(
+              "size-4 transition-transform",
+              showAll && "rotate-180",
+            )}
+          />
+        </Button>
+      ) : null}
     </section>
   );
 };

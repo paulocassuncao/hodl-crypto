@@ -235,11 +235,11 @@ export const TransactionForm = ({
                   type="button"
                   onClick={() => setType(t)}
                   className={cn(
-                    "rounded-md py-1 text-sm font-medium capitalize transition-colors",
+                    "rounded-md py-1 text-sm font-medium capitalize transition-colors pointer-coarse:py-3",
                     type === t
                       ? t === "buy"
-                        ? "bg-gain/15 text-gain"
-                        : "bg-loss/15 text-loss"
+                        ? "bg-gain/15 text-gain-ink"
+                        : "bg-loss/15 text-loss-ink"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                   aria-pressed={type === t}
