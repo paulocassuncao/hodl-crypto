@@ -32,5 +32,11 @@ jobs:
       - name: Build
         run: bun run build
         env:
-          # Build only needs the key to exist; routes are server-rendered on demand.
+          # Build only needs these to be non-empty; data is fetched at runtime.
+          # CoinGecko routes are server-rendered on demand; the public Supabase
+          # vars must exist so the browser client constructs during prerender of
+          # the app-shell pages (e.g. /_not-found, /alerts). Real values live in
+          # the Vercel project env, not here.
           COINGECKO_API_KEY: ci-placeholder-key
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
