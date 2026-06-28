@@ -27,7 +27,16 @@ const formatDate = (ms: number): string =>
     day: "numeric",
   });
 
-/** Buy/sell pill — green for buys, red for sells, in both table and card. */
+/**
+ * Buy/sell pill — green for buys, red for sells, in both table and card.
+ *
+ * This is a deliberate, sanctioned extension of the gain/loss direction channel:
+ * a buy accumulates (green) and a sell reduces (red), which reads the same way a
+ * trader already parses the market. The literal "Buy"/"Sell" text carries the
+ * meaning independent of hue, so the signal survives color blindness/grayscale
+ * (it never relies on color alone). Text uses the `-ink` shades so it clears AA
+ * (≥4.5:1) on the soft same-hue tint, where the full-strength tokens fell short.
+ */
 const TypeBadge = ({
   type,
 }: {
@@ -36,7 +45,7 @@ const TypeBadge = ({
   <span
     className={cn(
       "rounded px-1.5 py-0.5 text-xs font-medium capitalize",
-      type === "buy" ? "bg-gain/15 text-gain" : "bg-loss/15 text-loss",
+      type === "buy" ? "bg-gain/15 text-gain-ink" : "bg-loss/15 text-loss-ink",
     )}
   >
     {type}
@@ -117,7 +126,7 @@ export const TransactionsList = ({
         )}
       >
         <Table>
-          <TableHeader className="sticky top-0 z-10 bg-background [&_th]:bg-background">
+          <TableHeader className="sticky top-0 z-(--z-table-header) bg-background [&_th]:bg-background">
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Coin</TableHead>

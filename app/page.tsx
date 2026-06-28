@@ -1,4 +1,4 @@
-import { FearGreedGauge } from "@/components/fear-greed-gauge";
+import { FearGreedGauge } from "@/components/fear-greed-gauge.lazy";
 import { GainersLosers } from "@/components/gainers-losers";
 import { GlobalStatsBar } from "@/components/global-stats-bar";
 import { MarketTable } from "@/components/market-table/market-table";

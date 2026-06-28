@@ -1,7 +1,8 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import dynamic from "next/dynamic";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMoney } from "@/hooks/use-money";
 import { formatPercent, percentColorClass } from "@/lib/format";
 import {
@@ -11,6 +12,20 @@ import {
 } from "@/lib/portfolio-core";
 import type { Position } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+// Donut split out and deferred so recharts stays out of the portfolio's initial
+// chunk; the totals and legend render eagerly while the donut fills in behind a
+// matching round skeleton.
+const PortfolioAllocationDonut = dynamic(
+  () =>
+    import("@/components/portfolio/portfolio-allocation-donut").then(
+      (m) => m.PortfolioAllocationDonut,
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="size-[120px] shrink-0 rounded-full" />,
+  },
+);
 
 const CHART_COLORS = [
   "var(--chart-1)",
@@ -103,26 +118,7 @@ export const PortfolioSummary = ({
 
       {alloc.length > 0 ? (
         <div className="flex items-center gap-4 rounded-lg border bg-card p-4">
-          <ResponsiveContainer width={120} height={120}>
-            <PieChart>
-              <Pie
-                data={alloc}
-                dataKey="value"
-                nameKey="coinId"
-                innerRadius={38}
-                outerRadius={58}
-                strokeWidth={0}
-                isAnimationActive={false}
-              >
-                {alloc.map((a, i) => (
-                  <Cell
-                    key={a.coinId}
-                    fill={CHART_COLORS[i % CHART_COLORS.length]}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          <PortfolioAllocationDonut data={alloc} colors={CHART_COLORS} />
           <ul className="space-y-1 text-sm">
             {alloc.slice(0, 5).map((a, i) => (
               <li key={a.coinId} className="flex items-center gap-2">

@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { AlertButton } from "@/components/alerts/alert-button";
 import { ShareButton } from "@/components/share-button";
-import { CoinChart } from "@/components/coin-detail/coin-chart";
-import { CoinOhlcChart } from "@/components/coin-detail/coin-ohlc-chart";
 import { CoinMarkets } from "@/components/coin-detail/coin-markets";
 import { CoinStats } from "@/components/coin-detail/coin-stats";
 import { NewsFeed } from "@/components/news-feed";
@@ -25,6 +24,21 @@ import {
   percentColorClass,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+// Charts pull in recharts (~heavy). Defer the chunk so the detail header, price,
+// and stats paint without it; each shows a height-matched skeleton while loading
+// so there's no layout shift when the chart swaps in.
+const CoinChart = dynamic(
+  () => import("@/components/coin-detail/coin-chart").then((m) => m.CoinChart),
+  { ssr: false, loading: () => <Skeleton className="h-[320px] w-full" /> },
+);
+const CoinOhlcChart = dynamic(
+  () =>
+    import("@/components/coin-detail/coin-ohlc-chart").then(
+      (m) => m.CoinOhlcChart,
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-[320px] w-full" /> },
+);
 
 /** Strip HTML tags from CoinGecko descriptions for safe plain-text rendering. */
 const toPlainText = (html: string): string =>

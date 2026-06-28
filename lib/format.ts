@@ -91,5 +91,7 @@ export const formatRelativeTime = (value: number | null | undefined): string => 
 /** Tailwind text color class reflecting a gain/loss/neutral change. */
 export const percentColorClass = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return "text-muted-foreground";
-  return value >= 0 ? "text-gain" : "text-loss";
+  // An exactly-flat change is neutral, not a gain — don't tint "0.00%" green.
+  if (value === 0) return "text-muted-foreground";
+  return value > 0 ? "text-gain" : "text-loss";
 };
