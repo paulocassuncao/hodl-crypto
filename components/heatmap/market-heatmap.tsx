@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMarkets } from "@/hooks/use-markets";
 import { useCurrency } from "@/lib/currency";
-import { formatPercent } from "@/lib/format";
+import { formatPercent, percentArrow } from "@/lib/format";
 import { heatColor } from "@/lib/heat";
 import type { Coin, Currency } from "@/lib/types";
 
@@ -97,8 +97,7 @@ const HeatCell = ({
   // Direction glyph: on the smallest tiles the % label doesn't fit, so a tile
   // would otherwise convey up/down by fill color alone. The arrow keeps the
   // signal alive for color-blind and grayscale viewers (WCAG 1.4.1).
-  const arrow =
-    pct == null || Number.isNaN(pct) ? "" : pct > 0 ? "▲" : pct < 0 ? "▼" : "";
+  const arrow = percentArrow(pct);
   const label = `${name ?? symbol ?? id} (${symbol?.toUpperCase() ?? ""}), ${moveDescription(pct)} over ${timeframe}. Press Enter to view details.`;
 
   const navigate = (): void => onNavigate?.(id);
@@ -252,7 +251,7 @@ export const MarketHeatmap = (): React.ReactNode => {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Market Heatmap</h1>
+          <h1 className="text-2xl font-semibold">Market Heatmap</h1>
           <p className="text-sm text-muted-foreground">
             Top <span className="tabular-nums">{maxTiles}</span> by market cap ·
             tile size = market cap · color = {timeframe} change

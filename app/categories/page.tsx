@@ -4,7 +4,7 @@ import { CategoriesTable } from "@/components/categories-table";
 const CategoriesPage = (): React.ReactNode => (
   <div className="space-y-4">
     <div>
-      <h1 className="text-2xl font-bold">Categories</h1>
+      <h1 className="text-2xl font-semibold">Categories</h1>
       <p className="text-sm text-muted-foreground">
         Market sectors ranked by market capitalization.
       </p>

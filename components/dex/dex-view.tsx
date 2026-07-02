@@ -38,7 +38,7 @@ export const DexView = (): React.ReactNode => {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">On-Chain DEX</h1>
+          <h1 className="text-2xl font-semibold">On-Chain DEX</h1>
           <p className="text-sm text-muted-foreground">
             {mode === "trending" ? "Trending" : "Newest"} liquidity pools, live
             from GeckoTerminal.

@@ -74,6 +74,19 @@ export const formatPercent = (value: number | null | undefined): string => {
   return `${sign}${value.toFixed(2)}%`;
 };
 
+/**
+ * Direction arrow for a change: ▲ up, ▼ down, "" for flat/missing.
+ * The shared source of truth for the Color-Plus-Sign Rule's arrow channel — used
+ * in sign-less, glance-first contexts (the heatmap, the ticker) where the arrow
+ * is the non-color signal. The dense market table relies on the +/− sign from
+ * `formatPercent` instead, so arrows don't add redundant chrome to 100 rows.
+ * An exactly-flat change gets no arrow (it isn't a direction).
+ */
+export const percentArrow = (value: number | null | undefined): string => {
+  if (value == null || Number.isNaN(value) || value === 0) return "";
+  return value > 0 ? "▲" : "▼";
+};
+
 /** Format an epoch-ms timestamp as a terse relative time, e.g. `3h`, `2d`. */
 export const formatRelativeTime = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return "";

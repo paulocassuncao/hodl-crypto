@@ -143,7 +143,7 @@ The values below are **dark-native (canonical)**; the light theme equivalents fo
 
 **The Rationed Accent Rule.** Signal Lime appears on ≤10% of any screen. Its scarcity is what makes the live, actionable element findable in a dense grid of figures. If two limes compete for attention, one is wrong.
 
-**The Color-Plus-Sign Rule.** Market direction is *never* conveyed by hue alone. Every gain/loss value pairs its color with a sign and/or arrow (`+2.4% ▲`, `−1.1% ▼`) so the signal survives red-green color blindness and grayscale rendering.
+**The Color-Plus-Sign Rule.** Market direction is *never* conveyed by hue alone. Every gain/loss value carries a **non-color signal** so it survives red-green color blindness and grayscale rendering. The baseline, required everywhere a percentage is rendered, is the **explicit sign** (`+2.4%` / `−1.1%`) — this is what the dense market table and stats use, where a leading arrow would only duplicate the sign and tax density. The **arrow** (▲/▼) is added in the contexts where color is the *only* other channel or where a single glance must read direction at a distance: the **heatmap tiles** (no sign shown — the arrow is the sole non-color cue) and the **ticker tape**. Arrow logic lives in one place (`percentArrow` in `lib/format.ts`); a flat 0% gets no arrow, since it has no direction.
 
 ## 3. Typography
 
@@ -211,7 +211,7 @@ The product's centerpiece and its strongest existing asset. A **responsive dual-
 ### Do:
 - **Do** set every figure (price, %, volume, market cap, rank) in **Geist Mono with `tabular-nums`**, right-aligned in tables and decimal-aligned in columns.
 - **Do** reserve color to three meanings — Signal Lime = actionable, Green = up, Red = down — and keep Signal Lime to ≤10% of any screen.
-- **Do** pair every gain/loss with a sign or arrow (`+2.4% ▲` / `−1.1% ▼`), so direction survives color blindness and grayscale.
+- **Do** give every gain/loss a non-color signal: the explicit sign (`+2.4%` / `−1.1%`) everywhere as the baseline, plus the ▲/▼ arrow in sign-less or glance-first contexts (heatmap tiles, ticker) — via the shared `percentArrow` helper.
 - **Do** convey depth with hairline rings and tonal layering (Background → Surface → Surface High).
 - **Do** use skeleton loaders for data, and empty states that teach the interface.
 - **Do** keep type on a fixed rem scale (≈1.2 ratio); reserve uppercase tracked Labels for column headers only.

@@ -109,7 +109,7 @@ export const RadarView = (): React.ReactNode => {
     <section className="space-y-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Radar</h1>
+          <h1 className="text-2xl font-semibold">Radar</h1>
           <p className="text-sm text-muted-foreground">
             Relative strength across the top 100 — every move measured against
             Bitcoin. Screen by momentum and open any chart.

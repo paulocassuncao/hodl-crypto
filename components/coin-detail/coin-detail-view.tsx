@@ -81,7 +81,7 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
             />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">{coin.name}</h1>
+                <h1 className="text-2xl font-semibold">{coin.name}</h1>
                 <span className="text-sm uppercase text-muted-foreground">
                   {coin.symbol}
                 </span>
