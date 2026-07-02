@@ -68,7 +68,7 @@ export const CompareView = (): React.ReactNode => {
     <section className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Compare Coins</h1>
+          <h1 className="text-2xl font-semibold">Compare Coins</h1>
           <p className="text-sm text-muted-foreground">
             Up to {MAX_COMPARE} coins, side by side. Chart is normalized to %
             change so different prices are comparable.

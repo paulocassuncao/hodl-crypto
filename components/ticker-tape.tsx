@@ -9,6 +9,7 @@ import { useCurrency } from "@/lib/currency";
 import {
   formatCurrency,
   formatPercent,
+  percentArrow,
   percentColorClass,
 } from "@/lib/format";
 import type { Coin, Currency } from "@/lib/types";
@@ -53,7 +54,7 @@ const TickerItem = ({
         {formatCurrency(coin.current_price, currency)}
       </span>
       <span className={cn("tabular-nums", percentColorClass(change))}>
-        {(change ?? 0) >= 0 ? "▲" : "▼"} {formatPercent(change)}
+        {percentArrow(change)} {formatPercent(change)}
       </span>
     </Link>
   );

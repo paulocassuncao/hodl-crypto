@@ -62,7 +62,7 @@ export const DerivativesView = (): React.ReactNode => {
   return (
     <section className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Derivatives</h1>
+        <h1 className="text-2xl font-semibold">Derivatives</h1>
         <p className="text-sm text-muted-foreground">
           Top perpetual & futures markets by open interest, with funding rates.
         </p>

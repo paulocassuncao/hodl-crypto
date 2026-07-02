@@ -40,6 +40,9 @@ yarn-error.log*
 # personal portfolio backup (migration source, not for the repo)
 hodl-portfolio-backup.json
 
+# integration handover brief (personal working doc, not for the repo)
+HODL-HANDOVER.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

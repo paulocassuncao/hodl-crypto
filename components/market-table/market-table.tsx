@@ -425,7 +425,10 @@ const SortHeader = ({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide hover:text-foreground",
+        // min-h-6 clears the WCAG 2.2 2.5.8 (24px) target floor on mouse; coarse
+        // pointers (touch laptops/tablets that still get the md+ table) expand to
+        // the 44px tap target used across the rest of the app.
+        "inline-flex min-h-6 items-center gap-1 text-xs font-medium uppercase tracking-wide hover:text-foreground pointer-coarse:min-h-11",
         active ? "text-foreground" : "text-muted-foreground",
         align === "right" && "w-full justify-end",
       )}
