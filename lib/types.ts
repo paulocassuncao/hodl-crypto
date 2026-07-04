@@ -130,6 +130,9 @@ export interface Holding {
 
 export type TxType = "buy" | "sell";
 
+/** Where a ledger row came from: February DCA-bot backfill, manual entry, or Bybit sync. */
+export type TxSource = "bot" | "manual" | "bybit";
+
 /** A single buy or sell, the stored unit of the portfolio ledger. */
 export interface Transaction {
   id: string;
@@ -145,6 +148,8 @@ export interface Transaction {
   /** When the trade happened (epoch ms). */
   date: number;
   createdAt: number;
+  /** Provenance; absent on legacy/imported rows (stored as "manual"). */
+  source?: TxSource;
 }
 
 /** A coin position derived from its transactions (average-cost basis). */

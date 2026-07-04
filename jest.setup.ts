@@ -34,6 +34,23 @@ if (!window.matchMedia) {
     }) as MediaQueryList;
 }
 
+// jsdom lacks SubtleCrypto and TextEncoder (used by the Bybit request signer).
+if (!globalThis.crypto?.subtle) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { webcrypto } = require("node:crypto") as typeof import("node:crypto");
+  Object.defineProperty(globalThis.crypto, "subtle", {
+    value: webcrypto.subtle,
+  });
+}
+if (!globalThis.TextEncoder) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const util = require("node:util") as typeof import("node:util");
+  Object.assign(globalThis, {
+    TextEncoder: util.TextEncoder,
+    TextDecoder: util.TextDecoder,
+  });
+}
+
 // recharts' ResponsiveContainer depends on ResizeObserver.
 if (!global.ResizeObserver) {
   global.ResizeObserver = class {
