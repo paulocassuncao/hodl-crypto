@@ -39,8 +39,11 @@ export const proxy = async (request: NextRequest): Promise<NextResponse> => {
 
   const { pathname } = request.nextUrl;
   const isAuthRoute = pathname === "/login";
+  // The sleeve cron has no user session; the route enforces its own
+  // CRON_SECRET bearer auth (see app/api/sleeve/run/route.ts).
+  const isCronRoute = pathname === "/api/sleeve/run";
 
-  if (!user && !isAuthRoute) {
+  if (!user && !isAuthRoute && !isCronRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
