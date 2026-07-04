@@ -1,4 +1,4 @@
-import type { Transaction, TxType } from "@/lib/types";
+import type { Transaction, TxSource, TxType } from "@/lib/types";
 
 /**
  * A row of `public.transactions` as stored in Supabase (snake_case, ISO dates).
@@ -20,6 +20,48 @@ export type TransactionRow = {
   date: string;
   /** ISO 8601 timestamptz. */
   created_at: string;
+  /** Provenance of the row; the column defaults to 'manual'. */
+  source: TxSource;
+};
+
+/**
+ * A row of `public.sleeve_state` — per-asset paper-trading account state for
+ * the trading sleeve (PK: user_id + asset).
+ */
+export type SleeveStateRow = {
+  user_id: string;
+  /** "BTC" | "ETH". */
+  asset: string;
+  cash: number;
+  units: number;
+  /** Current target exposure in [0, 1]. */
+  position: number;
+  /** Open time (epoch ms) of the last processed daily bar. */
+  last_time_ms: number;
+  /** Fictitious starting capital for this asset (e.g. 500). */
+  allocation: number;
+  target_vol: number;
+};
+
+/** A row of `public.sleeve_trades` — one simulated fill. */
+export type SleeveTradeRow = {
+  id: string;
+  user_id: string;
+  asset: string;
+  time_ms: number;
+  side: "buy" | "sell";
+  price: number;
+  units: number;
+  position_after: number;
+  equity_after: number;
+};
+
+/** A row of `public.sleeve_equity` — the forward mark-to-market curve. */
+export type SleeveEquityRow = {
+  user_id: string;
+  asset: string;
+  time_ms: number;
+  equity: number;
 };
 
 /**
@@ -68,7 +110,10 @@ export type Database = {
     Tables: {
       transactions: {
         Row: TransactionRow;
-        Insert: Omit<TransactionRow, "created_at"> & { created_at?: string };
+        Insert: Omit<TransactionRow, "created_at" | "source"> & {
+          created_at?: string;
+          source?: TxSource;
+        };
         Update: Partial<TransactionRow>;
         Relationships: [];
       };
@@ -110,6 +155,7 @@ export const toTransaction = (row: TransactionRow): Transaction => ({
   amount: row.amount,
   date: new Date(row.date).getTime(),
   createdAt: new Date(row.created_at).getTime(),
+  source: row.source,
 });
 
 /** Map an app {@link Transaction} to an insertable row for the given user. */
@@ -128,4 +174,5 @@ export const toRow = (
   amount: tx.amount,
   date: new Date(tx.date).toISOString(),
   created_at: new Date(tx.createdAt).toISOString(),
+  source: tx.source ?? "manual",
 });
