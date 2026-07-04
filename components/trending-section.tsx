@@ -33,7 +33,7 @@ export const TrendingSection = (): React.ReactNode => {
               <Link
                 key={coin.id}
                 href={`/coins/${coin.id}`}
-                className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent"
+                className="focus-ring flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent"
               >
                 <span className="flex items-center gap-2">
                   <Image

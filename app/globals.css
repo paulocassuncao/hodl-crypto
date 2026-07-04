@@ -177,6 +177,23 @@
 }
 
 /*
+ * Shared keyboard focus ring for plain links (nav, movers/trending rows, ticker
+ * items, the mobile coin-card overlay). The interactive primitives — buttons,
+ * inputs, tiles, the ticker pause control — already ship an explicit
+ * Signal-tinted ring; bare <a>s previously fell back to the UA outline, which
+ * `* { outline-ring/50 }` only tints (no width/style), leaving focus visibility
+ * inconsistent and off-brand. One class restores it everywhere. Uses `outline`
+ * (not box-shadow) so it also survives Windows forced-colors mode; the outline
+ * follows each element's own border-radius. WCAG 2.4.7 / 1.4.11.
+ */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/*
  * Discrete scrollbars for capped, in-page scroll areas (e.g. the expandable
  * transactions ledger). A thin rail with a transparent track and a faint thumb
  * that only gains contrast on hover — so a scrolling panel reads as content,
