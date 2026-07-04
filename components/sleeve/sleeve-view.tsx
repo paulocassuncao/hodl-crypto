@@ -1,6 +1,8 @@
 "use client";
 
-import { FlaskConical, Hourglass } from "lucide-react";
+import { useState } from "react";
+
+import { FlaskConical, Hourglass, TriangleAlert } from "lucide-react";
 
 import { SleeveEquityChart } from "@/components/sleeve/sleeve-equity-chart.lazy";
 import { SleeveTradesTable } from "@/components/sleeve/sleeve-trades-table";
@@ -21,6 +23,17 @@ import type { SleeveStateRow } from "@/lib/supabase/types";
 /** Human position summary, e.g. "cash", "long 0.42x". */
 const exposureLabel = (position: number): string =>
   position < 0.005 ? "cash" : `long ${position.toFixed(2)}x`;
+
+const DAY_MS = 86_400_000;
+
+/**
+ * The cron advances one bar per day, so a healthy account's last bar is at
+ * most ~2 days old (yesterday's bar plus timing slack). Older than that means
+ * the daily job has silently stopped — surface it instead of showing a
+ * quietly frozen curve.
+ */
+export const isStale = (lastTimeMs: number, nowMs: number): boolean =>
+  nowMs - lastTimeMs > 2 * DAY_MS;
 
 const AssetCard = ({ state }: { state: SleeveStateRow }): React.ReactNode => {
   const invested = state.position >= 0.005;
@@ -58,6 +71,9 @@ const AssetCard = ({ state }: { state: SleeveStateRow }): React.ReactNode => {
 
 export const SleeveView = (): React.ReactNode => {
   const { data, isLoading, error } = useSleeve();
+  // Captured once on mount — staleness is judged in days, so it doesn't need
+  // to tick (and Date.now() during render violates react-hooks/purity).
+  const [mountedAtMs] = useState(() => Date.now());
 
   const states = data?.states ?? [];
   const trades = data?.trades ?? [];
@@ -72,6 +88,10 @@ export const SleeveView = (): React.ReactNode => {
       : totalAllocation;
   const pnl = currentEquity - totalAllocation;
   const pnlPct = totalAllocation > 0 ? (pnl / totalAllocation) * 100 : 0;
+
+  const oldestLastBar =
+    states.length > 0 ? Math.min(...states.map((s) => s.last_time_ms)) : null;
+  const stale = oldestLastBar !== null && isStale(oldestLastBar, mountedAtMs);
 
   return (
     <div className="space-y-6">
@@ -111,6 +131,22 @@ export const SleeveView = (): React.ReactNode => {
         </div>
       ) : (
         <>
+          {stale ? (
+            <div
+              role="status"
+              className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400"
+            >
+              <TriangleAlert className="size-4 shrink-0" aria-hidden />
+              <span>
+                Simulation stalled — last processed bar is{" "}
+                {new Date(oldestLastBar!).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}
+                . The daily job may be failing; check the Vercel cron logs.
+              </span>
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader>

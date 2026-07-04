@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 
-import { SleeveView } from "@/components/sleeve/sleeve-view";
+import { isStale, SleeveView } from "@/components/sleeve/sleeve-view";
 import { toChartSeries } from "@/components/sleeve/sleeve-equity-chart";
 import { useSleeve } from "@/hooks/use-sleeve";
 import type {
@@ -69,10 +69,36 @@ describe("SleeveView", () => {
     ).toBeInTheDocument();
   });
 
+  it("warns when the last processed bar is more than 2 days old", () => {
+    const DAY = 86_400_000;
+    withData({
+      states: [state({ asset: "BTC", last_time_ms: Date.now() - 3 * DAY })],
+    });
+    render(<SleeveView />);
+    expect(screen.getByRole("status")).toHaveTextContent(/Simulation stalled/);
+  });
+
+  it("does not warn when the last bar is fresh (yesterday's close)", () => {
+    const DAY = 86_400_000;
+    withData({
+      states: [state({ asset: "BTC", last_time_ms: Date.now() - DAY })],
+    });
+    render(<SleeveView />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
   it("formats a partial long exposure as e.g. long 0.42x", () => {
     withData({ states: [state({ asset: "BTC", position: 0.42, units: 0.004 })] });
     render(<SleeveView />);
     expect(screen.getByText("long 0.42x")).toBeInTheDocument();
+  });
+});
+
+describe("isStale", () => {
+  const DAY = 86_400_000;
+  it("is stale only past 2 days (one bar of slack over the daily cadence)", () => {
+    expect(isStale(0, 2 * DAY)).toBe(false);
+    expect(isStale(0, 2 * DAY + 1)).toBe(true);
   });
 });
 
