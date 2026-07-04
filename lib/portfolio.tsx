@@ -41,6 +41,8 @@ interface PortfolioContextValue {
   exportJson: () => string;
   /** Replace transactions from a JSON string; false if it can't be parsed. */
   importJson: (text: string) => boolean;
+  /** Re-fetch the ledger from Supabase (after a server-side import). */
+  reload: () => Promise<void>;
 }
 
 const PortfolioContext = createContext<PortfolioContextValue | null>(null);
@@ -277,6 +279,7 @@ export const PortfolioProvider = ({
         clear,
         exportJson,
         importJson,
+        reload,
       }}
     >
       {children}
