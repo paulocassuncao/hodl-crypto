@@ -24,7 +24,7 @@ export const Header = (): React.ReactNode => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-muted-foreground transition-colors hover:text-foreground"
+              className="focus-ring rounded-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </Link>

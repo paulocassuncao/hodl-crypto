@@ -47,7 +47,7 @@ const TickerItem = ({
   return (
     <Link
       href={`/coins/${coin.id}`}
-      className="inline-flex items-center gap-1.5 hover:text-foreground"
+      className="focus-ring inline-flex items-center gap-1.5 rounded-sm hover:text-foreground"
     >
       <span className="font-medium">{coin.symbol.toUpperCase()}</span>
       <span className="tabular-nums text-muted-foreground">

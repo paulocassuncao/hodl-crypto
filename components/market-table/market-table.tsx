@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -60,6 +60,11 @@ type SortKey =
   | "market_cap";
 
 type SortDir = "asc" | "desc";
+
+/** Stable empty fallback for coins missing sparkline data — a fresh `[]` literal
+ *  at the call site would give `Sparkline` a new prop identity every render and
+ *  defeat its memo. */
+const EMPTY_PRICES: number[] = [];
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "market_cap_rank", label: "Rank" },
@@ -251,7 +256,10 @@ export const MarketTable = (): React.ReactNode => {
       <div
         ref={tableWrapRef}
         tabIndex={0}
-        role="grid"
+        // A labeled, focusable scroll region — not role="grid": the native
+        // <table> inside already exposes table semantics, and we implement
+        // row-level j/k nav, not the cell-level arrow model grid would promise.
+        role="group"
         aria-label="Top 100 coins. Press j and k to navigate rows, Enter to open, slash to filter."
         onKeyDown={handleKeyDown}
         className="hidden overflow-x-auto rounded-lg border outline-none focus-visible:ring-2 focus-visible:ring-ring md:block"
@@ -340,7 +348,7 @@ export const MarketTable = (): React.ReactNode => {
                     coin={coin}
                     currency={currency}
                     index={i}
-                    onFocus={() => setFocusedIndex(i)}
+                    onFocus={setFocusedIndex}
                   />
                 ))}
             {isEmpty ? (
@@ -447,8 +455,9 @@ const SortHeader = ({
   </TableHead>
 );
 
-/** Compact tappable row for the mobile card list. */
-const CoinCard = ({
+/** Compact tappable row for the mobile card list. Memoized: filter typing
+ *  re-runs the parent but leaves each card's props (coin, currency) unchanged. */
+const CoinCard = memo(({
   coin,
   currency,
 }: {
@@ -457,11 +466,14 @@ const CoinCard = ({
 }): React.ReactNode => (
   <li className="relative flex items-center gap-3 px-3 py-2.5">
     <WatchlistStar id={coin.id} className="relative z-10 shrink-0" />
-    {/* Overlay link makes the whole card tappable without nesting in the star button. */}
+    {/* Overlay link makes the whole card tappable without nesting in the star
+        button. The ring is inset (-offset) so keyboard focus is visible without
+        being clipped at the card edge; the label carries price + 24h move so a
+        screen reader announces the row's data, not just the coin name. */}
     <Link
       href={`/coins/${coin.id}`}
-      className="absolute inset-0"
-      aria-label={coin.name}
+      className="absolute inset-0 rounded-lg outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+      aria-label={`${coin.name}, ${formatCurrency(coin.current_price, currency)}, ${formatPercent(coin.price_change_percentage_24h_in_currency)} 24h`}
     />
     <Image
       src={coin.image}
@@ -478,7 +490,7 @@ const CoinCard = ({
       </div>
     </div>
     <Sparkline
-      prices={coin.sparkline_in_7d?.price ?? []}
+      prices={coin.sparkline_in_7d?.price ?? EMPTY_PRICES}
       width={56}
       height={28}
     />
@@ -506,9 +518,12 @@ const CoinCard = ({
       />
     </span>
   </li>
-);
+));
+CoinCard.displayName = "CoinCard";
 
-const CoinRow = ({
+/** Desktop data-table row. Memoized with a stable `onFocus` (the raw state
+ *  setter) so a filter keystroke doesn't reconcile all ~100 rows and sparklines. */
+const CoinRow = memo(({
   coin,
   currency,
   index,
@@ -517,13 +532,13 @@ const CoinRow = ({
   coin: Coin;
   currency: Currency;
   index: number;
-  onFocus: () => void;
+  onFocus: (index: number) => void;
 }): React.ReactNode => (
   <TableRow
     className="group outline-none focus:bg-muted/50"
     data-row-index={index}
     tabIndex={-1}
-    onFocus={onFocus}
+    onFocus={() => onFocus(index)}
   >
     <TableCell className="pr-0">
       <WatchlistStar id={coin.id} />
@@ -584,7 +599,7 @@ const CoinRow = ({
     </TableCell>
     <TableCell className="hidden lg:table-cell">
       <div className="flex justify-end">
-        <Sparkline prices={coin.sparkline_in_7d?.price ?? []} />
+        <Sparkline prices={coin.sparkline_in_7d?.price ?? EMPTY_PRICES} />
       </div>
     </TableCell>
     <TableCell className="pl-0 text-right">
@@ -598,4 +613,5 @@ const CoinRow = ({
       />
     </TableCell>
   </TableRow>
-);
+));
+CoinRow.displayName = "CoinRow";

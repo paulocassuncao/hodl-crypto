@@ -36,10 +36,14 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Mirrors the dark `--background` token (oklch(0.17 0.008 140)) as a literal
-  // hex — the PWA/browser chrome theme color can't read a CSS variable. Keep
-  // this in sync with `--background` (.dark) in app/globals.css if it changes.
-  themeColor: "#1a1c19",
+  // Browser/PWA chrome color, per OS scheme (the default `system` theme). Each
+  // mirrors a `--background` token as a literal hex — chrome can't read a CSS
+  // variable. Light = oklch(1 0 0); dark = oklch(0.17 0.008 140). Keep both in
+  // sync with `--background` in app/globals.css if those tokens change.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1c19" },
+  ],
 };
 
 const RootLayout = ({

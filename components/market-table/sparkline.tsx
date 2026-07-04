@@ -1,5 +1,12 @@
-/** Tiny 7-day price sparkline, colored green/red by overall trend. */
-export const Sparkline = ({
+import { memo } from "react";
+
+/**
+ * Tiny 7-day price sparkline, colored green/red by overall trend.
+ * Memoized: it renders ~100× in the market table, so re-mounting every one on an
+ * unrelated parent render (e.g. a filter keystroke) is pure waste. Props are a
+ * stable `prices` reference (the coin's own array) plus primitive dimensions.
+ */
+export const Sparkline = memo(({
   prices,
   width = 130,
   height = 40,
@@ -63,4 +70,5 @@ export const Sparkline = ({
       </svg>
     </span>
   );
-};
+});
+Sparkline.displayName = "Sparkline";
