@@ -8,5 +8,6 @@ export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/derivatives", label: "Perps" },
   { href: "/compare", label: "Compare" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/sleeve", label: "Sleeve" },
   { href: "/alerts", label: "Alerts" },
 ];
