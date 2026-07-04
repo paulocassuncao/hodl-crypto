@@ -64,46 +64,6 @@ export type SleeveEquityRow = {
   equity: number;
 };
 
-/**
- * A row of `public.sleeve_state` — per-asset paper-trading account state for
- * the trading sleeve (PK: user_id + asset).
- */
-export type SleeveStateRow = {
-  user_id: string;
-  /** "BTC" | "ETH". */
-  asset: string;
-  cash: number;
-  units: number;
-  /** Current target exposure in [0, 1]. */
-  position: number;
-  /** Open time (epoch ms) of the last processed daily bar. */
-  last_time_ms: number;
-  /** Fictitious starting capital for this asset (e.g. 500). */
-  allocation: number;
-  target_vol: number;
-};
-
-/** A row of `public.sleeve_trades` — one simulated fill. */
-export type SleeveTradeRow = {
-  id: string;
-  user_id: string;
-  asset: string;
-  time_ms: number;
-  side: "buy" | "sell";
-  price: number;
-  units: number;
-  position_after: number;
-  equity_after: number;
-};
-
-/** A row of `public.sleeve_equity` — the forward mark-to-market curve. */
-export type SleeveEquityRow = {
-  user_id: string;
-  asset: string;
-  time_ms: number;
-  equity: number;
-};
-
 /** Minimal generated-style schema for the typed Supabase client. */
 export type Database = {
   public: {
