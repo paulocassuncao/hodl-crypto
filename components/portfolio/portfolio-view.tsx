@@ -1,8 +1,16 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Download, FileDown, FileUp, Plus, Upload, Wallet } from "lucide-react";
+import {
+  Download,
+  FileDown,
+  FileUp,
+  Plus,
+  RefreshCw,
+  Upload,
+  Wallet,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { AnalyticsSection } from "@/components/portfolio/analytics-section";
@@ -36,8 +44,15 @@ const DUST = 1e-8;
 
 /** Portfolio page body: summary, analytics, positions, ledger, and actions. */
 export const PortfolioView = (): React.ReactNode => {
-  const { transactions, positions, addTransactions, exportJson, importJson } =
-    usePortfolio();
+  const {
+    transactions,
+    positions,
+    addTransactions,
+    exportJson,
+    importJson,
+    reload,
+  } = usePortfolio();
+  const [syncing, setSyncing] = useState(false);
   const open = positions.filter((p) => p.quantity > DUST);
   const { data: prices, isLoading } = usePortfolioPrices(
     open.map((p) => p.coinId),
@@ -75,6 +90,35 @@ export const PortfolioView = (): React.ReactNode => {
 
   const handleJsonExport = (): void => {
     download("hodl-portfolio.json", exportJson(), "application/json");
+  };
+
+  const handleBybitSync = async (): Promise<void> => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/portfolio/sync-bybit", { method: "POST" });
+      const body = (await res.json()) as {
+        inserted?: number;
+        skipped?: number;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(body.error ?? `Sync failed (${res.status})`);
+      await reload();
+      const inserted = body.inserted ?? 0;
+      toast.success(
+        inserted > 0
+          ? `Imported ${inserted} new buy${inserted === 1 ? "" : "s"} from Bybit.`
+          : "Already up to date — no new Bybit buys.",
+        body.skipped
+          ? { description: `${body.skipped} duplicate(s) skipped.` }
+          : undefined,
+      );
+    } catch (error) {
+      toast.error("Bybit sync failed.", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const handleJsonImport = (file: File): void => {
@@ -147,6 +191,19 @@ export const PortfolioView = (): React.ReactNode => {
               </Button>
             </>
           ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => void handleBybitSync()}
+            disabled={syncing}
+            title="Import new spot buys from Bybit (append-only)"
+          >
+            <RefreshCw className={`size-4 ${syncing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">
+              {syncing ? "Syncing…" : "Sync Bybit"}
+            </span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
