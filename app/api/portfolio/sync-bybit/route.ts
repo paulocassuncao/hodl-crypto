@@ -29,16 +29,34 @@ export const POST = async (): Promise<NextResponse> => {
     if (error) throw new Error(error.message);
     const existing = (data ?? []).map(toTransaction);
 
-    // Empty-ledger floor: the DCA program started 2026-02-02; scanning from
-    // the epoch would mean thousands of 7-day windows against Bybit.
+    // Per-user watermark: the upper bound of the last scanned Bybit range.
+    // Scanning from here (not from the ledger's latest date) decouples the
+    // window from ledger contents, so the February DCA buys — which never
+    // appear in Bybit's spot execution API and so never advance the ledger's
+    // Bybit-sourced max — stop anchoring every sync back to February, and the
+    // window can't grow unbounded. Never reads the ledger to prune it: the
+    // sync stays append-only and existing rows (Feb included) are untouched.
+    const { data: syncRow, error: syncError } = await supabase
+      .from("bybit_sync_state")
+      .select("last_synced_ms")
+      .maybeSingle();
+    if (syncError) throw new Error(syncError.message);
+
+    // First-run floor: the DCA program started 2026-02-02; scanning from the
+    // epoch would mean thousands of 7-day windows against Bybit. This full
+    // backfill runs once, after which the watermark bounds every later scan.
     const DCA_START_MS = Date.parse("2026-02-02T00:00:00Z");
-    const fills = await fetchSpotBuys({
-      // Overlap the cutoff by a minute so a fill recorded milliseconds after
-      // the last row isn't missed; planSync drops anything ≤ cutoff.
-      startTime: existing.length
-        ? Math.max(...existing.map((t) => t.date)) - 60_000
-        : DCA_START_MS,
-    });
+    // Overlap by a minute so a fill recorded milliseconds after the bound
+    // isn't missed; planSync drops ≤ cutoff and dedups the re-fetched overlap.
+    const OVERLAP_MS = 60_000;
+    const endTime = Date.now();
+    const startTime = syncRow
+      ? syncRow.last_synced_ms - OVERLAP_MS
+      : existing.length
+        ? Math.max(...existing.map((t) => t.date)) - OVERLAP_MS
+        : DCA_START_MS;
+
+    const fills = await fetchSpotBuys({ startTime, endTime });
     const candidates = fills.map(fillToTransaction);
     const plan = planSync(existing, candidates);
 
@@ -48,6 +66,14 @@ export const POST = async (): Promise<NextResponse> => {
         .insert(plan.toInsert.map((tx) => toRow(tx, user.id)));
       if (insertError) throw new Error(insertError.message);
     }
+
+    // Advance the watermark to this scan's upper bound even when nothing was
+    // inserted — that empty-result case is exactly what would otherwise keep
+    // rescanning from February on every click.
+    const { error: watermarkError } = await supabase
+      .from("bybit_sync_state")
+      .upsert({ user_id: user.id, last_synced_ms: endTime });
+    if (watermarkError) throw new Error(watermarkError.message);
 
     return {
       inserted: plan.toInsert.length,
