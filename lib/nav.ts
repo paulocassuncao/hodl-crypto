@@ -9,5 +9,6 @@ export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/compare", label: "Compare" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/sleeve", label: "Sleeve" },
+  { href: "/backtest", label: "Backtest" },
   { href: "/alerts", label: "Alerts" },
 ];
