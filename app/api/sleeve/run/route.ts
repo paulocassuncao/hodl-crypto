@@ -5,10 +5,18 @@ import { handleRoute } from "@/lib/route";
 import {
   advanceSleeve,
   initSleeveState,
+  latestClosedBarIndex,
   type SleeveState,
 } from "@/lib/sleeve";
+import {
+  computeSignalFlips,
+  signalSnapshotAt,
+} from "@/lib/strategy/attribution";
 import { createSupabaseServiceClient } from "@/lib/supabase/service";
-import type { SleeveStateRow } from "@/lib/supabase/types";
+import type {
+  SleeveSignalSnapshot,
+  SleeveStateRow,
+} from "@/lib/supabase/types";
 
 /** Sleeve assets and their Binance symbols (BTC+ETH only — see handover §2). */
 const ASSETS: Record<string, string> = { BTC: "BTCUSDT", ETH: "ETHUSDT" };
@@ -18,6 +26,14 @@ const LOOKBACK_BARS = 400;
 /** Fictitious capital per asset ($1000 total across BTC+ETH). */
 const ALLOCATION = 500;
 const TARGET_VOL = 0.6;
+/**
+ * Trailing window of decision bars scanned for signal flips on every run.
+ * Backfill and incremental detection are the same rule: the unique
+ * constraint on (user_id, asset, time_ms, strategy) makes re-upserting the
+ * window's events a no-op, and the client-side watermark (not the DB)
+ * decides what is "new", so backfilled history never notifies.
+ */
+const EVENT_LOOKBACK_BARS = 90;
 
 const toState = (row: SleeveStateRow): SleeveState => ({
   asset: row.asset,
@@ -29,7 +45,11 @@ const toState = (row: SleeveStateRow): SleeveState => ({
   targetVol: row.target_vol,
 });
 
-const toStateRow = (state: SleeveState, userId: string): SleeveStateRow => ({
+const toStateRow = (
+  state: SleeveState,
+  userId: string,
+  snapshot: SleeveSignalSnapshot | null,
+): SleeveStateRow => ({
   user_id: userId,
   asset: state.asset,
   cash: state.cash,
@@ -38,6 +58,7 @@ const toStateRow = (state: SleeveState, userId: string): SleeveStateRow => ({
   last_time_ms: state.lastTimeMs,
   allocation: state.allocation,
   target_vol: state.targetVol,
+  signal_snapshot: snapshot,
 });
 
 /**
@@ -66,13 +87,49 @@ const run = async (request: NextRequest): Promise<NextResponse> => {
     const nowMs = Date.now();
     const perAsset: Record<
       string,
-      { barsProcessed: number; trades: number; lastTimeMs: number }
+      {
+        barsProcessed: number;
+        trades: number;
+        events: number;
+        lastTimeMs: number;
+      }
     > = {};
 
     for (const [asset, symbol] of Object.entries(ASSETS)) {
       const candles = await fetchDailyKlines(symbol, {
         startTimeMs: nowMs - LOOKBACK_BARS * DAY_MS,
       });
+      const lastClosed = latestClosedBarIndex(candles, nowMs);
+      const snapshot =
+        lastClosed >= 0 ? signalSnapshotAt(candles, lastClosed) : null;
+
+      // Signal flips over the trailing window (idempotent via the unique
+      // constraint — see EVENT_LOOKBACK_BARS).
+      let events = 0;
+      if (lastClosed >= 1) {
+        const fromIdx = Math.max(0, lastClosed - EVENT_LOOKBACK_BARS);
+        const flips = computeSignalFlips(asset, candles, {
+          afterTimeMs: candles[fromIdx].timeMs,
+          upToIndex: lastClosed,
+        });
+        if (flips.length > 0) {
+          const { error } = await supabase.from("sleeve_signal_events").upsert(
+            flips.map((f) => ({
+              user_id: ownerId,
+              asset: f.asset,
+              time_ms: f.timeMs,
+              strategy: f.strategy,
+              signal_before: f.signalBefore,
+              signal_after: f.signalAfter,
+              reason: f.reason,
+              context: f.context,
+            })),
+            { onConflict: "user_id,asset,time_ms,strategy" },
+          );
+          if (error) throw new Error(error.message);
+        }
+        events = flips.length;
+      }
 
       const { data: stateRow, error: stateError } = await supabase
         .from("sleeve_state")
@@ -90,11 +147,12 @@ const run = async (request: NextRequest): Promise<NextResponse> => {
         });
         const { error } = await supabase
           .from("sleeve_state")
-          .insert(toStateRow(state, ownerId));
+          .insert(toStateRow(state, ownerId, snapshot));
         if (error) throw new Error(error.message);
         perAsset[asset] = {
           barsProcessed: 0,
           trades: 0,
+          events,
           lastTimeMs: state.lastTimeMs,
         };
         continue;
@@ -130,16 +188,20 @@ const run = async (request: NextRequest): Promise<NextResponse> => {
             })),
           );
         if (equityError) throw new Error(equityError.message);
-        const { error: updateError } = await supabase
-          .from("sleeve_state")
-          .update(toStateRow(advance.state, ownerId))
-          .eq("user_id", ownerId)
-          .eq("asset", asset);
-        if (updateError) throw new Error(updateError.message);
       }
+      // Unconditional state write: refreshes the signal snapshot and
+      // self-heals a previous run that wrote trades/equity but died before
+      // the state update. Identical values make it an idempotent no-op.
+      const { error: updateError } = await supabase
+        .from("sleeve_state")
+        .update(toStateRow(advance.state, ownerId, snapshot))
+        .eq("user_id", ownerId)
+        .eq("asset", asset);
+      if (updateError) throw new Error(updateError.message);
       perAsset[asset] = {
         barsProcessed: advance.barsProcessed,
         trades: advance.newTrades.length,
+        events,
         lastTimeMs: advance.state.lastTimeMs,
       };
     }

@@ -9,7 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, formatQuantity } from "@/lib/format";
-import type { SleeveTradeRow } from "@/lib/supabase/types";
+import { reasonForTrade } from "@/lib/sleeve-signals";
+import type {
+  SleeveSignalEventRow,
+  SleeveTradeRow,
+} from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 
 const formatDate = (ms: number): string =>
@@ -38,11 +42,18 @@ const SideBadge = ({
   </span>
 );
 
-/** Simulated fill log, newest first. All dollar figures are fictitious. */
+/**
+ * Simulated fill log, newest first. All dollar figures are fictitious. When
+ * signal events are provided, each fill carries the reason the decision bar
+ * (one day earlier) flipped — or "Vol resize / rebalance" when no signal
+ * flipped and the vol targeting merely resized the position.
+ */
 export const SleeveTradesTable = ({
   trades,
+  events,
 }: {
   trades: SleeveTradeRow[];
+  events?: SleeveSignalEventRow[];
 }): React.ReactNode => (
   <div className="rounded-xl border">
     <Table>
@@ -55,6 +66,7 @@ export const SleeveTradesTable = ({
           <TableHead className="text-right">Units</TableHead>
           <TableHead className="text-right">Exposure after</TableHead>
           <TableHead className="text-right">Equity after</TableHead>
+          <TableHead>Reason</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -78,6 +90,9 @@ export const SleeveTradesTable = ({
             </TableCell>
             <TableCell className="text-right">
               {formatCurrency(t.equity_after, "usd")}
+            </TableCell>
+            <TableCell className="max-w-72 text-xs text-muted-foreground">
+              {reasonForTrade(t, events ?? []) ?? "—"}
             </TableCell>
           </TableRow>
         ))}

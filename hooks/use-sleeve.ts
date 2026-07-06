@@ -5,6 +5,7 @@ import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type {
   SleeveEquityRow,
+  SleeveSignalEventRow,
   SleeveStateRow,
   SleeveTradeRow,
 } from "@/lib/supabase/types";
@@ -46,4 +47,27 @@ export const useSleeve = (): UseQueryResult<SleeveData> =>
       };
     },
     staleTime: 60_000,
+  });
+
+/**
+ * The signed-in user's sleeve signal-flip events, newest first. Written by
+ * the daily cron, so a 5-minute refetch is plenty; shared by the sleeve page
+ * and the app-wide signal watcher (React Query dedupes the fetch).
+ */
+export const useSleeveSignalEvents = (): UseQueryResult<
+  SleeveSignalEventRow[]
+> =>
+  useQuery({
+    queryKey: ["sleeve-signal-events"],
+    queryFn: async (): Promise<SleeveSignalEventRow[]> => {
+      const supabase = getSupabaseBrowserClient();
+      const { data, error } = await supabase
+        .from("sleeve_signal_events")
+        .select("*")
+        .order("time_ms", { ascending: false });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    staleTime: 60_000,
+    refetchInterval: 300_000,
   });
