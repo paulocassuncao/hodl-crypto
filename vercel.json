@@ -1,3 +1,4 @@
 {
+  "regions": ["arn1"],
   "crons": [{ "path": "/api/sleeve/run", "schedule": "30 0 * * *" }]
 }
