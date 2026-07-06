@@ -64,6 +64,20 @@ export type SleeveEquityRow = {
   equity: number;
 };
 
+/**
+ * A row of `public.bybit_sync_state` — the append-only Bybit sync watermark
+ * (PK: user_id). {@link last_synced_ms} is the upper bound of the last scanned
+ * Bybit range, so the next sync scans `[last_synced_ms, now)` regardless of
+ * ledger contents.
+ */
+export type BybitSyncStateRow = {
+  user_id: string;
+  /** Upper bound (epoch ms) of the last scanned Bybit range. */
+  last_synced_ms: number;
+  /** ISO 8601 timestamptz. */
+  updated_at: string;
+};
+
 /** Minimal generated-style schema for the typed Supabase client. */
 export type Database = {
   public: {
@@ -93,6 +107,12 @@ export type Database = {
         Row: SleeveEquityRow;
         Insert: SleeveEquityRow;
         Update: Partial<SleeveEquityRow>;
+        Relationships: [];
+      };
+      bybit_sync_state: {
+        Row: BybitSyncStateRow;
+        Insert: Omit<BybitSyncStateRow, "updated_at"> & { updated_at?: string };
+        Update: Partial<BybitSyncStateRow>;
         Relationships: [];
       };
     };
