@@ -98,7 +98,7 @@ export const TradingViewChartDialog = ({
             href={`https://www.tradingview.com/symbols/${symbol.replace(":", "-")}/`}
             target="_blank"
             rel="noreferrer"
-            className="underline underline-offset-2 hover:text-foreground"
+            className="focus-ring rounded-xs underline underline-offset-2 hover:text-foreground"
           >
             TradingView
           </a>

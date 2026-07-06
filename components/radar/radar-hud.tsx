@@ -8,11 +8,7 @@ import { useGlobal } from "@/hooks/use-global";
 import { useMoney } from "@/hooks/use-money";
 import { usePortfolioPrices } from "@/hooks/use-portfolio-prices";
 import { useCurrency } from "@/lib/currency";
-import {
-  formatCompact,
-  formatPercent,
-  percentColorClass,
-} from "@/lib/format";
+import { formatCompact, formatPercent, percentColorClass } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** PAX Gold tracks spot gold (1 token ≈ 1oz); our free, crypto-native proxy. */
@@ -52,11 +48,12 @@ const StatCard = ({
 
 const DominanceCard = (): React.ReactNode => {
   const { data, isLoading, isError } = useGlobal();
-  if (isError) return null;
 
   return (
     <StatCard title="BTC Dominance">
-      {isLoading || !data ? (
+      {isError ? (
+        <span className="text-sm text-muted-foreground">Unavailable</span>
+      ) : isLoading || !data ? (
         <Skeleton className="h-12 w-full" />
       ) : (
         <>
@@ -75,11 +72,12 @@ const DominanceCard = (): React.ReactNode => {
 const MarketCapCard = (): React.ReactNode => {
   const { currency } = useCurrency();
   const { data, isLoading, isError } = useGlobal();
-  if (isError) return null;
 
   return (
     <StatCard title="Total Market Cap">
-      {isLoading || !data ? (
+      {isError ? (
+        <span className="text-sm text-muted-foreground">Unavailable</span>
+      ) : isLoading || !data ? (
         <Skeleton className="h-12 w-full" />
       ) : (
         <>

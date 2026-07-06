@@ -46,6 +46,14 @@
   --gain-ink: oklch(0.46 0.15 152);
   --loss-ink: oklch(0.5 0.18 25);
   --warning: oklch(0.7 0.13 80);
+  /* Warning text sitting on a soft amber tint (bg-warning/10). Like gain/loss-ink,
+     the full-strength --warning dips below AA over the tint, so this deeper shade
+     restores ≥4.5:1 for the small text in stale/alert banners. */
+  --warning-ink: oklch(0.52 0.14 75);
+  /* "Trending / hot" flame — a categorical status hue (orange), distinct from
+     the reserved gain/loss channels and from warning. Deepened in light so the
+     icon clears the 3:1 non-text contrast floor on the near-white card. */
+  --trending: oklch(0.6 0.16 50);
   /* Watchlist "favorite" gold — a status color, not a brand channel.
      Deepened in light so the active (filled) star clears the 3:1 non-text
      contrast floor on white (WCAG 1.4.11); the unfilled→filled shape change
@@ -102,6 +110,8 @@
   --gain-ink: oklch(0.82 0.17 152);
   --loss-ink: oklch(0.72 0.19 25);
   --warning: oklch(0.8 0.13 80);
+  --warning-ink: oklch(0.82 0.14 85);
+  --trending: oklch(0.78 0.18 55);
   --star: oklch(0.84 0.16 82);
   --fg-fear: oklch(0.72 0.17 50);
   --fg-neutral: oklch(0.82 0.15 90);
@@ -141,6 +151,8 @@
   --color-gain-ink: var(--gain-ink);
   --color-loss-ink: var(--loss-ink);
   --color-warning: var(--warning);
+  --color-warning-ink: var(--warning-ink);
+  --color-trending: var(--trending);
   --color-star: var(--star);
   --color-fg-fear: var(--fg-fear);
   --color-fg-neutral: var(--fg-neutral);
@@ -171,7 +183,8 @@
    * default advance so figures stay compact in dense tables.
    */
   .tabular-nums {
-    font-family: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+    font-family:
+      var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
     letter-spacing: -0.01em;
   }
 }

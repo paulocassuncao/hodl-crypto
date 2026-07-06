@@ -13,6 +13,8 @@ colors:
   gain: "oklch(0.76 0.16 152)"
   loss: "oklch(0.66 0.21 25)"
   warning: "oklch(0.80 0.13 80)"
+  warning-ink: "oklch(0.82 0.14 85)"
+  trending: "oklch(0.78 0.18 55)"
 typography:
   display:
     fontFamily: "Geist, system-ui, sans-serif"

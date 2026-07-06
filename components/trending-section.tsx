@@ -20,7 +20,7 @@ export const TrendingSection = (): React.ReactNode => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Flame className="size-4 text-orange-500" />
+          <Flame className="size-4 text-trending" />
           Trending
         </CardTitle>
       </CardHeader>

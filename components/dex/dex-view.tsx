@@ -44,7 +44,10 @@ export const DexView = (): React.ReactNode => {
             from GeckoTerminal.
           </p>
         </div>
-        <Tabs value={mode} onValueChange={(v) => setMode(v as "trending" | "new")}>
+        <Tabs
+          value={mode}
+          onValueChange={(v) => setMode(v as "trending" | "new")}
+        >
           <TabsList>
             <TabsTrigger value="trending">Trending</TabsTrigger>
             <TabsTrigger value="new">New</TabsTrigger>
@@ -83,7 +86,9 @@ export const DexView = (): React.ReactNode => {
                   colSpan={6}
                   className="py-10 text-center text-muted-foreground"
                 >
-                  {error instanceof Error ? error.message : "Failed to load pools."}
+                  {error instanceof Error
+                    ? error.message
+                    : "Failed to load pools."}
                 </TableCell>
               </TableRow>
             ) : isLoading ? (
@@ -149,7 +154,7 @@ const PoolRow = ({
         href={`https://www.geckoterminal.com/${pool.network}/pools/${pool.address}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex text-muted-foreground hover:text-foreground"
+        className="focus-ring inline-flex rounded-md text-muted-foreground hover:text-foreground"
         aria-label={`Open ${pool.name} on GeckoTerminal`}
       >
         <ArrowUpRight className="size-4" />

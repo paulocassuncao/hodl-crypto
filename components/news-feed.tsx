@@ -47,7 +47,7 @@ export const NewsFeed = ({
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-start justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-accent"
+              className="focus-ring flex items-start justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-accent"
             >
               <span className="line-clamp-2 text-sm">{item.title}</span>
               <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
