@@ -46,7 +46,9 @@ const AssetCard = ({ state }: { state: SleeveStateRow }): React.ReactNode => {
           <span>{state.asset}</span>
           <span
             className={
-              invested ? "text-gain-ink text-sm" : "text-muted-foreground text-sm"
+              invested
+                ? "text-gain-ink text-sm"
+                : "text-muted-foreground text-sm"
             }
           >
             {exposureLabel(state.position)}
@@ -127,8 +129,8 @@ export const SleeveView = (): React.ReactNode => {
           <div>
             <p className="font-medium">Sleeve not initialized yet</p>
             <p className="text-sm text-muted-foreground">
-              The daily job will bootstrap both assets in cash on its first
-              run; positions open when the trend turns up.
+              The daily job will bootstrap both assets in cash on its first run;
+              positions open when the trend turns up.
             </p>
           </div>
         </div>
@@ -137,7 +139,7 @@ export const SleeveView = (): React.ReactNode => {
           {stale ? (
             <div
               role="status"
-              className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400"
+              className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm text-warning-ink"
             >
               <TriangleAlert className="size-4 shrink-0" aria-hidden />
               <span>

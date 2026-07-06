@@ -47,7 +47,7 @@ const TickerItem = ({
   return (
     <Link
       href={`/coins/${coin.id}`}
-      className="focus-ring inline-flex items-center gap-1.5 rounded-sm hover:text-foreground"
+      className="focus-ring -my-1 inline-flex items-center gap-1.5 rounded-sm py-1 hover:text-foreground"
     >
       <span className="font-medium">{coin.symbol.toUpperCase()}</span>
       <span className="tabular-nums text-muted-foreground">
@@ -200,10 +200,16 @@ export const TickerTape = (): React.ReactNode => {
         type="button"
         onClick={() => setUserPaused((p) => !p)}
         aria-pressed={userPaused}
-        aria-label={userPaused ? "Resume scrolling prices" : "Pause scrolling prices"}
+        aria-label={
+          userPaused ? "Resume scrolling prices" : "Pause scrolling prices"
+        }
         className="absolute inset-y-0 right-0 z-10 flex items-center bg-gradient-to-l from-background via-background to-transparent pr-3 pl-8 text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {userPaused ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
+        {userPaused ? (
+          <Play className="size-3.5" />
+        ) : (
+          <Pause className="size-3.5" />
+        )}
       </button>
     </section>
   );

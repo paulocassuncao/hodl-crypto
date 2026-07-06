@@ -51,3 +51,4 @@ next-env.d.ts
 .serena/
 .claude/settings.local.json
 .impeccable/hook.cache.json
+.impeccable/critique/

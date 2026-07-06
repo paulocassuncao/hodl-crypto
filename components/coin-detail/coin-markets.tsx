@@ -37,7 +37,7 @@ const TradeLink = ({ url }: { url: string | null }): React.ReactNode =>
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+      className="focus-ring inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
     >
       Trade
       <ExternalLink className="size-3" />
@@ -121,7 +121,9 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
               <TableHead>Pair</TableHead>
               <TableHead className="text-right">Price</TableHead>
               <TableHead className="text-right">Volume (24h)</TableHead>
-              {showTrust && <TableHead className="text-center">Trust</TableHead>}
+              {showTrust && (
+                <TableHead className="text-center">Trust</TableHead>
+              )}
               <TableHead className="text-right">Trade</TableHead>
             </TableRow>
           </TableHeader>
