@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 
 import { AlertWatcher } from "@/components/alerts/alert-watcher";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { SleeveSignalWatcher } from "@/components/sleeve/sleeve-signal-watcher";
 import { Toaster } from "@/components/ui/sonner";
 import { AlertsProvider } from "@/lib/alerts";
 import { AuthProvider } from "@/lib/auth";
@@ -39,6 +40,7 @@ export const Providers = ({ children }: { children: ReactNode }): ReactNode => {
                 <AlertsProvider>
                   {children}
                   <AlertWatcher />
+                  <SleeveSignalWatcher />
                   <ServiceWorkerRegister />
                   <Toaster richColors position="top-right" />
                 </AlertsProvider>

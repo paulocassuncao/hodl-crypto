@@ -5,11 +5,13 @@ import { useState } from "react";
 import { FlaskConical, Hourglass, TriangleAlert } from "lucide-react";
 
 import { SleeveEquityChart } from "@/components/sleeve/sleeve-equity-chart.lazy";
+import { SleeveSignalCard } from "@/components/sleeve/sleeve-signal-card";
+import { SleeveSignalFeed } from "@/components/sleeve/sleeve-signal-feed";
 import { SleeveTradesTable } from "@/components/sleeve/sleeve-trades-table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSleeve } from "@/hooks/use-sleeve";
+import { useSleeve, useSleeveSignalEvents } from "@/hooks/use-sleeve";
 import { formatCurrency, formatPercent, percentColorClass } from "@/lib/format";
 import type { SleeveStateRow } from "@/lib/supabase/types";
 
@@ -71,6 +73,7 @@ const AssetCard = ({ state }: { state: SleeveStateRow }): React.ReactNode => {
 
 export const SleeveView = (): React.ReactNode => {
   const { data, isLoading, error } = useSleeve();
+  const { data: signalEvents } = useSleeveSignalEvents();
   // Captured once on mount — staleness is judged in days, so it doesn't need
   // to tick (and Date.now() during render violates react-hooks/purity).
   const [mountedAtMs] = useState(() => Date.now());
@@ -181,6 +184,17 @@ export const SleeveView = (): React.ReactNode => {
             ))}
           </div>
 
+          <section className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Signals
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {states.map((s) => (
+                <SleeveSignalCard key={s.asset} state={s} />
+              ))}
+            </div>
+          </section>
+
           {equity.length > 0 ? (
             <section className="space-y-2">
               <h2 className="text-sm font-medium text-muted-foreground">
@@ -194,6 +208,13 @@ export const SleeveView = (): React.ReactNode => {
 
           <section className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground">
+              Signal events
+            </h2>
+            <SleeveSignalFeed events={signalEvents ?? []} />
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-sm font-medium text-muted-foreground">
               Simulated trades
             </h2>
             {trades.length === 0 ? (
@@ -201,7 +222,7 @@ export const SleeveView = (): React.ReactNode => {
                 In cash, waiting for the trend — no simulated fills yet.
               </div>
             ) : (
-              <SleeveTradesTable trades={trades} />
+              <SleeveTradesTable trades={trades} events={signalEvents ?? []} />
             )}
           </section>
         </>

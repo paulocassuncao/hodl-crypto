@@ -25,6 +25,33 @@ export type TransactionRow = {
 };
 
 /**
+ * Latest-bar indicator snapshot for one sleeve asset, stored as jsonb on
+ * `sleeve_state.signal_snapshot` (snake_case keys, matching the column
+ * convention). Numeric fields are null while the indicator is warming up.
+ */
+export type SleeveSignalSnapshot = {
+  /** Open time (epoch ms) of the decision bar the snapshot describes. */
+  time_ms: number;
+  close: number;
+  ema_fast: number | null;
+  ema_slow: number | null;
+  ema_filter: number | null;
+  /** Raw EMA-trend signal at the bar (0 or 1). */
+  ema_signal: number;
+  /** Donchian entry level: max high of the previous `entry` bars. */
+  donchian_upper: number | null;
+  /** Donchian exit level: min low of the previous `exit` bars. */
+  donchian_lower: number | null;
+  /** Raw Donchian signal at the bar (0 or 1). */
+  donchian_signal: number;
+  realized_vol: number | null;
+  /** Vol-targeting fraction min(1, targetVol / realizedVol). */
+  sizing_frac: number | null;
+  /** Blended ensemble target exposure in [0, 1]. */
+  ensemble_target: number;
+};
+
+/**
  * A row of `public.sleeve_state` — per-asset paper-trading account state for
  * the trading sleeve (PK: user_id + asset).
  */
@@ -41,6 +68,8 @@ export type SleeveStateRow = {
   /** Fictitious starting capital for this asset (e.g. 500). */
   allocation: number;
   target_vol: number;
+  /** Indicator snapshot at the latest closed bar; null before the first run. */
+  signal_snapshot: SleeveSignalSnapshot | null;
 };
 
 /** A row of `public.sleeve_trades` — one simulated fill. */
@@ -62,6 +91,30 @@ export type SleeveEquityRow = {
   asset: string;
   time_ms: number;
   equity: number;
+};
+
+/**
+ * A row of `public.sleeve_signal_events` — one sub-strategy signal flip with
+ * its attribution. `time_ms` is the DECISION bar's open time: the flip is
+ * decided at that bar's close and executes at the next bar's open, so a trade
+ * at `t` correlates with events at `t − 1 day`.
+ */
+export type SleeveSignalEventRow = {
+  id: string;
+  user_id: string;
+  asset: string;
+  time_ms: number;
+  strategy: "ema_trend" | "donchian";
+  /** Raw signal (0 or 1) at the previous decision bar. */
+  signal_before: number;
+  /** Raw signal (0 or 1) at this decision bar. */
+  signal_after: number;
+  /** Human-readable explanation, e.g. "Donchian breakout — close …". */
+  reason: string;
+  /** Indicator values at the flip bar (display-only). */
+  context: Record<string, number | null>;
+  /** ISO 8601 timestamptz. */
+  created_at: string;
 };
 
 /**
@@ -107,6 +160,15 @@ export type Database = {
         Row: SleeveEquityRow;
         Insert: SleeveEquityRow;
         Update: Partial<SleeveEquityRow>;
+        Relationships: [];
+      };
+      sleeve_signal_events: {
+        Row: SleeveSignalEventRow;
+        Insert: Omit<SleeveSignalEventRow, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<SleeveSignalEventRow>;
         Relationships: [];
       };
       bybit_sync_state: {
