@@ -99,7 +99,9 @@ export const SleeveView = (): React.ReactNode => {
   const stale = oldestLastBar !== null && isStale(oldestLastBar, mountedAtMs);
 
   return (
-    <div className="space-y-6">
+    // O ritmo vertical aqui separa seções tituladas (cada uma com seu h2:
+    // Signals, Equity curve, Signal events), não linhas de um mesmo grid de cards.
+    <div className="space-y-6">{/* design-lint-ignore grid-rhythm */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display flex items-center gap-2 text-2xl font-semibold">
