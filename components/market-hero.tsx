@@ -68,7 +68,7 @@ export const MarketHero = (): React.ReactNode => {
       <div className="flex justify-end">
         <DataFreshness updatedAt={dataUpdatedAt} isFetching={isFetching} />
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.15fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Hero panel — the market itself */}
         <div className="glass-panel relative overflow-hidden rounded-2xl p-6 sm:p-7">
           {/* Living pulse — Bitcoin's real 7-day line, drawn behind the figure. */}
@@ -123,7 +123,7 @@ export const MarketHero = (): React.ReactNode => {
         </div>
 
         {/* Secondary readings */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           {isLoading || !data ? (
             Array.from({ length: 3 }).map((_, i) => (
               <div
