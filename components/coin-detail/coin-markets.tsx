@@ -53,7 +53,7 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
 
   if (isError) {
     return (
-      <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+      <div className="rounded-lg glass-panel p-8 text-center text-muted-foreground">
         {error instanceof Error ? error.message : "Failed to load markets."}
       </div>
     );
@@ -65,7 +65,7 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
 
   if (tickers.length === 0) {
     return (
-      <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+      <div className="rounded-lg glass-panel p-8 text-center text-muted-foreground">
         No markets found for this coin.
       </div>
     );
@@ -87,7 +87,7 @@ export const CoinMarkets = ({ id }: { id: string }): React.ReactNode => {
         {tickers.map((t, i) => (
           <li
             key={`${t.exchange}-${t.base}-${t.target}-${i}`}
-            className="rounded-lg border bg-card p-3"
+            className="rounded-lg glass-panel p-3"
           >
             <div className="flex items-center gap-2">
               {showTrust ? <TrustDot score={t.trustScore} /> : null}

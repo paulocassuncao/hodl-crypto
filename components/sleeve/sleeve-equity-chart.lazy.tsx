@@ -16,7 +16,7 @@ export const SleeveEquityChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-64 w-full animate-pulse rounded-xl border bg-card" />
+      <div className="h-64 w-full animate-pulse rounded-xl glass-panel" />
     ),
   },
 );

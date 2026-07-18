@@ -55,13 +55,13 @@ export const SignalFeed = ({
 }): React.ReactNode => {
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-lg glass-panel p-6 text-sm text-muted-foreground">
         {emptyLabel}
       </div>
     );
   }
   return (
-    <div className="divide-y rounded-xl border bg-card">
+    <div className="divide-y rounded-xl glass-panel">
       {items.map((e) => (
         <div key={e.key} className="space-y-1 p-3 text-sm">
           <div className="flex flex-wrap items-center gap-2">

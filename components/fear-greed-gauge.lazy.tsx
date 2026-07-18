@@ -16,7 +16,7 @@ export const FearGreedGauge = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-full min-h-[206px] w-full animate-pulse rounded-xl border bg-card" />
+      <div className="h-full min-h-[206px] w-full animate-pulse rounded-xl glass-panel" />
     ),
   },
 );

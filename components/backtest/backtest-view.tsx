@@ -69,7 +69,7 @@ const Segmented = <T extends string>({
   <div
     role="group"
     aria-label={ariaLabel}
-    className="inline-flex rounded-lg border bg-card p-0.5"
+    className="inline-flex rounded-lg glass-panel p-0.5"
   >
     {options.map((o) => (
       <button
@@ -128,9 +128,9 @@ const MetricsGrid = ({ report }: { report: BacktestReport }): React.ReactNode =>
     },
   ];
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {cells.map((c) => (
-        <div key={c.label} className="bg-card p-3">
+        <div key={c.label} className="glass-panel rounded-lg p-3">
           <div className="text-xs text-muted-foreground">{c.label}</div>
           <div
             className={cn(
@@ -153,7 +153,7 @@ const RoundTripsTable = ({
 }): React.ReactNode => {
   if (trips.length === 0) {
     return (
-      <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-lg glass-panel p-6 text-sm text-muted-foreground">
         No closed round-trips in this window.
       </div>
     );
@@ -218,7 +218,7 @@ export const BacktestView = (): React.ReactNode => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="flex items-center gap-2 text-2xl font-semibold">
+        <h1 className="font-display flex items-center gap-2 text-2xl font-semibold">
           Backtest
           <Badge variant="outline" className="gap-1">
             <FlaskConical aria-hidden />
@@ -250,7 +250,7 @@ export const BacktestView = (): React.ReactNode => {
       </div>
 
       {error ? (
-        <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg glass-panel p-6 text-sm text-muted-foreground">
           Couldn&apos;t run the backtest: {error.message}
         </div>
       ) : isLoading || !data ? (
@@ -264,7 +264,7 @@ export const BacktestView = (): React.ReactNode => {
               Equity curve — {data.asset}, {data.bars.toLocaleString()} daily
               bars from {formatDate(data.startTimeMs)}
             </h2>
-            <div className="rounded-xl border bg-card p-4">
+            <div className="rounded-xl glass-panel p-4">
               <BacktestEquityChart equity={data.equity} />
             </div>
           </section>

@@ -209,7 +209,7 @@ const PositionCard = ({
   const { price, change24h, value, unrealized, pct, avgCost, alloc } = derived;
 
   return (
-    <li className="rounded-lg border bg-card p-3">
+    <li className="rounded-lg glass-panel p-3">
       <div className="flex items-center gap-2">
         <Link
           href={`/coins/${p.coinId}`}

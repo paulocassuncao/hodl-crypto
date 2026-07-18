@@ -251,7 +251,7 @@ export const MarketHeatmap = (): React.ReactNode => {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Market Heatmap</h1>
+          <h1 className="font-display text-2xl font-semibold">Market Heatmap</h1>
           <p className="text-sm text-muted-foreground">
             Top <span className="tabular-nums">{maxTiles}</span> by market cap ·
             tile size = market cap · color = {timeframe} change
@@ -272,7 +272,7 @@ export const MarketHeatmap = (): React.ReactNode => {
       </div>
 
       {isError ? (
-        <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+        <div className="rounded-lg glass-panel p-8 text-center text-muted-foreground">
           {error instanceof Error ? error.message : "Failed to load market data."}
         </div>
       ) : isLoading || data.length === 0 ? (

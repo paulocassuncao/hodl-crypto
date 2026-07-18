@@ -108,7 +108,7 @@ export const WhatIfDialog = ({
           </label>
 
           {result ? (
-            <dl className="space-y-1.5 rounded-lg border bg-card p-3 text-sm">
+            <dl className="space-y-1.5 rounded-lg glass-panel p-3 text-sm">
               {rows.map((r, i) => (
                 <div
                   key={r.label}

@@ -64,7 +64,7 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
       </Link>
 
       {isError ? (
-        <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+        <div className="rounded-lg glass-panel p-8 text-center text-muted-foreground">
           {error instanceof Error ? error.message : "Failed to load coin."}
         </div>
       ) : isLoading || !coin ? (
@@ -75,7 +75,7 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
             <CoinIcon src={coin.image.large} size={48} />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold">{coin.name}</h1>
+                <h1 className="font-display text-2xl font-semibold">{coin.name}</h1>
                 <span className="text-sm uppercase text-muted-foreground">
                   {coin.symbol}
                 </span>
@@ -146,7 +146,7 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
 
               {coin.description.en ? (
                 <section className="space-y-2">
-                  <h2 className="text-lg font-semibold">About {coin.name}</h2>
+                  <h2 className="font-display text-lg font-semibold">About {coin.name}</h2>
                   <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
                     {toPlainText(coin.description.en).slice(0, 600)}
                     {toPlainText(coin.description.en).length > 600 ? "…" : ""}

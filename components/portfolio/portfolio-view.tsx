@@ -137,7 +137,7 @@ export const PortfolioView = (): React.ReactNode => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Portfolio</h1>
+          <h1 className="font-display text-2xl font-semibold">Portfolio</h1>
           <p className="text-sm text-muted-foreground">
             Buy/sell ledger · average cost · values in USD · synced to your
             account
@@ -235,7 +235,7 @@ export const PortfolioView = (): React.ReactNode => {
       </div>
 
       {transactions.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border bg-card p-12 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-lg glass-panel p-12 text-center">
           <Wallet className="size-8 text-muted-foreground" />
           <div>
             <p className="font-medium">No transactions yet</p>
