@@ -21,7 +21,11 @@ export const FearGreedGauge = (): React.ReactNode => {
         {isLoading || !data || !zone ? (
           <Skeleton className="mx-auto h-[120px] w-full" />
         ) : (
-          <div className="relative">
+          <div
+            className="relative"
+            role="img"
+            aria-label={`Fear & Greed index: ${data.value} out of 100 — ${zone.label}`}
+          >
             <ResponsiveContainer width="100%" height={130}>
               <RadialBarChart
                 data={[{ value: data.value, fill: zone.colorVar }]}
