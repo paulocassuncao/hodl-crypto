@@ -143,7 +143,7 @@ const HeatCell = ({
       }}
       // Inline presentation attrs (stroke) are overridden by these CSS rules on
       // focus, raising a Signal-tinted ring over the background hairline.
-      className="cursor-pointer outline-none [&:focus-visible>rect]:stroke-primary [&:focus-visible>rect]:[stroke-width:3]"
+      className="heat-tile cursor-pointer outline-none [&:focus-visible>rect]:stroke-primary [&:focus-visible>rect]:[stroke-width:3]"
     >
       <rect
         x={x}

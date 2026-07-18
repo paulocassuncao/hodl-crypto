@@ -226,7 +226,7 @@ const RadarRow = ({
   currency: Currency;
   onOpenChart: (coin: Coin) => void;
 }): React.ReactNode => (
-  <TableRow className="group">
+  <TableRow className="market-row group">
     <TableCell className="pr-0">
       <WatchlistStar id={coin.id} />
     </TableCell>
@@ -238,13 +238,20 @@ const RadarRow = ({
         href={`/coins/${coin.id}`}
         className="flex items-center gap-2 font-medium group-hover:underline"
       >
-        <Image
-          src={coin.image}
-          alt=""
-          width={24}
-          height={24}
-          className="rounded-full"
-        />
+        <span className="relative inline-flex size-6 shrink-0">
+          <span
+            aria-hidden="true"
+            className="coin-ic-halo"
+            style={{ backgroundImage: `url(${coin.image})` }}
+          />
+          <Image
+            src={coin.image}
+            alt=""
+            width={24}
+            height={24}
+            className="relative z-10 rounded-full"
+          />
+        </span>
         <span>{coin.name}</span>
         <span className="text-xs uppercase text-muted-foreground">
           {coin.symbol}

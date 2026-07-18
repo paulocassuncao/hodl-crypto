@@ -44,7 +44,7 @@ export const CoinChart = ({ id }: { id: string }): React.ReactNode => {
     });
 
   return (
-    <div className="space-y-4 rounded-lg border bg-card p-4">
+    <div className="chart-glow glass-panel space-y-4 rounded-xl p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-muted-foreground">
           Price Chart

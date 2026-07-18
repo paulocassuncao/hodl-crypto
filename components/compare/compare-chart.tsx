@@ -59,7 +59,7 @@ export const CompareChart = ({
   );
 
   return (
-    <div className="space-y-3 rounded-lg border bg-card p-4">
+    <div className="chart-glow glass-panel space-y-3 rounded-xl p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">
           Performance (% change)
