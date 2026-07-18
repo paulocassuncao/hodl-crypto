@@ -48,7 +48,11 @@ export const SleeveEquityChart = ({
 }): React.ReactNode => {
   const data = toChartSeries(rows);
   return (
-    <div className="h-64 w-full" role="img" aria-label="Sleeve equity curve">
+    <div
+      className="chart-glow h-64 w-full"
+      role="img"
+      aria-label="Sleeve equity curve"
+    >
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -71,10 +75,12 @@ export const SleeveEquityChart = ({
             ]}
             labelFormatter={(ms) => formatDay(Number(ms))}
           />
+          {/* Combined equity is the hero series — ink, not the accent (the
+              accent is reserved for interaction, never data). */}
           <Line
             type="monotone"
             dataKey="total"
-            stroke="var(--primary)"
+            stroke="var(--foreground)"
             strokeWidth={2}
             dot={false}
             isAnimationActive={false}

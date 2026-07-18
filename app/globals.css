@@ -363,6 +363,16 @@
     transform: translate(-4vw, -5vh) scale(1.1);
   }
 }
+/*
+ * Chart glow — a soft luminous halo on the primary curve of an equity/line
+ * chart, so the data reads as lit against the void (DESIGN.md §6). Applied to a
+ * Recharts container via the `chart-glow` class; only the line stroke glows, not
+ * the axes or grid.
+ */
+.chart-glow .recharts-line-curve {
+  filter: drop-shadow(0 0 5px oklch(0.97 0.01 262 / 0.3));
+}
+
 /* Beacon — the pulsing ring on the hero's 24h move (a living heartbeat). */
 @keyframes beacon {
   0% {
