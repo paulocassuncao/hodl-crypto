@@ -81,16 +81,23 @@ const MoversCard = ({
             <Link
               key={coin.id}
               href={`/coins/${coin.id}`}
-              className="focus-ring flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent"
+              className="focus-ring group flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent"
             >
               <span className="flex items-center gap-2">
-                <Image
-                  src={coin.image}
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="rounded-full"
-                />
+                <span className="relative inline-flex size-5 shrink-0">
+                  <span
+                    aria-hidden="true"
+                    className="coin-ic-halo"
+                    style={{ backgroundImage: `url(${coin.image})` }}
+                  />
+                  <Image
+                    src={coin.image}
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="relative z-10 rounded-full"
+                  />
+                </span>
                 <span className="text-sm font-medium">{coin.symbol.toUpperCase()}</span>
               </span>
               <span className="flex items-center gap-3">
