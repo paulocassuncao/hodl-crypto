@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import Link from "next/link";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
@@ -84,20 +84,7 @@ const MoversCard = ({
               className="focus-ring group flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent"
             >
               <span className="flex items-center gap-2">
-                <span className="relative inline-flex size-5 shrink-0">
-                  <span
-                    aria-hidden="true"
-                    className="coin-ic-halo"
-                    style={{ backgroundImage: `url(${coin.image})` }}
-                  />
-                  <Image
-                    src={coin.image}
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="relative z-10 rounded-full"
-                  />
-                </span>
+                <CoinIcon src={coin.image} size={20} />
                 <span className="text-sm font-medium">{coin.symbol.toUpperCase()}</span>
               </span>
               <span className="flex items-center gap-3">

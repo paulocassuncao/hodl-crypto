@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
@@ -117,13 +117,7 @@ export const PositionsTable = ({
                   className="flex items-center gap-2 hover:underline"
                 >
                   {p.image ? (
-                    <Image
-                      src={p.image}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="rounded-full"
-                    />
+                    <CoinIcon src={p.image} size={20} />
                   ) : null}
                   <span className="font-medium">{p.name}</span>
                   <span className="text-xs uppercase text-muted-foreground">
@@ -222,13 +216,7 @@ const PositionCard = ({
           className="flex min-w-0 items-center gap-2 hover:underline"
         >
           {p.image ? (
-            <Image
-              src={p.image}
-              alt=""
-              width={24}
-              height={24}
-              className="shrink-0 rounded-full"
-            />
+            <CoinIcon src={p.image} size={24} />
           ) : null}
           <span className="truncate font-medium">{p.name}</span>
           <span className="shrink-0 text-xs uppercase text-muted-foreground">

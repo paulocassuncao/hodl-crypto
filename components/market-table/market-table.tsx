@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -475,20 +475,7 @@ const CoinCard = memo(({
       className="absolute inset-0 rounded-lg outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
       aria-label={`${coin.name}, ${formatCurrency(coin.current_price, currency)}, ${formatPercent(coin.price_change_percentage_24h_in_currency)} 24h`}
     />
-    <span className="relative inline-flex size-7 shrink-0">
-      <span
-        aria-hidden="true"
-        className="coin-ic-halo"
-        style={{ backgroundImage: `url(${coin.image})` }}
-      />
-      <Image
-        src={coin.image}
-        alt=""
-        width={28}
-        height={28}
-        className="relative z-10 rounded-full"
-      />
-    </span>
+    <CoinIcon src={coin.image} size={28} />
     <div className="min-w-0 flex-1">
       <div className="truncate font-medium">{coin.name}</div>
       <div className="text-xs uppercase text-muted-foreground">
@@ -558,20 +545,7 @@ const CoinRow = memo(({
         href={`/coins/${coin.id}`}
         className="flex items-center gap-2 font-medium group-hover:underline"
       >
-        <span className="relative inline-flex size-6 shrink-0">
-          <span
-            aria-hidden="true"
-            className="coin-ic-halo"
-            style={{ backgroundImage: `url(${coin.image})` }}
-          />
-          <Image
-            src={coin.image}
-            alt=""
-            width={24}
-            height={24}
-            className="relative z-10 rounded-full"
-          />
-        </span>
+        <CoinIcon src={coin.image} size={24} />
         <span>{coin.name}</span>
         <span className="text-xs uppercase text-muted-foreground">
           {coin.symbol}

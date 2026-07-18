@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 
 import { TransactionForm } from "@/components/portfolio/transaction-form";
@@ -85,13 +85,7 @@ export const TransactionsList = ({
           <li key={t.id} className="rounded-lg border bg-card p-3">
             <div className="flex items-center gap-2">
               {t.image ? (
-                <Image
-                  src={t.image}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="shrink-0 rounded-full"
-                />
+                <CoinIcon src={t.image} size={24} />
               ) : null}
               <span className="min-w-0 truncate font-medium">{t.name}</span>
               <span className="shrink-0 text-xs uppercase text-muted-foreground">
@@ -145,13 +139,7 @@ export const TransactionsList = ({
                 <TableCell>
                   <span className="flex items-center gap-2">
                     {t.image ? (
-                      <Image
-                        src={t.image}
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="rounded-full"
-                      />
+                      <CoinIcon src={t.image} size={20} />
                     ) : null}
                     <span className="font-medium">{t.name}</span>
                     <span className="text-xs uppercase text-muted-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Bell, Trash2 } from "lucide-react";
 
@@ -62,13 +62,7 @@ export const AlertsList = (): React.ReactNode => {
                 href={`/coins/${alert.coinId}`}
                 className="flex min-w-0 items-center gap-3"
               >
-                <Image
-                  src={alert.image}
-                  alt=""
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
+                <CoinIcon src={alert.image} size={32} />
                 <div className="min-w-0">
                   <p className="truncate font-medium">{alert.name}</p>
                   <p className="flex items-center gap-1 text-sm text-muted-foreground">
