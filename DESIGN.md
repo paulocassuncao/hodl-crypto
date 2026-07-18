@@ -1,33 +1,37 @@
 ---
 name: HODL
-description: A trading-terminal dashboard for the fastest read on the crypto top 100.
+description: A living-space crypto dashboard — the market read as an atmospheric instrument in the dark.
 colors:
-  signal: "oklch(0.84 0.19 120)"
-  signal-ink: "oklch(0.18 0.02 140)"
-  bg: "oklch(0.17 0.008 140)"
-  surface: "oklch(0.21 0.009 140)"
-  surface-high: "oklch(0.25 0.010 140)"
-  ink: "oklch(0.96 0.006 140)"
-  muted: "oklch(0.70 0.010 140)"
-  border: "oklch(0.31 0.008 140)"
-  gain: "oklch(0.76 0.16 152)"
-  loss: "oklch(0.66 0.21 25)"
-  warning: "oklch(0.80 0.13 80)"
-  warning-ink: "oklch(0.82 0.14 85)"
-  trending: "oklch(0.78 0.18 55)"
+  accent: "oklch(0.74 0.15 268)"
+  accent-ink: "oklch(0.17 0.04 268)"
+  bg: "oklch(0.15 0.022 265)"
+  surface: "oklch(0.2 0.026 264)"
+  surface-high: "oklch(0.26 0.03 264)"
+  ink: "oklch(0.97 0.01 262)"
+  muted: "oklch(0.72 0.025 262)"
+  border: "oklch(1 0 0 / 0.1)"
+  glass: "oklch(0.62 0.03 264 / 0.06)"
+  glass-high: "oklch(0.66 0.03 264 / 0.1)"
+  glass-border: "oklch(1 0 0 / 0.08)"
+  glow-accent: "oklch(0.74 0.15 268 / 0.5)"
+  gain: "oklch(0.8 0.15 158)"
+  loss: "oklch(0.7 0.17 20)"
+  warning: "oklch(0.82 0.13 82)"
+  bloom-mood-up: "oklch(0.72 0.14 165 / 0.5)"
+  bloom-mood-down: "oklch(0.7 0.16 25 / 0.5)"
 typography:
   display:
-    fontFamily: "Geist, system-ui, sans-serif"
+    fontFamily: "Bricolage Grotesque, system-ui, sans-serif"
     fontSize: "1.5rem"
-    fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "-0.01em"
+    fontWeight: 800
+    lineHeight: 1.05
+    letterSpacing: "-0.02em"
   title:
-    fontFamily: "Geist, system-ui, sans-serif"
-    fontSize: "1.125rem"
-    fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: "-0.005em"
+    fontFamily: "Bricolage Grotesque, system-ui, sans-serif"
+    fontSize: "1.0625rem"
+    fontWeight: 700
+    lineHeight: 1.25
+    letterSpacing: "-0.01em"
   body:
     fontFamily: "Geist, system-ui, sans-serif"
     fontSize: "0.875rem"
@@ -36,22 +40,22 @@ typography:
     letterSpacing: "normal"
   label:
     fontFamily: "Geist, system-ui, sans-serif"
-    fontSize: "0.75rem"
+    fontSize: "0.6875rem"
     fontWeight: 500
     lineHeight: 1.2
-    letterSpacing: "0.04em"
+    letterSpacing: "0.08em"
   numeric:
     fontFamily: "Geist Mono, ui-monospace, monospace"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: "normal"
-    fontFeature: "tnum"
+    letterSpacing: "-0.01em"
+    fontFeature: "tnum lnum"
 rounded:
-  sm: "0.375rem"
-  md: "0.5rem"
-  lg: "0.625rem"
-  xl: "0.875rem"
+  sm: "0.5rem"
+  md: "0.625rem"
+  lg: "0.75rem"
+  xl: "1rem"
   pill: "9999px"
 spacing:
   xs: "0.25rem"
@@ -61,37 +65,13 @@ spacing:
   xl: "2rem"
 components:
   button-primary:
-    backgroundColor: "{colors.signal}"
-    textColor: "{colors.signal-ink}"
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.accent-ink}"
     rounded: "{rounded.lg}"
-    height: "2rem"
-    padding: "0 0.625rem"
-  button-outline:
-    backgroundColor: "{colors.bg}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
-    height: "2rem"
-    padding: "0 0.625rem"
-  button-ghost:
-    backgroundColor: "{colors.bg}"
-    textColor: "{colors.muted}"
-    rounded: "{rounded.lg}"
-    height: "2rem"
-    padding: "0 0.625rem"
-  input:
-    backgroundColor: "{colors.bg}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
-    height: "2rem"
-    padding: "0.25rem 0.625rem"
-  badge-default:
-    backgroundColor: "{colors.signal}"
-    textColor: "{colors.signal-ink}"
-    rounded: "{rounded.pill}"
-    height: "1.25rem"
-    padding: "0.125rem 0.5rem"
+    height: "2.25rem"
+    padding: "0 0.75rem"
   card:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.glass}"
     textColor: "{colors.ink}"
     rounded: "{rounded.xl}"
     padding: "1rem"
@@ -101,128 +81,128 @@ components:
 
 ## 1. Overview
 
-**Creative North Star: "The Trading Terminal"**
+**Creative North Star: "The Living Space."**
 
-HODL is a precision instrument, not a website. The whole system is built around a single job: a trader glances at the screen and, in under a second, reads the state of the market. Everything that does not serve that read is removed. Surfaces are flat graphite glass; dividers are hairlines, not boxes; the numbers themselves — in a tabular monospace — are the brightest, most deliberate material on the screen. Color is rationed and semantic: green means up, red means down, and one acid-lime "Signal" marks the thing you can act on. Nothing decorates.
+HODL reads the market as an atmosphere you look *into*, not a table you look *at*. The
+whole system sits on a deep blue-black void with real depth: slow-drifting blooms of
+light, a canvas starfield, a vignette pulling the eye inward. Panels are glass lifted
+off that space; the numbers — the actual data — are the brightest, crispest material
+on the screen, glowing faintly against the dark. It should feel like standing at an
+observatory window onto the market at night: calm, dimensional, quietly alive.
 
-This system explicitly rejects the stock-shadcn neutral starter it grew out of — the chroma-zero gray palette that reads as "AI made that" rather than as a tool a trader trusts. It equally rejects the two reflexes a crypto dashboard falls into: the **meme-coin casino** (neon gradients, glow, FOMO energy) and the **navy-and-gold fintech** template. HODL is dark-native and composed: an after-hours trading desk, graphite and quiet, with figures ticking in cool light and a single lime readout marking the live edge.
+This system **replaces the earlier "Trading Terminal" direction** (flat graphite + acid
+lime), which read as the saturated AI-slop of every crypto dashboard. The move away from
+it is deliberate: the ambient light and depth are what make HODL not-generic, and any
+drift back toward a flat dark panel with a neon accent is a regression. It equally rejects
+the two crypto reflexes: the **meme-coin casino** (neon gradients, glow-for-hype, FOMO)
+and the **navy-and-gold fintech** template. HODL glows to convey *state*, never to excite.
 
-The interface is dense by intent. A trader wants the whole top 100, the global stats, the movers, and the mood on one calm surface — density is a feature here, clutter is the enemy. Familiarity is also a feature: this should feel instantly legible to anyone fluent in TradingView, Bloomberg, or CoinGecko, then quietly better.
-
-**Key Characteristics:**
-- Dark-native graphite surface; light theme is a clean daylight equivalent, never an afterthought.
-- Monospace tabular numerics treated as the hero material — figures align to the decimal, everywhere.
-- One rationed brand color ("Signal" lime) for interaction only; green/red reserved for market direction.
-- Flat by default: hairline rings and tonal layering convey depth, never drop shadows.
-- Sub-second glanceability is the acceptance test for every layout decision.
+**Key characteristics:**
+- Deep-void, dark-native ground with a render-isolated ambient layer (blooms + starfield); light is a luminous "daytime sky" variant, not flat white.
+- **Semantic ambient light** — the bloom's hue carries the market's mood (green-teal when up, ember when down). The background *reports*; it never decorates.
+- One rationed luminous accent — **Periwinkle** — for interaction only, never on data.
+- Green/red held in reserve for market direction: luminous, but softened, never neon.
+- Glass panels + hairline rings + soft glow for depth. No flat opaque cards, no drop-shadow-as-elevation.
+- Monospace tabular numerics glowing faintly against the void are the hero material.
 
 ## 2. Colors
 
-A composed, dark-native graphite palette carrying exactly one brand accent, with green/red held in strict reserve for market semantics. The neutrals are tinted a near-imperceptible amount toward the brand's own green hue (≈140°) so the grays read as the system's own, not as default gray.
+Dark is canonical (the hero); light values follow in `app/globals.css`. Neutrals are
+tinted toward the accent's blue hue (~264°) so the grays read as the system's own.
 
-The values below are **dark-native (canonical)**; the light theme equivalents follow each role for the daylight variant.
+### The accent
+- **Periwinkle** (`oklch(0.74 0.15 268)` dark / `oklch(0.53 0.19 268)` light): the single
+  brand color. Luminous blue-violet, deliberately *cooler and bluer* than any market color
+  so it never reads as "up" or "down." Used only on interactive/identity surfaces — the
+  brand orb, active nav, focus rings, links, primary buttons — and **never on data**. Text
+  on Periwinkle is **Accent Ink** (`oklch(0.17 0.04 268)`), a near-black, for AA contrast.
 
-### Primary
-- **Signal Lime** (`oklch(0.84 0.19 120)` dark / `oklch(0.80 0.18 120)` light): The single brand color. Acid yellow-green, pushed deliberately *yellower* than the gain-green so it never reads as "up." Used exclusively on interactive and identity surfaces — primary buttons, the active tab/selection, focus rings, links, the wordmark — and **never** on data. On Signal, text is **Signal Ink** (`oklch(0.18 0.02 140)`), a near-black, for AA contrast on the bright lime.
+### Market semantics
+- **Gain** (`oklch(0.8 0.15 158)` dark): positive movement — percentages, up-ticks, rising
+  sparklines. Luminous but not the acid neon of a casino.
+- **Loss** (`oklch(0.7 0.17 20)`): negative movement. Warm ember, not blood-red.
 
-### Secondary
-- **Gain Green** (`oklch(0.76 0.16 152)` dark / `oklch(0.5 0.14 152)` light): Positive price movement only — percentages, up-arrows, rising sparklines, heatmap tiles. Cleaner and greener than Signal Lime. The light value is deepened to a forest green so the small percentage text clears AA (≥4.5:1) on white.
-- **Loss Red** (`oklch(0.66 0.21 25)` dark / `oklch(0.56 0.20 25)` light): Negative price movement only — percentages, down-arrows, falling sparklines, heatmap tiles.
+### The void & glass
+- **Background / void** (`oklch(0.15 0.022 265)` dark / `oklch(0.972 0.012 265)` light): the
+  deep space the whole app floats in. Never pure black; a blue-black with depth.
+- **Surface / Glass** (`--glass`, `--glass-high`): panels are translucent glass over the
+  void with `backdrop-blur`, bordered by a hairline **Glass Border** (`oklch(1 0 0 / 0.08)`).
+  A solid `--card` exists as a fallback but the atmospheric default is glass.
+- **Ink** (`oklch(0.97 0.01 262)`): body text and primary numerics. **Muted**
+  (`oklch(0.72 0.025 262)`): secondary — labels, ranks, captions — holding ≥4.5:1 on the void.
 
-### Tertiary
-- **Caution Amber** (`oklch(0.80 0.13 80)` dark / `oklch(0.70 0.13 80)` light): Sparingly, for stale-data and rate-limit warnings (the CoinGecko Demo plan throttles). Not a brand color; a status color.
+### The ambient layer (`--bloom-*`, `--star-color`, `--space-*`)
+Consumed only by `components/space.tsx`. The blooms default to a calm green-teal↔violet↔blue
+spread; the **market-mood** hue (green-teal up / ember down) can be swapped in to make the
+whole space cohere with the day's direction.
 
-### Neutral
-- **Graphite BG** (`oklch(0.17 0.008 140)` dark / `oklch(1 0 0)` light): The app background. Deep cool graphite in dark; pure white in daylight.
-- **Surface** (`oklch(0.21 0.009 140)` dark / `oklch(0.985 0.003 140)` light): Cards, panels, the table container, sticky header. One step off the background.
-- **Surface High** (`oklch(0.25 0.010 140)` dark / `oklch(0.96 0.004 140)` light): Hover/selected rows, dropdowns, popovers — the next tonal layer up.
-- **Ink** (`oklch(0.96 0.006 140)` dark / `oklch(0.18 0.01 140)` light): Body text and primary numerics. Carries a trace of the brand hue.
-- **Muted** (`oklch(0.70 0.010 140)` dark / `oklch(0.50 0.015 140)` light): Secondary text — symbols, ranks, column labels, captions. Holds ≥4.5:1 on its surface; not a decorative light-gray.
-- **Border** (`oklch(0.31 0.008 140)` dark / `oklch(0.90 0.005 140)` light): Hairline dividers, table row rules, ring borders. 1px, never a heavier accent.
+### Named rules
+**The Three-Channel Rule.** Color carries exactly three meanings that never trade jobs:
+**Periwinkle = "you can act on this," Gain = "market up," Loss = "market down."** Periwinkle
+never colors a number; gain/loss never color a button or the ambient accent chrome.
 
-### Named Rules
-**The Three-Channel Rule.** Color carries exactly three meanings and they never trade jobs: **Signal Lime = "you can act on this"**, **Green = "market up"**, **Red = "market down."** Signal never colors a number; green/red never color a button. A reader must be able to learn the screen's color language in one glance and trust it everywhere.
+**The Rationed-Glow Rule.** Glow means *state* or *focus*, nothing else. The accent glow
+(brand orb, focus ring) and the market glow (a rising number, a gain sparkline) are the only
+lit things; everything else is calm. If two glows compete, one is wrong.
 
-**The Rationed Accent Rule.** Signal Lime appears on ≤10% of any screen. Its scarcity is what makes the live, actionable element findable in a dense grid of figures. If two limes compete for attention, one is wrong.
-
-**The Color-Plus-Sign Rule.** Market direction is *never* conveyed by hue alone. Every gain/loss value carries a **non-color signal** so it survives red-green color blindness and grayscale rendering. The baseline, required everywhere a percentage is rendered, is the **explicit sign** (`+2.4%` / `−1.1%`) — this is what the dense market table and stats use, where a leading arrow would only duplicate the sign and tax density. The **arrow** (▲/▼) is added in the contexts where color is the *only* other channel or where a single glance must read direction at a distance: the **heatmap tiles** (no sign shown — the arrow is the sole non-color cue) and the **ticker tape**. Arrow logic lives in one place (`percentArrow` in `lib/format.ts`); a flat 0% gets no arrow, since it has no direction.
+**The Color-Plus-Sign Rule.** Market direction is never hue-alone. Every gain/loss value
+carries an explicit sign (`+2.4%` / `−1.1%`); the ▲/▼ arrow is added where color is the only
+other channel (heatmap tiles, ticker). Survives red-green CVD and grayscale.
 
 ## 3. Typography
 
-**Display / UI Font:** Geist (with `system-ui, sans-serif`)
-**Numeric / Data Font:** Geist Mono (with `ui-monospace, monospace`)
+**Display:** Bricolage Grotesque — a grotesque with genuine character (contrast, expressive
+terminals) for headings, section titles, and the big hero numbers. **Body/UI:** Geist.
+**Numeric/data:** Geist Mono with `font-variant-numeric: tabular-nums lining-nums`.
 
-**Character:** One contemporary grotesk family does all the interface work — headings, labels, body — kept in a tight scale so nothing shouts. Its monospace sibling is promoted to a first-class role: **every figure on the screen is set in Geist Mono with tabular figures**, so prices, percentages, market caps, and ranks align to the decimal column for instant vertical scanning. The pairing is a true contrast pair (proportional grotesk + monospace), not two similar sans-serifs.
+A true contrast pairing (characterful grotesque + neutral sans + mono), never two similar
+sans. Every figure a trader compares — price, %, volume, cap, rank — is Geist Mono, tabular,
+right-aligned in tables. The hero figures (total market cap, the day's move) rise to display
+scale; the dense table stays on a fixed rem scale (≈1.2 ratio), never `clamp()`.
 
-### Hierarchy
-- **Display** (600, 1.5rem / 24px, 1.2, −0.01em): Page-level headings ("Top 100 by Market Cap"). Fixed rem, never fluid — this is product UI, not a hero.
-- **Title** (600, 1.125rem / 18px, 1.3): Section and card titles ("Trending", "Fear & Greed").
-- **Body** (400, 0.875rem / 14px, 1.5): Descriptions and prose. Cap prose at 65–75ch; tabular data may run denser.
-- **Label** (500, 0.75rem / 12px, +0.04em, uppercase): Column headers and metadata captions. The one place tracked uppercase is allowed — it earns it as a data-table convention.
-- **Numeric** (Geist Mono, 500, 0.875rem / 14px, `font-variant-numeric: tabular-nums`): All prices, percentages, volumes, caps, ranks, and chart axes.
+## 4. Elevation & depth
 
-### Named Rules
-**The Numbers-Are-Monospace Rule.** If it's a figure a trader compares — price, %, volume, cap, rank — it is Geist Mono with tabular figures, right-aligned in tables, decimal-aligned in columns. Proportional digits in a data column are a bug.
+Depth is built three ways, in order of preference: (1) the **ambient space** behind
+everything; (2) **glass** — translucent surfaces with `backdrop-blur` and a hairline glass
+ring; (3) **tonal layering** for hovered rows and popovers. Drop shadows are reserved for
+true floating overlays (dropdowns, dialogs, toasts) that float over arbitrary content —
+never to separate in-flow panels. The focus ring is a Periwinkle glow (`ring` + `--glow-accent`).
 
-**The Fixed-Scale Rule.** Type sizes are a fixed rem scale (ratio ≈1.2), never `clamp()`. A heading that shrinks inside a sidebar or card looks broken, not responsive.
-
-## 4. Elevation
-
-This system is **flat by default and does not use drop shadows**. Depth is built two ways: a **1px hairline ring** (`ring-1`, border color at ~10% ink) that draws cards, the table, and panels as crisp planes, and **tonal layering** — Background → Surface → Surface High — that lifts hovered rows, dropdowns, and popovers by stepping lightness, not by casting a shadow. The sticky header is the one permitted exception: a `backdrop-blur` over a translucent surface, used functionally to keep column context legible while scrolling, not decoratively.
-
-### Named Rules
-**The Ring-Not-Shadow Rule.** *In-flow* containers — cards, the table, panels, the stats strip — are separated by hairline rings and tonal steps, never by `box-shadow`. A drop shadow on a card here is the 2014-app tell. If a surface needs to feel lifted, raise its tone one step (Surface → Surface High); don't float it. **The one exception is true floating overlays** (dropdowns, popovers, tooltips, dialogs, toasts): because they float over arbitrary content, they pair the hairline ring with a single soft shadow for separation. Everything anchored in the page layout stays flat.
-
-**The Glow-Is-Focus Rule.** The only "shadow-like" effect permitted is the focus ring — a 3px Signal-tinted ring (`ring-3 ring-signal/50`) on keyboard focus. Glow means "focused," nothing else.
+**The Isolated-Space Rule.** The ambient layer (`<Space/>`) is fixed, `memo`-wrapped, and
+drives its own rAF loop — it must never re-render on data updates, and `backdrop-blur` on
+long live-updating lists must be applied to the container, not per-row, to stay smooth.
 
 ## 5. Components
 
-### Buttons
-- **Shape:** Gently rounded (`0.625rem` / `rounded-lg`); compact `2rem` (h-8) default height, `0 0.625rem` padding, `0.875rem` medium-weight label.
-- **Primary:** Signal Lime background, Signal Ink text. The single highest-emphasis action on a view. Hover dims to ~80% opacity; `:active` nudges down 1px (`translate-y-px`).
-- **Outline:** Background surface, 1px border, ink text. The default for toolbar actions (sort, currency). Hover fills to Surface High.
-- **Ghost:** No border, muted text; hover fills to Surface High and lifts text to ink. For low-emphasis and icon buttons.
-- **Destructive:** Tinted, not solid — Loss Red at ~10% background with Loss Red text. Never a fully saturated red fill.
-- **Focus / Hover:** 150–200ms `transition-all`; focus shows the 3px Signal ring. No choreography.
+- **Buttons:** `rounded-lg`, `2.25rem` tall. Primary = Periwinkle fill / Accent Ink text; hover brightens ~5%, active nudges down 1px. Outline/ghost use glass fills.
+- **Cards / panels:** glass (`--glass`) over the void, `rounded-xl`, hairline glass ring, `backdrop-blur`. Never a flat opaque card; never a card nested in a card.
+- **Nav:** frosted header (`bg-background/70 backdrop-blur-xl`) with a hairline bottom. Brand orb (a luminous body) + display wordmark; active route is a glass pill with an inset ring.
+- **Inputs:** glass fill, hairline ring; focus shifts the ring to Periwinkle with a soft glow. Placeholder at ≥4.5:1, never a faint gray.
+- **The market table:** the centerpiece. Crisp on a glass panel; numeric columns Geist Mono tabular right-aligned; a 7-day sparkline per row glowing by direction; rows hover to a faint accent-tinted wash with a luminous left edge. The atmosphere lives in the hero and the ground — the table itself stays scannable, glow kept subtle so it never fights the read.
 
-### Chips / Badges
-- **Style:** Pill (`rounded-pill`), `1.25rem` tall, `0.75rem` text. Default = Signal Lime fill / Signal Ink text for counts and "live" markers; outline and ghost variants for quiet metadata (categories, symbols).
-- **State:** Selected chips use Signal fill; unselected use outline. Never use green/red as a chip brand color — those are reserved for direction.
+## 6. Motion
 
-### Cards / Containers
-- **Corner Style:** `0.875rem` (`rounded-xl`).
-- **Background:** Surface, on the Graphite BG.
-- **Elevation Strategy:** Flat — `ring-1` hairline ring, no shadow (see §4).
-- **Internal Padding:** `1rem` (`--card-spacing`), `0.75rem` in compact (`size="sm"`) cards. Footers step to Surface High with a top hairline.
-- **Rule:** Cards are for genuinely grouped, self-contained widgets (Fear & Greed, Trending, Gainers/Losers) — never as a wrapper around the primary data table. Never nest a card in a card.
+Motion is part of the build, not an afterthought — but it conveys state, never decorates.
+- **Ambient:** the blooms drift slowly (26–46s); the starfield drifts upward. This is the
+  app "breathing." It pauses under `prefers-reduced-motion`, when the user sets
+  `data-motion="off"`, and while the tab is hidden.
+- **Data:** number ticks, sparkline draw-in (staggered), the hero market line drawing and its
+  head gently pulsing. ~150–250ms for interaction; ease-out (quart/quint/expo), no bounce.
+- **Reduced motion is not optional.** Every animation has a static fallback.
 
-### Inputs / Fields
-- **Style:** `2rem` tall, `rounded-lg`, 1px border, transparent background. The filter field leads with a muted search glyph.
-- **Focus:** Border shifts to Signal and a 3px `ring-signal/50` appears. No layout shift.
-- **Placeholder:** Muted, but at the same ≥4.5:1 contrast as body — never a faint gray.
-- **Error / Disabled:** `aria-invalid` borders + rings in Loss Red at low opacity; disabled drops to 50% and blocks pointer events.
+## 7. Do's and Don'ts
 
-### Navigation
-- **Style:** Sticky top bar, translucent Surface with `backdrop-blur`, hairline bottom border. Bold "HODL" wordmark, then text links in muted that lift to ink on hover; the active route reads in ink. Right cluster: command-palette search trigger, currency switcher, theme toggle. Collapses to a slide-out sheet on mobile.
+### Do
+- Set every figure in Geist Mono tabular, right-aligned in tables.
+- Reserve Periwinkle for interaction only; keep it and every glow scarce (state/focus).
+- Give gain/loss a non-color signal (sign always; arrow where color is the only other cue).
+- Build depth with the ambient space, glass, and tonal layering — in that order.
+- Keep the ambient layer render-isolated and honor `prefers-reduced-motion` + `data-motion`.
 
-### Signature Component — The Market Table
-The product's centerpiece and its strongest existing asset. A **responsive dual-mode** list: a stacked, tappable card list below `md` (no horizontal scroll on phones) and a full sortable data table at `md+`. Every numeric column is Geist Mono tabular and right-aligned; gain/loss cells pair color with sign; a 7-day **Sparkline** rides each row, its stroke colored by net direction. Column headers are uppercase Label type with a sort-state arrow (▲/▼) and a dimmed idle indicator. Rows hover to Surface High; the whole mobile card is a single tap target. Loading shows **skeleton rows**, not spinners; empty states teach ("No coins in your watchlist yet — tap ☆ to add.").
-
-## 6. Do's and Don'ts
-
-### Do:
-- **Do** set every figure (price, %, volume, market cap, rank) in **Geist Mono with `tabular-nums`**, right-aligned in tables and decimal-aligned in columns.
-- **Do** reserve color to three meanings — Signal Lime = actionable, Green = up, Red = down — and keep Signal Lime to ≤10% of any screen.
-- **Do** give every gain/loss a non-color signal: the explicit sign (`+2.4%` / `−1.1%`) everywhere as the baseline, plus the ▲/▼ arrow in sign-less or glance-first contexts (heatmap tiles, ticker) — via the shared `percentArrow` helper.
-- **Do** convey depth with hairline rings and tonal layering (Background → Surface → Surface High).
-- **Do** use skeleton loaders for data, and empty states that teach the interface.
-- **Do** keep type on a fixed rem scale (≈1.2 ratio); reserve uppercase tracked Labels for column headers only.
-
-### Don't:
-- **Don't** ship the **stock-shadcn chroma-zero neutral palette** — the un-branded gray that reads as "AI made that" is the #1 anti-reference. Tint neutrals toward the brand's own hue.
-- **Don't** drift toward the **meme-coin casino** (neon gradients, decorative glow, FOMO energy) or the **navy-and-gold fintech** template. HODL is composed graphite, not a slot machine or a bank brochure.
-- **Don't** color a number with Signal Lime or color a button with Green/Red. The three channels never trade jobs.
-- **Don't** use `box-shadow` to separate containers, or `border-left`/`border-right` >1px as a colored stripe accent. Hairline rings and tonal steps only.
-- **Don't** use `background-clip: text` gradient text, glassmorphism as decoration, or display fonts in labels/buttons/data.
-- **Don't** use `clamp()` fluid headings in the app UI, or proportional (non-tabular) digits in a data column.
-- **Don't** wrap the primary data table in a card, and never nest a card inside a card.
+### Don't
+- **Don't** regress to a flat opaque dark panel with a neon accent — that is the rejected "Trading Terminal" / AI-slop look this system exists to escape.
+- **Don't** drift toward meme-coin casino (neon gradients, hype glow) or navy-and-gold fintech.
+- **Don't** color a number with Periwinkle, or a button/chrome with gain/loss.
+- **Don't** use `background-clip:text` gradient text, `border-left/right` >1px color stripes, or drop-shadow to separate in-flow panels.
+- **Don't** put `backdrop-blur` per-row on the live table, or let `<Space/>` re-render on data.
+- **Don't** use `clamp()` fluid headings in the dense UI, or proportional digits in a data column.

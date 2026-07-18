@@ -8,67 +8,67 @@
 @custom-variant data-vertical (&[data-orientation="vertical"]);
 
 /*
- * HODL — "The Trading Terminal" palette (see DESIGN.md).
- * Brand color: Signal Lime, rationed to interaction (buttons, active states,
- * focus, wordmark) — NEVER on data. Green/red are reserved for market direction.
- * Neutrals are tinted ~0.008 chroma toward the brand hue (140°) so the grays
- * read as the system's own, not as default gray.
- * Light = pure-white daylight instrument; dark (.dark) = graphite, the hero.
+ * HODL — "Atmospheric / living space" palette (see DESIGN.md).
+ * The market as a living space: deep void grounds, glass panels, a rationed
+ * luminous periwinkle accent for INTERACTION only (never on data), and green/red
+ * held in reserve for market direction (luminous but not neon). Neutrals are
+ * tinted toward the accent's blue hue (~264°) so the grays read as the system's
+ * own. Dark (.dark) is the hero; light is a luminous "daytime sky" variant that
+ * keeps atmosphere rather than defaulting to flat white.
  */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.18 0.01 140);
-  --card: oklch(0.985 0.003 140);
-  --card-foreground: oklch(0.18 0.01 140);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.01 140);
-  /* Signal Lime — deeper in light so dark text reads on it (AA) */
-  --primary: oklch(0.62 0.15 128);
-  --primary-foreground: oklch(0.18 0.02 140);
-  --secondary: oklch(0.96 0.004 140);
-  --secondary-foreground: oklch(0.18 0.01 140);
-  --muted: oklch(0.96 0.004 140);
-  --muted-foreground: oklch(0.49 0.013 140);
-  --accent: oklch(0.96 0.004 140);
-  --accent-foreground: oklch(0.18 0.01 140);
-  --destructive: oklch(0.52 0.21 27);
-  --border: oklch(0.9 0.005 140);
-  --input: oklch(0.9 0.005 140);
-  --ring: oklch(0.62 0.15 128);
-  /* Market semantics: green for gains, red for losses (paired with sign/arrow in UI) */
-  --gain: oklch(0.5 0.14 152);
-  --loss: oklch(0.56 0.2 25);
-  /* Ink shades for gain/loss TEXT sitting on a soft same-hue tint (the buy/sell
-     pills, bg-{gain,loss}/15). The full-strength tokens above clear AA on solid
-     backgrounds but dip to ~3.9–4.3:1 over a 15% tint — too low for small text.
-     These darker (light) / brighter (dark) shades restore ≥4.9:1 on the tint. */
-  --gain-ink: oklch(0.46 0.15 152);
-  --loss-ink: oklch(0.5 0.18 25);
-  --warning: oklch(0.7 0.13 80);
-  /* Warning text sitting on a soft amber tint (bg-warning/10). Like gain/loss-ink,
-     the full-strength --warning dips below AA over the tint, so this deeper shade
-     restores ≥4.5:1 for the small text in stale/alert banners. */
-  --warning-ink: oklch(0.52 0.14 75);
-  /* "Trending / hot" flame — a categorical status hue (orange), distinct from
-     the reserved gain/loss channels and from warning. Deepened in light so the
-     icon clears the 3:1 non-text contrast floor on the near-white card. */
+  --radius: 0.75rem;
+  /* Light = luminous daytime sky (cool, tinted toward the accent, not flat white) */
+  --background: oklch(0.972 0.012 265);
+  --foreground: oklch(0.24 0.03 264);
+  --card: oklch(0.995 0.005 265);
+  --card-foreground: oklch(0.24 0.03 264);
+  --popover: oklch(0.995 0.005 265);
+  --popover-foreground: oklch(0.24 0.03 264);
+  /* Periwinkle accent — deeper in light so white text reads on it (AA) */
+  --primary: oklch(0.53 0.19 268);
+  --primary-foreground: oklch(0.99 0.01 265);
+  --secondary: oklch(0.94 0.012 265);
+  --secondary-foreground: oklch(0.24 0.03 264);
+  --muted: oklch(0.945 0.01 265);
+  --muted-foreground: oklch(0.48 0.03 264);
+  --accent: oklch(0.94 0.014 265);
+  --accent-foreground: oklch(0.24 0.03 264);
+  --destructive: oklch(0.53 0.2 22);
+  --border: oklch(0.28 0.03 264 / 0.12);
+  --input: oklch(0.28 0.03 264 / 0.14);
+  --ring: oklch(0.53 0.19 268);
+  /* Market semantics: luminous green/red (paired with sign/arrow in UI) */
+  --gain: oklch(0.5 0.14 158);
+  --loss: oklch(0.55 0.2 22);
+  /* Ink shades for gain/loss TEXT on a soft same-hue tint (buy/sell pills). */
+  --gain-ink: oklch(0.46 0.15 158);
+  --loss-ink: oklch(0.5 0.18 22);
+  --warning: oklch(0.66 0.13 78);
+  --warning-ink: oklch(0.5 0.14 74);
   --trending: oklch(0.6 0.16 50);
-  /* Watchlist "favorite" gold — a status color, not a brand channel.
-     Deepened in light so the active (filled) star clears the 3:1 non-text
-     contrast floor on white (WCAG 1.4.11); the unfilled→filled shape change
-     already carries the state without relying on color. */
   --star: oklch(0.6 0.16 78);
-  /* Fear & Greed gauge zones (fear → neutral → greed); extremes reuse loss/gain */
-  --fg-fear: oklch(0.58 0.18 45);
+  --fg-fear: oklch(0.58 0.18 30);
   --fg-neutral: oklch(0.6 0.14 85);
-  --fg-greed: oklch(0.52 0.16 145);
+  --fg-greed: oklch(0.5 0.14 158);
   /* Categorical series (multi-coin compare) — distinct from reserved green/red */
-  --chart-1: oklch(0.62 0.15 128);
-  --chart-2: oklch(0.55 0.15 240);
-  --chart-3: oklch(0.68 0.14 80);
-  --chart-4: oklch(0.55 0.2 300);
-  --chart-5: oklch(0.62 0.2 350);
+  --chart-1: oklch(0.53 0.19 268);
+  --chart-2: oklch(0.55 0.15 220);
+  --chart-3: oklch(0.6 0.16 300);
+  --chart-4: oklch(0.62 0.16 340);
+  --chart-5: oklch(0.6 0.14 190);
+  /* --- Atmospheric extras (theme-aware; consumed by the <Space/> layer and
+     glass surfaces). Light: pale luminous blooms, faint depth. --- */
+  --glass: oklch(0.55 0.03 265 / 0.05);
+  --glass-high: oklch(0.55 0.03 265 / 0.09);
+  --glass-border: oklch(0.3 0.03 264 / 0.1);
+  --glow-accent: oklch(0.53 0.19 268 / 0.35);
+  --bloom-1: oklch(0.72 0.13 200 / 0.16);
+  --bloom-2: oklch(0.66 0.16 285 / 0.16);
+  --bloom-3: oklch(0.74 0.14 165 / 0.14);
+  --star-color: oklch(0.4 0.04 265 / 0.35);
+  --space-base: oklch(0.968 0.014 265);
+  --space-deep: oklch(0.94 0.02 265);
   /*
    * Semantic z-index scale. Layers stack low→high so each role owns a tier and
    * we never reach for an arbitrary 999. A dropdown opened from the sticky
@@ -86,41 +86,53 @@
 }
 
 .dark {
-  --background: oklch(0.17 0.008 140);
-  --foreground: oklch(0.96 0.006 140);
-  --card: oklch(0.21 0.009 140);
-  --card-foreground: oklch(0.96 0.006 140);
-  --popover: oklch(0.21 0.009 140);
-  --popover-foreground: oklch(0.96 0.006 140);
-  /* Signal Lime — bright on graphite, the brand at its most alive */
-  --primary: oklch(0.84 0.19 120);
-  --primary-foreground: oklch(0.18 0.02 140);
-  --secondary: oklch(0.25 0.01 140);
-  --secondary-foreground: oklch(0.96 0.006 140);
-  --muted: oklch(0.25 0.01 140);
-  --muted-foreground: oklch(0.7 0.01 140);
-  --accent: oklch(0.25 0.01 140);
-  --accent-foreground: oklch(0.96 0.006 140);
-  --destructive: oklch(0.73 0.2 25);
-  --border: oklch(0.3 0.008 140);
-  --input: oklch(0.32 0.008 140);
-  --ring: oklch(0.84 0.19 120);
-  --gain: oklch(0.76 0.16 152);
-  --loss: oklch(0.66 0.21 25);
-  --gain-ink: oklch(0.82 0.17 152);
-  --loss-ink: oklch(0.72 0.19 25);
-  --warning: oklch(0.8 0.13 80);
-  --warning-ink: oklch(0.82 0.14 85);
-  --trending: oklch(0.78 0.18 55);
+  /* The hero. Deep blue-black void; panels are glass lifted off it. */
+  --background: oklch(0.15 0.022 265);
+  --foreground: oklch(0.97 0.01 262);
+  --card: oklch(0.2 0.026 264);
+  --card-foreground: oklch(0.97 0.01 262);
+  --popover: oklch(0.21 0.028 264);
+  --popover-foreground: oklch(0.97 0.01 262);
+  /* Periwinkle — luminous on the void, the accent at its most alive */
+  --primary: oklch(0.74 0.15 268);
+  --primary-foreground: oklch(0.17 0.04 268);
+  --secondary: oklch(0.25 0.026 264);
+  --secondary-foreground: oklch(0.97 0.01 262);
+  --muted: oklch(0.25 0.026 264);
+  --muted-foreground: oklch(0.72 0.025 262);
+  --accent: oklch(0.26 0.03 264);
+  --accent-foreground: oklch(0.97 0.01 262);
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(1 0 0 / 0.1);
+  --input: oklch(1 0 0 / 0.13);
+  --ring: oklch(0.74 0.15 268);
+  --gain: oklch(0.8 0.15 158);
+  --loss: oklch(0.7 0.17 20);
+  --gain-ink: oklch(0.84 0.16 158);
+  --loss-ink: oklch(0.76 0.17 20);
+  --warning: oklch(0.82 0.13 82);
+  --warning-ink: oklch(0.84 0.14 86);
+  --trending: oklch(0.78 0.16 45);
   --star: oklch(0.84 0.16 82);
-  --fg-fear: oklch(0.72 0.17 50);
+  --fg-fear: oklch(0.7 0.17 30);
   --fg-neutral: oklch(0.82 0.15 90);
-  --fg-greed: oklch(0.78 0.18 145);
-  --chart-1: oklch(0.84 0.19 120);
-  --chart-2: oklch(0.7 0.14 240);
-  --chart-3: oklch(0.8 0.13 80);
-  --chart-4: oklch(0.7 0.16 300);
-  --chart-5: oklch(0.75 0.18 350);
+  --fg-greed: oklch(0.8 0.15 158);
+  --chart-1: oklch(0.74 0.15 268);
+  --chart-2: oklch(0.72 0.13 210);
+  --chart-3: oklch(0.72 0.15 300);
+  --chart-4: oklch(0.74 0.16 340);
+  --chart-5: oklch(0.78 0.14 175);
+  /* --- Atmospheric extras (dark = the hero: brighter blooms, a starfield) --- */
+  --glass: oklch(0.62 0.03 264 / 0.06);
+  --glass-high: oklch(0.66 0.03 264 / 0.1);
+  --glass-border: oklch(1 0 0 / 0.08);
+  --glow-accent: oklch(0.74 0.15 268 / 0.5);
+  --bloom-1: oklch(0.72 0.14 165 / 0.5);
+  --bloom-2: oklch(0.62 0.16 285 / 0.45);
+  --bloom-3: oklch(0.66 0.14 210 / 0.4);
+  --star-color: oklch(0.85 0.06 265 / 0.85);
+  --space-base: oklch(0.15 0.022 265);
+  --space-deep: oklch(0.1 0.02 265);
 }
 
 @theme inline {
@@ -162,8 +174,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  /* Atmospheric surfaces (glass panels lifted off the living space) */
+  --color-glass: var(--glass);
+  --color-glass-high: var(--glass-high);
+  --color-glass-border: var(--glass-border);
+  --color-glow-accent: var(--glow-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
 @layer base {
@@ -237,6 +255,100 @@
 }
 
 /*
+ * The living space — a fixed, render-isolated atmospheric backdrop (see
+ * components/space.tsx and DESIGN.md). Deep void ground + slow-drifting blooms
+ * that carry the market's mood; a canvas starfield layers on top for depth.
+ * All colors come from theme tokens so the layer adapts to light/dark. Motion
+ * pauses under prefers-reduced-motion and when the user disables it
+ * (`data-motion="off"` on <html>).
+ */
+.space-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 90% at 50% -10%,
+    var(--space-deep),
+    var(--space-base) 62%
+  );
+}
+.space-bloom {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.space-bloom.b1 {
+  width: 62vw;
+  height: 62vw;
+  left: -12vw;
+  top: -22vh;
+  background: radial-gradient(circle, var(--bloom-1), transparent 68%);
+  animation: space-drift-1 30s ease-in-out infinite;
+}
+.space-bloom.b2 {
+  width: 56vw;
+  height: 56vw;
+  right: -14vw;
+  top: 6vh;
+  background: radial-gradient(circle, var(--bloom-2), transparent 68%);
+  animation: space-drift-2 38s ease-in-out infinite;
+}
+.space-bloom.b3 {
+  width: 50vw;
+  height: 50vw;
+  left: 26vw;
+  bottom: -26vh;
+  background: radial-gradient(circle, var(--bloom-3), transparent 70%);
+  animation: space-drift-3 46s ease-in-out infinite;
+}
+.space-stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.space-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 260px 60px var(--space-deep);
+}
+@keyframes space-drift-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6vw, 4vh) scale(1.12);
+  }
+}
+@keyframes space-drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate(-5vw, 6vh) scale(0.95);
+  }
+}
+@keyframes space-drift-3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-4vw, -5vh) scale(1.1);
+  }
+}
+/* User-disabled motion: freeze the blooms (canvas checks the same flag in JS). */
+:root[data-motion="off"] .space-bloom {
+  animation: none;
+}
+
+/*
  * Reduced motion is not optional. Collapse entrance/zoom/slide animations
  * (overlays, skeleton pulse, chart draws) and long transitions to near-instant
  * for users who ask for it, while leaving instant state changes intact.
@@ -249,5 +361,8 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .space-bloom {
+    animation: none !important;
   }
 }
