@@ -35,6 +35,38 @@ const CHART_COLORS = [
   "var(--chart-5)",
 ];
 
+/** A compact glass tile for a secondary portfolio figure. */
+const Tile = ({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone: number;
+}): React.ReactNode => (
+  <div className="glass-panel rounded-xl px-4 py-3">
+    <div className="text-[0.6875rem] font-medium uppercase tracking-wider text-muted-foreground">
+      {label}
+    </div>
+    <div
+      className={cn(
+        "mt-1 font-mono text-lg font-semibold tabular-nums",
+        percentColorClass(tone),
+      )}
+    >
+      {value}
+    </div>
+    {sub ? (
+      <div className={cn("font-mono text-xs tabular-nums", percentColorClass(tone))}>
+        {sub}
+      </div>
+    ) : null}
+  </div>
+);
+
 interface PortfolioSummaryProps {
   positions: Position[];
   prices: PriceMap;
@@ -42,7 +74,11 @@ interface PortfolioSummaryProps {
   symbolFor: (coinId: string) => string;
 }
 
-/** Headline totals (value, P&L, realized, 24h) plus an allocation donut. */
+/**
+ * The living hero of the Portfolio: total value at display scale with a glow,
+ * unrealized P&L with a pulsing beacon, the secondary figures as glass tiles,
+ * and the allocation donut on glass.
+ */
 export const PortfolioSummary = ({
   positions,
   prices,
@@ -58,85 +94,90 @@ export const PortfolioSummary = ({
     return `${sign}${money.format(Math.abs(value))}`;
   };
 
-  const stats: {
-    label: string;
-    value: string;
-    sub?: string;
-    tone: number;
-    muted?: boolean;
-  }[] = [
-    {
-      label: "Total Value",
-      value: money.format(totals.value),
-      tone: 0,
-      muted: true,
-    },
-    {
-      label: "Unrealized P&L",
-      value: signed(totals.pnl),
-      sub: formatPercent(totals.pnlPct),
-      tone: totals.pnl,
-    },
-    {
-      label: "Realized P&L",
-      value: signed(totals.realized),
-      sub: totals.realizedCost > 0 ? formatPercent(totals.realizedPct) : undefined,
-      tone: totals.realized,
-    },
-    {
-      label: "24h Change",
-      value: signed(totals.change24h),
-      sub: formatPercent(totals.change24hPct),
-      tone: totals.change24h,
-    },
-  ];
+  const up = totals.pnl >= 0;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border lg:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-card p-4">
-            <div className="text-xs text-muted-foreground">{s.label}</div>
-            <div
-              className={cn(
-                "mt-1 text-2xl font-semibold tabular-nums",
-                s.muted ? "text-foreground" : percentColorClass(s.tone),
-              )}
-            >
-              {s.value}
-            </div>
-            {s.sub ? (
-              <div
-                className={cn("text-sm tabular-nums", percentColorClass(s.tone))}
-              >
-                {s.sub}
-              </div>
-            ) : null}
-          </div>
-        ))}
+    <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
+      {/* Hero — total value + unrealized P&L */}
+      <div className="glass-panel relative overflow-hidden rounded-2xl p-6 sm:p-7">
+        <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Total Value
+        </div>
+        <div
+          className="mt-2 font-display text-5xl font-extrabold leading-none tracking-tight tabular-nums sm:text-6xl"
+          style={{ textShadow: "0 0 44px var(--glow-accent)" }}
+        >
+          {money.format(totals.value)}
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className={cn(
+              "size-2 rounded-full bg-current",
+              up ? "text-gain" : "text-loss",
+            )}
+            style={{ animation: "beacon 2.6s ease-out infinite" }}
+          />
+          <span
+            className={cn(
+              "font-mono text-base font-semibold tabular-nums",
+              percentColorClass(totals.pnl),
+            )}
+          >
+            {signed(totals.pnl)}
+          </span>
+          <span
+            className={cn(
+              "font-mono text-sm tabular-nums",
+              percentColorClass(totals.pnl),
+            )}
+          >
+            {formatPercent(totals.pnlPct)}
+          </span>
+          <span className="text-sm text-muted-foreground">unrealized P&amp;L</span>
+        </div>
       </div>
 
-      {alloc.length > 0 ? (
-        <div className="flex items-center gap-4 rounded-lg border bg-card p-4">
-          <PortfolioAllocationDonut data={alloc} colors={CHART_COLORS} />
-          <ul className="space-y-1 text-sm">
-            {alloc.slice(0, 5).map((a, i) => (
-              <li key={a.coinId} className="flex items-center gap-2">
-                <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
-                />
-                <span className="uppercase text-muted-foreground">
-                  {symbolFor(a.coinId)}
-                </span>
-                <span className="ml-auto tabular-nums">
-                  {a.pct.toFixed(1)}%
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      {/* Secondary figures + allocation */}
+      <div className="grid grid-cols-2 gap-3">
+        <Tile
+          label="Realized P&L"
+          value={signed(totals.realized)}
+          sub={
+            totals.realizedCost > 0
+              ? formatPercent(totals.realizedPct)
+              : undefined
+          }
+          tone={totals.realized}
+        />
+        <Tile
+          label="24h Change"
+          value={signed(totals.change24h)}
+          sub={formatPercent(totals.change24hPct)}
+          tone={totals.change24h}
+        />
+        {alloc.length > 0 ? (
+          <div className="glass-panel col-span-2 flex items-center gap-4 rounded-xl p-4">
+            <PortfolioAllocationDonut data={alloc} colors={CHART_COLORS} />
+            <ul className="space-y-1 text-sm">
+              {alloc.slice(0, 5).map((a, i) => (
+                <li key={a.coinId} className="flex items-center gap-2">
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
+                  />
+                  <span className="uppercase text-muted-foreground">
+                    {symbolFor(a.coinId)}
+                  </span>
+                  <span className="ml-auto font-mono tabular-nums">
+                    {a.pct.toFixed(1)}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 };

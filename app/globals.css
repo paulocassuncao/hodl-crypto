@@ -363,6 +363,97 @@
     transform: translate(-4vw, -5vh) scale(1.1);
   }
 }
+/*
+ * Chart glow — a soft luminous halo on the primary curve of an equity/line
+ * chart, so the data reads as lit against the void (DESIGN.md §6). Applied to a
+ * Recharts container via the `chart-glow` class; only the line stroke glows, not
+ * the axes or grid.
+ */
+.chart-glow .recharts-line-curve {
+  filter: drop-shadow(0 0 5px oklch(0.97 0.01 262 / 0.3));
+}
+
+/*
+ * Sparkline draw-in — the line traces itself on mount and the area fades up
+ * under it, so the market list "wakes up" rather than snapping in. `pathLength=1`
+ * normalizes the dash to the line's own length regardless of data.
+ */
+@keyframes spark-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes spark-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.spark-line {
+  stroke-dasharray: 1;
+  animation: spark-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.spark-area {
+  animation: spark-fade 0.9s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .spark-line {
+    stroke-dasharray: none;
+    animation: none;
+  }
+  .spark-area {
+    animation: none;
+  }
+}
+
+/*
+ * Market row — a luminous hover for the dense list: a faint accent wash sweeping
+ * in from the left plus a lit left edge, so the row you're on glows against the
+ * void without a heavy fill. The blur stays on the row, not per-cell.
+ */
+.market-row {
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.market-row:hover {
+  background: linear-gradient(
+    90deg,
+    oklch(0.74 0.15 268 / 0.08),
+    transparent 42%
+  );
+  box-shadow: inset 2px 0 0 0 var(--primary);
+}
+
+/*
+ * Coin icon halo — a soft colored glow behind each logo, drawn from the logo's
+ * own colors (a blurred, scaled copy of the same cached image), lifting on hover.
+ * Cheap: a background-image div, not a second <img>.
+ */
+.coin-ic-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(7px);
+  opacity: 0.5;
+  transform: scale(1.12);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+  pointer-events: none;
+}
+.group:hover .coin-ic-halo {
+  opacity: 0.85;
+  transform: scale(1.3);
+}
+
 /* Beacon — the pulsing ring on the hero's 24h move (a living heartbeat). */
 @keyframes beacon {
   0% {

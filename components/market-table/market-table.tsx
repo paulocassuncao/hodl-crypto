@@ -535,7 +535,7 @@ const CoinRow = memo(({
   onFocus: (index: number) => void;
 }): React.ReactNode => (
   <TableRow
-    className="group outline-none focus:bg-muted/50"
+    className="market-row group outline-none focus:bg-muted/50"
     data-row-index={index}
     tabIndex={-1}
     onFocus={() => onFocus(index)}
@@ -551,13 +551,20 @@ const CoinRow = memo(({
         href={`/coins/${coin.id}`}
         className="flex items-center gap-2 font-medium group-hover:underline"
       >
-        <Image
-          src={coin.image}
-          alt=""
-          width={24}
-          height={24}
-          className="rounded-full"
-        />
+        <span className="relative inline-flex size-6 shrink-0">
+          <span
+            aria-hidden="true"
+            className="coin-ic-halo"
+            style={{ backgroundImage: `url(${coin.image})` }}
+          />
+          <Image
+            src={coin.image}
+            alt=""
+            width={24}
+            height={24}
+            className="relative z-10 rounded-full"
+          />
+        </span>
         <span>{coin.name}</span>
         <span className="text-xs uppercase text-muted-foreground">
           {coin.symbol}

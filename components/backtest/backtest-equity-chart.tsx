@@ -37,8 +37,10 @@ const formatDay = (ms: number): string =>
     year: "2-digit",
   });
 
+// Strategy is the hero series — ink, not the accent (the accent is reserved for
+// interaction, never data). Benchmarks read in categorical chart hues.
 const SERIES: { key: keyof BacktestEquityPoint; label: string; color: string; width: number }[] = [
-  { key: "strategy", label: "Strategy", color: "var(--primary)", width: 2 },
+  { key: "strategy", label: "Strategy", color: "var(--foreground)", width: 2 },
   { key: "buyHold", label: "Buy & hold", color: "var(--chart-1)", width: 1 },
   { key: "dca", label: "DCA", color: "var(--chart-2)", width: 1 },
 ];
@@ -56,7 +58,7 @@ export const BacktestEquityChart = ({
   const data = downsample(equity);
   return (
     <div
-      className="h-72 w-full"
+      className="chart-glow h-72 w-full"
       role="img"
       aria-label="Backtest equity curve: strategy vs buy-and-hold vs DCA"
     >
