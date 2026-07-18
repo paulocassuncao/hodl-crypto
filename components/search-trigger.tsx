@@ -56,7 +56,7 @@ export const SearchTrigger = (): React.ReactNode => {
       >
         <Search className="size-4" />
         <span className="hidden sm:inline">Search…</span>
-        <kbd className="hidden rounded border bg-muted px-1.5 font-mono text-[10px] sm:inline">
+        <kbd className="hidden rounded border bg-muted px-1.5 font-mono text-xs sm:inline">
           ⌘K
         </kbd>
       </Button>
