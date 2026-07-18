@@ -168,46 +168,6 @@ export interface Position {
   realizedCost: number;
 }
 
-/** A normalized on-chain liquidity pool from GeckoTerminal. */
-export interface Pool {
-  id: string;
-  /** Display name, e.g. "WETH / USDC 0.05%". */
-  name: string;
-  /** Network id, e.g. "eth". */
-  network: string;
-  /** Pool contract address. */
-  address: string;
-  baseSymbol: string;
-  quoteSymbol: string;
-  /** DEX name, e.g. "Uniswap V3". */
-  dex: string;
-  /** Base token price in USD. */
-  priceUsd: number;
-  /** 24h price change percentage, or null if unavailable. */
-  priceChange24h: number | null;
-  /** 24h volume in USD. */
-  volume24h: number;
-  /** Total liquidity (reserve) in USD. */
-  liquidityUsd: number;
-}
-
-/** A normalized derivatives (perpetual/futures) ticker from CoinGecko. */
-export interface Derivative {
-  /** Exchange / market name, e.g. "Binance (Futures)". */
-  market: string;
-  /** Contract symbol, e.g. "BTCUSDT". */
-  symbol: string;
-  price: number;
-  /** Funding rate as a percentage. */
-  fundingRatePct: number | null;
-  /** Open interest in USD. */
-  openInterestUsd: number;
-  /** 24h volume in USD. */
-  volume24hUsd: number;
-  /** "perpetual" | "futures". */
-  contractType: string;
-}
-
 export type AlertDirection = "above" | "below";
 
 /** A user-defined browser price alert, persisted in localStorage. */

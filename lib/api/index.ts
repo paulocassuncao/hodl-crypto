@@ -5,12 +5,10 @@ import type {
   Coin,
   CoinDetail,
   Currency,
-  Derivative,
   FearGreed,
   GlobalData,
   NewsItem,
   OHLCPoint,
-  Pool,
   SearchCoin,
   Ticker,
   TrendingCoin,
@@ -72,17 +70,6 @@ export const fetchNews = async (filter?: {
 
 export const fetchCoinTickers = async (id: string): Promise<Ticker[]> =>
   toJson(await fetch(`/api/coins/${id}/tickers`));
-
-export const fetchDexPools = async (
-  network: string,
-  mode: "trending" | "new",
-): Promise<Pool[]> =>
-  toJson(
-    await fetch(`/api/dex?network=${encodeURIComponent(network)}&mode=${mode}`),
-  );
-
-export const fetchDerivatives = async (): Promise<Derivative[]> =>
-  toJson(await fetch("/api/derivatives"));
 
 /** USD→currency conversion multipliers for the active display currency. */
 export const fetchFxRates = async (): Promise<Record<Currency, number>> =>

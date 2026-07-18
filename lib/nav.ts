@@ -2,10 +2,9 @@
  * Primary navigation, shared by the desktop nav and the mobile menu.
  *
  * Slimmed to the redesigned information architecture (see the redesign plan):
- * Explore (Market, Compare) and Operate (Portfolio, Strategy, Alerts). Routes
- * being folded away — /radar, /categories, /heatmap — or cut — /dex,
- * /derivatives — are intentionally off the nav; they still resolve by URL until
- * their migration/removal phase lands.
+ * Explore (Market, Compare) and Operate (Portfolio, Strategy, Alerts). The
+ * former Coins / Radar / Heatmap / Categories screens are folded into Market as
+ * lenses (see components/market/market-lens.tsx); /dex and /derivatives were cut.
  */
 export type NavLink = { href: string; label: string; group: "explore" | "operate" };
 
