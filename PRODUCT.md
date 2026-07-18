@@ -16,13 +16,13 @@ Success looks like: a trader opens HODL, and within a second knows the market's 
 
 ## Brand Personality
 
-Sharp and technical. Instrument-grade, not hype-driven. Three words: **precise, fast, composed**. The interface should feel like a professional trading instrument — confident with numbers, dense without clutter, calm under volatile data. Voice is terse and factual: it reports the market, it doesn't sell it. Dark-native energy; monospace/tabular numerics treated as a first-class material.
+Atmospheric and composed — an instrument you look *into*, not a dashboard you look *at*. Three words: **luminous, calm, alive**. The interface is a deep-void observatory window onto the market at night: dimensional, quietly breathing, with the numbers as the brightest material glowing against the dark. Confident with data, calm under volatility. Voice is terse and factual: it reports the market, it doesn't sell it. Dark-native (a luminous daytime-sky variant for light); the ambient light itself carries the market's mood. See [DESIGN.md](DESIGN.md) — "The Living Space."
 
 ## Anti-references
 
-- **The generic SaaS-cream / stock-shadcn-starter look.** This is the current state of the app (default neutral tokens, no brand color) and the single most important thing to move away from. It reads as "AI made that," not as a trading instrument.
-- **Hype-y, meme-coin casino aesthetics** — neon gradients, confetti, FOMO framing, "to the moon" energy. HODL is composed, not a slot machine.
-- **Cluttered, ad-heavy market data sites** — interstitials, dense ad rails, popups, anything that buries the data.
+- **The flat dark dashboard with a neon accent** — the "Trading Terminal" direction this redesign replaced (graphite + acid lime). It reads as the saturated AI-slop of every crypto tool. A flat opaque card with a bright accent is the regression to guard against; depth and semantic ambient light are what make HODL not-generic.
+- **Meme-coin casino aesthetics** — neon gradients, confetti, FOMO, "to the moon." HODL glows to convey state, never to excite. Not a slot machine.
+- **Navy-and-gold fintech** and **cluttered ad-heavy data sites** — the corporate-bank template, and interstitials/ad rails/popups that bury the data.
 
 ## Design Principles
 

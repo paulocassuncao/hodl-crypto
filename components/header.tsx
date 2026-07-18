@@ -2,34 +2,37 @@ import Link from "next/link";
 
 import { CurrencySwitcher } from "@/components/currency-switcher";
 import { MobileNav } from "@/components/mobile-nav";
+import { NavLinks } from "@/components/nav-links";
 import { SearchTrigger } from "@/components/search-trigger";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
-import { NAV_LINKS } from "@/lib/nav";
 
-/** Top navigation bar: brand, section links, search, currency, and theme. */
+/**
+ * Top navigation bar: a frosted-glass panel over the living space. Brand orb +
+ * display wordmark, slim section nav, then search, currency, and theme.
+ */
 export const Header = (): React.ReactNode => (
-  <header className="sticky top-0 z-(--z-sticky) border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header className="sticky top-0 z-(--z-sticky) border-b border-glass-border bg-background/70 backdrop-blur-xl">
     <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4">
-      <div className="flex items-center gap-2 md:gap-6">
+      <div className="flex items-center gap-2 md:gap-5">
         <MobileNav />
-        <Link href="/" className="flex items-baseline gap-2">
-          {/* Signal Lime on white clears the 3:1 large-text bar only because the
-              wordmark is 20px bold — never reuse `text-primary` for body-size
-              text in light mode (it falls below 4.5:1). */}
-          <span className="text-xl font-bold tracking-tight text-primary">HODL</span>
+        <Link href="/" className="focus-ring flex items-center gap-2.5 rounded-lg">
+          {/* Brand orb — a small luminous body, the app's presence in the space. */}
+          <span
+            aria-hidden="true"
+            className="size-6 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle at 34% 30%, oklch(0.92 0.09 270), var(--primary) 58%, oklch(0.4 0.14 275))",
+              boxShadow:
+                "0 0 18px -2px var(--glow-accent), inset 0 0 7px oklch(1 0 0 / 0.35)",
+            }}
+          />
+          <span className="font-display text-xl font-extrabold tracking-tight text-foreground">
+            HODL
+          </span>
         </Link>
-        <nav className="hidden items-center gap-4 text-sm font-medium md:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="focus-ring rounded-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <NavLinks />
       </div>
       <div className="flex items-center gap-1 sm:gap-2">
         <SearchTrigger />
