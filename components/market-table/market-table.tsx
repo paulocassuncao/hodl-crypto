@@ -464,7 +464,7 @@ const CoinCard = memo(({
   coin: Coin;
   currency: Currency;
 }): React.ReactNode => (
-  <li className="relative flex items-center gap-3 px-3 py-2.5">
+  <li className="market-row group relative flex items-center gap-3 rounded-lg px-3 py-2.5">
     <WatchlistStar id={coin.id} className="relative z-10 shrink-0" />
     {/* Overlay link makes the whole card tappable without nesting in the star
         button. The ring is inset (-offset) so keyboard focus is visible without
@@ -475,13 +475,20 @@ const CoinCard = memo(({
       className="absolute inset-0 rounded-lg outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
       aria-label={`${coin.name}, ${formatCurrency(coin.current_price, currency)}, ${formatPercent(coin.price_change_percentage_24h_in_currency)} 24h`}
     />
-    <Image
-      src={coin.image}
-      alt=""
-      width={28}
-      height={28}
-      className="shrink-0 rounded-full"
-    />
+    <span className="relative inline-flex size-7 shrink-0">
+      <span
+        aria-hidden="true"
+        className="coin-ic-halo"
+        style={{ backgroundImage: `url(${coin.image})` }}
+      />
+      <Image
+        src={coin.image}
+        alt=""
+        width={28}
+        height={28}
+        className="relative z-10 rounded-full"
+      />
+    </span>
     <div className="min-w-0 flex-1">
       <div className="truncate font-medium">{coin.name}</div>
       <div className="text-xs uppercase text-muted-foreground">

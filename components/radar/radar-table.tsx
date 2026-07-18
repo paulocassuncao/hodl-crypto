@@ -294,20 +294,27 @@ const RadarCard = ({
   currency: Currency;
   onOpenChart: (coin: Coin) => void;
 }): React.ReactNode => (
-  <li className="space-y-2 px-3 py-2.5">
+  <li className="market-row group space-y-2 rounded-lg px-3 py-2.5">
     <div className="flex items-center gap-3">
       <WatchlistStar id={coin.id} className="shrink-0" />
       <Link
         href={`/coins/${coin.id}`}
         className="flex min-w-0 flex-1 items-center gap-2"
       >
-        <Image
-          src={coin.image}
-          alt=""
-          width={28}
-          height={28}
-          className="shrink-0 rounded-full"
-        />
+        <span className="relative inline-flex size-7 shrink-0">
+          <span
+            aria-hidden="true"
+            className="coin-ic-halo"
+            style={{ backgroundImage: `url(${coin.image})` }}
+          />
+          <Image
+            src={coin.image}
+            alt=""
+            width={28}
+            height={28}
+            className="relative z-10 rounded-full"
+          />
+        </span>
         <span className="min-w-0">
           <span className="block truncate font-medium">{coin.name}</span>
           <span className="text-xs uppercase text-muted-foreground">
@@ -335,7 +342,7 @@ const RadarCard = ({
         const value = metricValue(coin, m, btc);
         return (
           <div key={m} className="rounded-md bg-muted/40 py-1">
-            <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+            <div className="text-[0.6875rem] uppercase tracking-wide text-muted-foreground">
               {METRIC_LABEL[m]}
             </div>
             <div

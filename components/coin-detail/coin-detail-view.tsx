@@ -72,13 +72,20 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
       ) : (
         <>
           <header className="flex flex-wrap items-center gap-4">
-            <Image
-              src={coin.image.large}
-              alt=""
-              width={48}
-              height={48}
-              className="rounded-full"
-            />
+            <span className="relative inline-flex size-12 shrink-0">
+              <span
+                aria-hidden="true"
+                className="coin-ic-halo"
+                style={{ backgroundImage: `url(${coin.image.large})` }}
+              />
+              <Image
+                src={coin.image.large}
+                alt=""
+                width={48}
+                height={48}
+                className="relative z-10 rounded-full"
+              />
+            </span>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-semibold">{coin.name}</h1>
