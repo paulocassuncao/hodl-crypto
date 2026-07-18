@@ -11,6 +11,7 @@
  *   title-font     — h1/h2 page/section titles must use `font-display`
  *   accent-on-data — `--primary` (the interaction accent) never colors data marks
  *   coin-logo      — asset logos go through <CoinIcon> (single source of the halo)
+ *   grid-rhythm    — a vertical card stack must not be looser than the card gutter
  *
  * To intentionally allow a line, append `// design-lint-ignore <rule>` to it.
  */
@@ -78,6 +79,44 @@ const checkTitles = (file, src) => {
   }
 };
 
+/**
+ * grid-rhythm — cards laid out in a multi-column grid establish the horizontal
+ * card gutter (e.g. `gap-4` = 16px). When the same file stacks content with a
+ * `space-y-*` LOOSER than that gutter, stacked card rows end up farther apart
+ * than side-by-side cards: the grid reads as uneven ("amateur"). The vertical
+ * rhythm should match the card gutter (or the rows be grouped in a tighter
+ * stack). Only multi-column grids with a real card gutter (`gap-3`+) count, so
+ * chip/inline grids (`gap-1`/`gap-2`) don't trigger it; `space-y` values at or
+ * below the gutter are fine (tight sub-groups inside a card).
+ */
+const checkGridRhythm = (file, src) => {
+  const cardGaps = [];
+  // Any double-quoted class string with a responsive multi-column grid.
+  for (const m of src.matchAll(/"([^"]*\bgrid\b[^"]*)"/g)) {
+    const cls = m[1];
+    if (!/(?:sm:|md:|lg:|xl:)?grid-cols-[2-9]/.test(cls)) continue;
+    const gm = cls.match(/\bgap-(\d+(?:\.\d+)?)\b/);
+    if (!gm) continue;
+    const g = parseFloat(gm[1]);
+    // gap-4 (16px) is the canonical card gutter; gap-1..3 are chip/form/inline
+    // grids, not card rows, so they don't establish a rhythm baseline.
+    if (g >= 4) cardGaps.push(g);
+  }
+  if (cardGaps.length === 0) return;
+  const gutter = Math.max(...cardGaps);
+  for (const m of src.matchAll(/\bspace-y-(\d+(?:\.\d+)?)\b/g)) {
+    if (parseFloat(m[1]) > gutter) {
+      add(
+        file,
+        src,
+        m.index,
+        "grid-rhythm",
+        `space-y-${m[1]} é mais folgado que o gutter dos cards (gap-${gutter}) — iguale o ritmo vertical ao horizontal`,
+      );
+    }
+  }
+};
+
 const checkFile = (file) => {
   const rel = relative(ROOT, file);
   if (SKIP.test(rel)) return;
@@ -87,6 +126,7 @@ const checkFile = (file) => {
     for (const m of src.matchAll(re)) add(file, src, m.index, rule, message);
   }
   checkTitles(file, src);
+  checkGridRhythm(file, src);
 };
 
 const walk = (dir) => {
