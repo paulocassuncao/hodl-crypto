@@ -225,6 +225,26 @@
 }
 
 /*
+ * Glass panel — the atmospheric surface (DESIGN.md §4/§5). A translucent fill
+ * over the living space with a backdrop blur and a hairline ring, so panels
+ * read as lifted glass rather than flat opaque cards. `-hi` is the next tonal
+ * step for hovered/active surfaces. Keep `backdrop-blur` on the container, never
+ * per-row on the live table (the Isolated-Space performance rule).
+ */
+@utility glass-panel {
+  background-color: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+@utility glass-panel-hi {
+  background-color: var(--glass-high);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/*
  * Discrete scrollbars for capped, in-page scroll areas (e.g. the expandable
  * transactions ledger). A thin rail with a transparent track and a faint thumb
  * that only gains contrast on hover — so a scrolling panel reads as content,
@@ -343,9 +363,28 @@
     transform: translate(-4vw, -5vh) scale(1.1);
   }
 }
+/* Beacon — the pulsing ring on the hero's 24h move (a living heartbeat). */
+@keyframes beacon {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  70% {
+    box-shadow: 0 0 0 9px transparent;
+    opacity: 0.9;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+  }
+}
+
 /* User-disabled motion: freeze the blooms (canvas checks the same flag in JS). */
 :root[data-motion="off"] .space-bloom {
   animation: none;
+}
+:root[data-motion="off"] [style*="beacon"] {
+  animation: none !important;
 }
 
 /*
