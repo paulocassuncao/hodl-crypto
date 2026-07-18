@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import dynamic from "next/dynamic";
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -72,20 +72,7 @@ export const CoinDetailView = ({ id }: { id: string }): React.ReactNode => {
       ) : (
         <>
           <header className="flex flex-wrap items-center gap-4">
-            <span className="relative inline-flex size-12 shrink-0">
-              <span
-                aria-hidden="true"
-                className="coin-ic-halo"
-                style={{ backgroundImage: `url(${coin.image.large})` }}
-              />
-              <Image
-                src={coin.image.large}
-                alt=""
-                width={48}
-                height={48}
-                className="relative z-10 rounded-full"
-              />
-            </span>
+            <CoinIcon src={coin.image.large} size={48} />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-semibold">{coin.name}</h1>

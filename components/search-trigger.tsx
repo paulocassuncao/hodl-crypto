@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
@@ -85,13 +85,7 @@ export const SearchTrigger = (): React.ReactNode => {
                     onSelect={() => goTo(coin.id)}
                     className="gap-2"
                   >
-                    <Image
-                      src={coin.thumb}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="rounded-full"
-                    />
+                    <CoinIcon src={coin.thumb} size={20} />
                     <span className="font-medium">{coin.name}</span>
                     <span className="text-xs uppercase text-muted-foreground">
                       {coin.symbol}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import { Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -117,13 +117,7 @@ export const CoinPicker = ({
                     }
                     className="gap-2"
                   >
-                    <Image
-                      src={coin.thumb}
-                      alt=""
-                      width={20}
-                      height={20}
-                      className="rounded-full"
-                    />
+                    <CoinIcon src={coin.thumb} size={20} />
                     <span className="font-medium">{coin.name}</span>
                     <span className="text-xs uppercase text-muted-foreground">
                       {coin.symbol}

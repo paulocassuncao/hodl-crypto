@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import { ArrowDown, ArrowDownUp, ArrowUp, ChevronsUpDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -217,13 +217,11 @@ const SortHeader = ({
 const CoinIcons = ({ srcs }: { srcs: string[] }): React.ReactNode => (
   <div className="flex shrink-0 -space-x-1.5">
     {srcs.slice(0, 3).map((src, i) => (
-      <Image
+      <CoinIcon
         key={i}
         src={src}
-        alt=""
-        width={20}
-        height={20}
-        className="rounded-full ring-2 ring-card"
+        size={20}
+        imageClassName="ring-2 ring-card"
       />
     ))}
   </div>

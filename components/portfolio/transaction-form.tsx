@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -179,13 +179,7 @@ export const TransactionForm = ({
                       }
                       className="gap-2"
                     >
-                      <Image
-                        src={coin.thumb}
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="rounded-full"
-                      />
+                      <CoinIcon src={coin.thumb} size={20} />
                       <span className="font-medium">{coin.name}</span>
                       <span className="text-xs uppercase text-muted-foreground">
                         {coin.symbol}
@@ -200,13 +194,7 @@ export const TransactionForm = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               {picked.image ? (
-                <Image
-                  src={picked.image}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                />
+                <CoinIcon src={picked.image} size={24} />
               ) : null}
               <span className="font-medium">{picked.name}</span>
               <span className="text-xs uppercase text-muted-foreground">

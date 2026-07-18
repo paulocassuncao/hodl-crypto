@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
 import { useMoney } from "@/hooks/use-money";
@@ -36,13 +36,7 @@ const PerformerCard = ({
     </div>
     <div className="mt-2 flex items-center gap-2">
       {stat.image ? (
-        <Image
-          src={stat.image}
-          alt=""
-          width={24}
-          height={24}
-          className="rounded-full"
-        />
+        <CoinIcon src={stat.image} size={24} />
       ) : null}
       <span className="font-medium">{stat.name}</span>
       <span className="text-xs uppercase text-muted-foreground">

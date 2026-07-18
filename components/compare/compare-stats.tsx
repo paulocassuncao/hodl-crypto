@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CoinIcon } from "@/components/coin-icon";
 import Link from "next/link";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,13 +87,7 @@ export const CompareStats = ({ ids }: { ids: string[] }): React.ReactNode => {
                   href={`/coins/${coin.id}`}
                   className="inline-flex items-center gap-2 hover:underline"
                 >
-                  <Image
-                    src={coin.image.large}
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="rounded-full"
-                  />
+                  <CoinIcon src={coin.image.large} size={20} />
                   <span className="font-semibold">{coin.symbol.toUpperCase()}</span>
                 </Link>
               </th>
