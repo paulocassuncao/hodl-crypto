@@ -102,7 +102,7 @@ export const SleeveView = (): React.ReactNode => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold">
+          <h1 className="font-display flex items-center gap-2 text-2xl font-semibold">
             Trading Sleeve
             <Badge variant="outline" className="gap-1">
               <FlaskConical aria-hidden />
@@ -118,13 +118,13 @@ export const SleeveView = (): React.ReactNode => {
       </div>
 
       {error ? (
-        <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg glass-panel p-6 text-sm text-muted-foreground">
           Couldn&apos;t load the sleeve: {error.message}
         </div>
       ) : isLoading ? (
         <Skeleton className="h-64 w-full" />
       ) : states.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border bg-card p-12 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-lg glass-panel p-12 text-center">
           <Hourglass className="size-8 text-muted-foreground" />
           <div>
             <p className="font-medium">Sleeve not initialized yet</p>
@@ -202,7 +202,7 @@ export const SleeveView = (): React.ReactNode => {
               <h2 className="text-sm font-medium text-muted-foreground">
                 Equity curve (paper)
               </h2>
-              <div className="rounded-xl border bg-card p-4">
+              <div className="rounded-xl glass-panel p-4">
                 <SleeveEquityChart rows={equity} />
               </div>
             </section>
@@ -220,7 +220,7 @@ export const SleeveView = (): React.ReactNode => {
               Simulated trades
             </h2>
             {trades.length === 0 ? (
-              <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+              <div className="rounded-lg glass-panel p-6 text-sm text-muted-foreground">
                 In cash, waiting for the trend — no simulated fills yet.
               </div>
             ) : (

@@ -82,7 +82,7 @@ export const TransactionsList = ({
         )}
       >
         {visible.map((t) => (
-          <li key={t.id} className="rounded-lg border bg-card p-3">
+          <li key={t.id} className="rounded-lg glass-panel p-3">
             <div className="flex items-center gap-2">
               {t.image ? (
                 <CoinIcon src={t.image} size={24} />

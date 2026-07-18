@@ -53,7 +53,7 @@ export const CoinPicker = ({
       {selected.map((coin) => (
         <span
           key={coin.id}
-          className="inline-flex items-center gap-1.5 rounded-full border bg-card py-1 pl-3 pr-1.5 text-sm"
+          className="inline-flex items-center gap-1.5 rounded-full glass-panel py-1 pl-3 pr-1.5 text-sm"
         >
           <span className="font-medium">{coin.name}</span>
           <span className="text-xs uppercase text-muted-foreground">

@@ -186,7 +186,7 @@ export const MarketTable = (): React.ReactNode => {
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold">
+          <h2 className="font-display text-lg font-semibold">
             {filter === "watchlist" ? "Your Watchlist" : "Top 100 by Market Cap"}
           </h2>
           <Tabs

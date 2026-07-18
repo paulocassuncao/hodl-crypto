@@ -208,7 +208,7 @@ export const DcaDialog = ({ positions }: DcaDialogProps): React.ReactNode => {
                 </AreaChart>
               </ResponsiveContainer>
 
-              <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border text-sm">
+              <dl className="grid grid-cols-2 gap-2 text-sm">
                 {[
                   { label: "Invested", value: money.format(result.invested) },
                   { label: "Buys", value: String(result.buys) },
@@ -218,12 +218,12 @@ export const DcaDialog = ({ positions }: DcaDialogProps): React.ReactNode => {
                   },
                   { label: "Avg cost", value: money.format(result.avgCost) },
                 ].map((s) => (
-                  <div key={s.label} className="bg-card p-2.5">
+                  <div key={s.label} className="glass-panel rounded-lg p-2.5">
                     <dt className="text-xs text-muted-foreground">{s.label}</dt>
                     <dd className="tabular-nums">{s.value}</dd>
                   </div>
                 ))}
-                <div className="bg-card p-2.5">
+                <div className="glass-panel rounded-lg p-2.5">
                   <dt className="text-xs text-muted-foreground">DCA return</dt>
                   <dd
                     className={cn(
@@ -234,7 +234,7 @@ export const DcaDialog = ({ positions }: DcaDialogProps): React.ReactNode => {
                     {formatPercent(result.roiPct)}
                   </dd>
                 </div>
-                <div className="bg-card p-2.5">
+                <div className="glass-panel rounded-lg p-2.5">
                   <dt className="text-xs text-muted-foreground">
                     Lump sum return
                   </dt>

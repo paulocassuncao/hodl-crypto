@@ -29,7 +29,7 @@ const PerformerCard = ({
 }): React.ReactNode => {
   const money = useMoney();
   return (
-  <div className="rounded-lg border bg-card p-4">
+  <div className="rounded-lg glass-panel p-4">
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {icon}
       {label}

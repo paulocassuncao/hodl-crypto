@@ -17,7 +17,7 @@ export const AlertsList = (): React.ReactNode => {
 
   if (alerts.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border bg-card p-12 text-center">
+      <div className="flex flex-col items-center gap-3 rounded-lg glass-panel p-12 text-center">
         <Bell className="size-8 text-muted-foreground" />
         <div>
           <p className="font-medium">No price alerts yet</p>
@@ -54,7 +54,7 @@ export const AlertsList = (): React.ReactNode => {
             <li
               key={alert.id}
               className={cn(
-                "flex items-center gap-3 rounded-lg border bg-card p-3",
+                "flex items-center gap-3 rounded-lg glass-panel p-3",
                 triggered && "opacity-70",
               )}
             >

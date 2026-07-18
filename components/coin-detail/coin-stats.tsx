@@ -25,9 +25,9 @@ export const CoinStats = ({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {stats.map((s) => (
-        <div key={s.label} className="bg-card p-3">
+        <div key={s.label} className="glass-panel rounded-lg p-3">
           <div className="text-xs text-muted-foreground">{s.label}</div>
           <div className="mt-1 text-sm font-semibold tabular-nums">
             {s.value}
