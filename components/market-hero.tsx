@@ -2,8 +2,10 @@
 
 import { DataFreshness } from "@/components/data-freshness";
 import { FearGreedGauge } from "@/components/fear-greed-gauge.lazy";
+import { Sparkline } from "@/components/market-table/sparkline";
 import { Button } from "@/components/ui/button";
 import { useGlobal } from "@/hooks/use-global";
+import { useMarkets } from "@/hooks/use-markets";
 import { useCurrency } from "@/lib/currency";
 import {
   formatCompact,
@@ -41,6 +43,9 @@ export const MarketHero = (): React.ReactNode => {
   const { currency } = useCurrency();
   const { data, isLoading, isError, isFetching, dataUpdatedAt, refetch } =
     useGlobal();
+  const { data: markets } = useMarkets();
+  const btcSpark =
+    markets?.find((c) => c.id === "bitcoin")?.sparkline_in_7d?.price ?? [];
 
   if (isError) {
     return (
@@ -66,42 +71,55 @@ export const MarketHero = (): React.ReactNode => {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.15fr_1fr]">
         {/* Hero panel — the market itself */}
         <div className="glass-panel relative overflow-hidden rounded-2xl p-6 sm:p-7">
-          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Total market cap
-          </div>
-          {isLoading || !data ? (
-            <div className="mt-3 h-12 w-64 max-w-full animate-pulse rounded-lg bg-muted" />
-          ) : (
-            <>
-              <div
-                className="mt-2 font-display text-5xl font-extrabold leading-none tracking-tight tabular-nums sm:text-6xl"
-                style={{ textShadow: "0 0 44px var(--glow-accent)" }}
-              >
-                {formatCompact(data.total_market_cap[currency], currency)}
-              </div>
-              <div className="mt-3 flex items-center gap-2.5">
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "size-2 rounded-full bg-current",
-                    up ? "text-gain" : "text-loss",
-                  )}
-                  style={{ animation: "beacon 2.6s ease-out infinite" }}
-                />
-                <span
-                  className={cn(
-                    "font-mono text-base font-semibold tabular-nums",
-                    percentColorClass(change),
-                  )}
+          {/* Living pulse — Bitcoin's real 7-day line, drawn behind the figure. */}
+          {btcSpark.length > 1 ? (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-0 opacity-80 [mask-image:linear-gradient(90deg,transparent,#000_18%)]"
+            >
+              <Sparkline prices={btcSpark} width={720} height={96} />
+              <span className="absolute bottom-2 right-3 font-mono text-[0.6875rem] uppercase tracking-wider text-muted-foreground">
+                BTC · 7d
+              </span>
+            </div>
+          ) : null}
+
+          <div className="relative z-10">
+            <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Total market cap
+            </div>
+            {isLoading || !data ? (
+              <div className="mt-3 h-12 w-64 max-w-full animate-pulse rounded-lg bg-muted" />
+            ) : (
+              <>
+                <div
+                  className="mt-2 font-display text-5xl font-extrabold leading-none tracking-tight tabular-nums sm:text-6xl"
+                  style={{ textShadow: "0 0 44px var(--glow-accent)" }}
                 >
-                  {up ? "▲" : "▼"} {formatPercent(change)}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  past 24h
-                </span>
-              </div>
-            </>
-          )}
+                  {formatCompact(data.total_market_cap[currency], currency)}
+                </div>
+                <div className="mt-3 flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "size-2 rounded-full bg-current",
+                      up ? "text-gain" : "text-loss",
+                    )}
+                    style={{ animation: "beacon 2.6s ease-out infinite" }}
+                  />
+                  <span
+                    className={cn(
+                      "font-mono text-base font-semibold tabular-nums",
+                      percentColorClass(change),
+                    )}
+                  >
+                    {up ? "▲" : "▼"} {formatPercent(change)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">past 24h</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Secondary readings */}
