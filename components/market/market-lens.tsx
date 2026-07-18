@@ -2,27 +2,31 @@
 
 import { useState } from "react";
 
-import { Grid3x3, Table2, TrendingUp } from "lucide-react";
+import { Grid3x3, Layers, Table2, TrendingUp } from "lucide-react";
 
+import { CategoriesTable } from "@/components/categories-table";
 import { MarketHeatmap } from "@/components/heatmap/market-heatmap";
 import { MarketTable } from "@/components/market-table/market-table";
 import { RadarView } from "@/components/radar/radar-view";
 import { cn } from "@/lib/utils";
 
-type Lens = "table" | "relative" | "heatmap";
+type Lens = "table" | "relative" | "heatmap" | "sectors";
 
 const LENSES: { id: Lens; label: string; icon: typeof Table2 }[] = [
   { id: "table", label: "Table", icon: Table2 },
   { id: "relative", label: "Relative to BTC", icon: TrendingUp },
   { id: "heatmap", label: "Heatmap", icon: Grid3x3 },
+  { id: "sectors", label: "Sectors", icon: Layers },
 ];
 
 /**
- * The Market list, one dataset seen three ways. A single lens switch folds the
- * former Coins / Radar / Heatmap screens together: the sortable table, the
- * BTC-relative screener, and the treemap all read the same top-100 `useMarkets`
- * data. Lens choice is local (resets on reload); the relative lens keeps its own
- * URL state for sharable screens.
+ * The Market list, one place, several ways. A single lens switch folds the
+ * former Coins / Radar / Heatmap / Categories screens together: the sortable
+ * table, the BTC-relative screener, and the treemap all read the same top-100
+ * `useMarkets` data; Sectors is the market by category. Lens choice is local
+ * (resets on reload); the relative lens keeps its own URL state for sharable
+ * screens. The content sits in a min-height frame so switching lenses never
+ * collapses the page height and yanks the scroll to the top.
  */
 export const MarketLens = (): React.ReactNode => {
   const [lens, setLens] = useState<Lens>("table");
@@ -60,9 +64,12 @@ export const MarketLens = (): React.ReactNode => {
         </div>
       </div>
 
-      {lens === "table" && <MarketTable />}
-      {lens === "relative" && <RadarView embedded />}
-      {lens === "heatmap" && <MarketHeatmap />}
+      <div className="min-h-[70vh]">
+        {lens === "table" && <MarketTable />}
+        {lens === "relative" && <RadarView embedded />}
+        {lens === "heatmap" && <MarketHeatmap />}
+        {lens === "sectors" && <CategoriesTable />}
+      </div>
     </section>
   );
 };
