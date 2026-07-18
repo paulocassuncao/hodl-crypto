@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { RadarFilterDialog } from "@/components/radar/radar-filter-dialog";
@@ -30,8 +30,19 @@ import type { Coin } from "@/lib/types";
  * view). Filtering is consolidated behind one toolbar + modal, and the whole
  * state lives in the URL so any view is shareable.
  */
-export const RadarView = (): React.ReactNode => {
+/**
+ * The relative-strength screener. Standalone at /radar (with its own title +
+ * HUD); when `embedded` (as the "Relative to BTC" lens inside the Market
+ * screen) the header and HUD are suppressed, since the Market hero already
+ * carries the global readings.
+ */
+export const RadarView = ({
+  embedded = false,
+}: {
+  embedded?: boolean;
+} = {}): React.ReactNode => {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { currency } = useCurrency();
   const { data, isLoading, isError, error } = useMarkets();
@@ -49,12 +60,14 @@ export const RadarView = (): React.ReactNode => {
     }
   }, [isError, error]);
 
+  // Write state to whatever path this view lives on — /radar standalone, or the
+  // Market screen ("/") when embedded — so the relative lens never navigates away.
   const commit = useCallback(
     (next: RadarState): void => {
       const qs = encodeRadarState(next);
-      router.replace(`/radar${qs ? `?${qs}` : ""}`, { scroll: false });
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
     },
-    [router],
+    [router, pathname],
   );
 
   const btc = useMemo(() => data?.find((c) => c.id === "bitcoin"), [data]);
@@ -107,18 +120,20 @@ export const RadarView = (): React.ReactNode => {
 
   return (
     <section className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Radar</h1>
-          <p className="text-sm text-muted-foreground">
-            Relative strength across the top 100 — every move measured against
-            Bitcoin. Screen by momentum and open any chart.
-          </p>
+      {!embedded && (
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold">Radar</h1>
+            <p className="text-sm text-muted-foreground">
+              Relative strength across the top 100 — every move measured against
+              Bitcoin. Screen by momentum and open any chart.
+            </p>
+          </div>
+          <ShareButton title="Radar · HODL" />
         </div>
-        <ShareButton title="Radar · HODL" />
-      </div>
+      )}
 
-      <RadarHud />
+      {!embedded && <RadarHud />}
 
       <RadarToolbar
         q={state.q}
