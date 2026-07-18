@@ -23,7 +23,7 @@ export const Header = (): React.ReactNode => (
             className="size-6 rounded-full"
             style={{
               background:
-                "radial-gradient(circle at 34% 30%, oklch(0.92 0.09 270), var(--primary) 58%, oklch(0.4 0.14 275))",
+                "radial-gradient(circle at 34% 30%, var(--orb-highlight), var(--primary) 58%, var(--orb-edge))",
               boxShadow:
                 "0 0 18px -2px var(--glow-accent), inset 0 0 7px oklch(1 0 0 / 0.35)",
             }}

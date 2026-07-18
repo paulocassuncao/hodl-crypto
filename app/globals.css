@@ -51,8 +51,10 @@
   --fg-fear: oklch(0.58 0.18 30);
   --fg-neutral: oklch(0.6 0.14 85);
   --fg-greed: oklch(0.5 0.14 158);
-  /* Categorical series (multi-coin compare) — distinct from reserved green/red */
-  --chart-1: oklch(0.53 0.19 268);
+  /* Categorical series (multi-coin compare) — distinct from reserved green/red
+     AND from the interaction accent: chart-1 is a data-blue shifted off the
+     Periwinkle hue so a data mark never reads as "you can act on this". */
+  --chart-1: oklch(0.5 0.16 250);
   --chart-2: oklch(0.55 0.15 220);
   --chart-3: oklch(0.6 0.16 300);
   --chart-4: oklch(0.62 0.16 340);
@@ -63,6 +65,12 @@
   --glass-high: oklch(0.55 0.03 265 / 0.09);
   --glass-border: oklch(0.3 0.03 264 / 0.1);
   --glow-accent: oklch(0.53 0.19 268 / 0.35);
+  /* Brand orb — the app's luminous "body" in the space (header wordmark). Its
+     specular highlight and deep edge are theme-independent, so they live only
+     here and dark inherits them. Tokens, not inline literals, so the orb is a
+     documented design-system element rather than color drift. */
+  --orb-highlight: oklch(0.92 0.09 270);
+  --orb-edge: oklch(0.4 0.14 275);
   --bloom-1: oklch(0.72 0.13 200 / 0.16);
   --bloom-2: oklch(0.66 0.16 285 / 0.16);
   --bloom-3: oklch(0.74 0.14 165 / 0.14);
@@ -117,7 +125,8 @@
   --fg-fear: oklch(0.7 0.17 30);
   --fg-neutral: oklch(0.82 0.15 90);
   --fg-greed: oklch(0.8 0.15 158);
-  --chart-1: oklch(0.74 0.15 268);
+  /* Data-blue shifted off the Periwinkle accent hue (see :root note). */
+  --chart-1: oklch(0.7 0.14 250);
   --chart-2: oklch(0.72 0.13 210);
   --chart-3: oklch(0.72 0.15 300);
   --chart-4: oklch(0.74 0.16 340);

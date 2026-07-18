@@ -47,6 +47,7 @@ const TickerItem = ({
   return (
     <Link
       href={`/coins/${coin.id}`}
+      aria-label={`${coin.name}: ${formatCurrency(coin.current_price, currency)}, ${formatPercent(change)} 24h`}
       className="focus-ring -my-1 inline-flex items-center gap-1.5 rounded-sm py-1 hover:text-foreground"
     >
       <span className="font-medium">{coin.symbol.toUpperCase()}</span>
