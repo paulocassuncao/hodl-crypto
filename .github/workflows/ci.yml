@@ -26,6 +26,9 @@ jobs:
       - name: Lint
         run: bun run lint
 
+      - name: Design consistency
+        run: bun run check:design
+
       - name: Test
         run: bun run test
 

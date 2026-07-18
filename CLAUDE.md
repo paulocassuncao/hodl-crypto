@@ -8,6 +8,17 @@
 - Style components with Tailwind utility classes
 - Co-locate CSS modules or component-specific styling in the same directory
 
+## 🎨 Design System — "The Living Space" (see [DESIGN.md](DESIGN.md))
+
+Atmospheric, dark-native. Route through the shared primitives so consistency is by construction:
+
+- **Panels** use `glass-panel` (or the `<Card>` component) — never raw `bg-card`.
+- **Asset logos** go through `<CoinIcon>` — it owns the colored halo (never inline it).
+- **Titles** (h1/h2) use `font-display` (Bricolage Grotesque).
+- **Charts:** primary/hero data lines use `--foreground` + `.chart-glow`; the accent `--primary` is for interaction only, **never** on data marks (gain/loss/`--chart-*` carry data).
+
+`bun run check:design` enforces these classes in CI (the required `verify` job). Intentional exceptions: append `// design-lint-ignore <rule>` to the line.
+
 ## ⚛️ React Query Patterns
 
 - Set up `QueryClient` in `app/layout.tsx`
