@@ -13,10 +13,10 @@ const MarketPage = (): React.ReactNode => (
   <div className="space-y-8">
     <h1 className="sr-only">Crypto Market</h1>
     <MarketHero />
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <TrendingSection />
       <GainersLosers />
-      <NewsFeed className="lg:col-span-2" />
+      <NewsFeed className="lg:col-span-3" />
     </div>
     <MarketLens />
   </div>

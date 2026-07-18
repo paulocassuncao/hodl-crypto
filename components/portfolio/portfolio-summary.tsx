@@ -97,7 +97,7 @@ export const PortfolioSummary = ({
   const up = totals.pnl >= 0;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
+    <div className="grid gap-4 lg:grid-cols-2">
       {/* Hero — total value + unrealized P&L */}
       <div className="glass-panel relative overflow-hidden rounded-2xl p-6 sm:p-7">
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -139,7 +139,7 @@ export const PortfolioSummary = ({
       </div>
 
       {/* Secondary figures + allocation */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <Tile
           label="Realized P&L"
           value={signed(totals.realized)}
