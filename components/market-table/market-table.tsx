@@ -348,6 +348,7 @@ export const MarketTable = (): React.ReactNode => {
                     coin={coin}
                     currency={currency}
                     index={i}
+                    sortKey={sortKey}
                     onFocus={setFocusedIndex}
                   />
                 ))}
@@ -428,7 +429,10 @@ const SortHeader = ({
   align?: "left" | "right";
   className?: string;
 }): React.ReactNode => (
-  <TableHead className={className}>
+  // The active/sorted column carries a faint neutral wash (header + cells) so the
+  // eye anchors on the timeframe in focus without muting the others' gain/loss
+  // color — every % column keeps its market-direction signal.
+  <TableHead className={cn(className, active && "bg-foreground/[0.04]")}>
     <button
       type="button"
       onClick={onClick}
@@ -521,85 +525,111 @@ const CoinRow = memo(({
   coin,
   currency,
   index,
+  sortKey,
   onFocus,
 }: {
   coin: Coin;
   currency: Currency;
   index: number;
+  sortKey: SortKey;
   onFocus: (index: number) => void;
-}): React.ReactNode => (
-  <TableRow
-    className="market-row group outline-none focus:bg-muted/50"
-    data-row-index={index}
-    tabIndex={-1}
-    onFocus={() => onFocus(index)}
-  >
-    <TableCell className="pr-0">
-      <WatchlistStar id={coin.id} />
-    </TableCell>
-    <TableCell className="text-muted-foreground tabular-nums">
-      {coin.market_cap_rank}
-    </TableCell>
-    <TableCell>
-      <Link
-        href={`/coins/${coin.id}`}
-        className="flex items-center gap-2 font-medium group-hover:underline"
+}): React.ReactNode => {
+  // Faint neutral wash on the active/sorted column's cells (matches the sorted
+  // header), so the timeframe in focus reads as a column without stripping the
+  // gain/loss color from the others.
+  const activeCol = (key: SortKey): string | false =>
+    key === sortKey && "bg-foreground/[0.04]";
+  return (
+    <TableRow
+      className="market-row group outline-none focus:bg-muted/50"
+      data-row-index={index}
+      tabIndex={-1}
+      onFocus={() => onFocus(index)}
+    >
+      <TableCell className="pr-0">
+        <WatchlistStar id={coin.id} />
+      </TableCell>
+      <TableCell
+        className={cn(
+          "text-muted-foreground tabular-nums",
+          activeCol("market_cap_rank"),
+        )}
       >
-        <CoinIcon src={coin.image} size={24} />
-        <span>{coin.name}</span>
-        <span className="text-xs uppercase text-muted-foreground">
-          {coin.symbol}
-        </span>
-      </Link>
-    </TableCell>
-    <TableCell className="text-right tabular-nums">
-      {formatCurrency(coin.current_price, currency)}
-    </TableCell>
-    <TableCell
-      className={cn(
-        "hidden text-right tabular-nums lg:table-cell",
-        percentColorClass(coin.price_change_percentage_1h_in_currency),
-      )}
-    >
-      {formatPercent(coin.price_change_percentage_1h_in_currency)}
-    </TableCell>
-    <TableCell
-      className={cn(
-        "text-right tabular-nums",
-        percentColorClass(coin.price_change_percentage_24h_in_currency),
-      )}
-    >
-      {formatPercent(coin.price_change_percentage_24h_in_currency)}
-    </TableCell>
-    <TableCell
-      className={cn(
-        "hidden text-right tabular-nums lg:table-cell",
-        percentColorClass(coin.price_change_percentage_7d_in_currency),
-      )}
-    >
-      {formatPercent(coin.price_change_percentage_7d_in_currency)}
-    </TableCell>
-    <TableCell className="hidden text-right tabular-nums lg:table-cell">
-      {formatCompact(coin.total_volume, currency)}
-    </TableCell>
-    <TableCell className="text-right tabular-nums">
-      {formatCompact(coin.market_cap, currency)}
-    </TableCell>
-    <TableCell className="hidden lg:table-cell">
-      <div className="flex justify-end">
-        <Sparkline prices={coin.sparkline_in_7d?.price ?? EMPTY_PRICES} />
-      </div>
-    </TableCell>
-    <TableCell className="pl-0 text-right">
-      <AlertButton
-        compact
-        coinId={coin.id}
-        symbol={coin.symbol}
-        name={coin.name}
-        image={coin.image}
-        currentPrice={coin.current_price}
-      />
-    </TableCell>
-  </TableRow>
-));
+        {coin.market_cap_rank}
+      </TableCell>
+      <TableCell>
+        <Link
+          href={`/coins/${coin.id}`}
+          className="flex items-center gap-2 font-medium group-hover:underline"
+        >
+          <CoinIcon src={coin.image} size={24} />
+          <span>{coin.name}</span>
+          <span className="text-xs uppercase text-muted-foreground">
+            {coin.symbol}
+          </span>
+        </Link>
+      </TableCell>
+      <TableCell
+        className={cn("text-right tabular-nums", activeCol("current_price"))}
+      >
+        {formatCurrency(coin.current_price, currency)}
+      </TableCell>
+      <TableCell
+        className={cn(
+          "hidden text-right tabular-nums lg:table-cell",
+          percentColorClass(coin.price_change_percentage_1h_in_currency),
+          activeCol("price_change_percentage_1h_in_currency"),
+        )}
+      >
+        {formatPercent(coin.price_change_percentage_1h_in_currency)}
+      </TableCell>
+      <TableCell
+        className={cn(
+          "text-right tabular-nums",
+          percentColorClass(coin.price_change_percentage_24h_in_currency),
+          activeCol("price_change_percentage_24h_in_currency"),
+        )}
+      >
+        {formatPercent(coin.price_change_percentage_24h_in_currency)}
+      </TableCell>
+      <TableCell
+        className={cn(
+          "hidden text-right tabular-nums lg:table-cell",
+          percentColorClass(coin.price_change_percentage_7d_in_currency),
+          activeCol("price_change_percentage_7d_in_currency"),
+        )}
+      >
+        {formatPercent(coin.price_change_percentage_7d_in_currency)}
+      </TableCell>
+      <TableCell
+        className={cn(
+          "hidden text-right tabular-nums lg:table-cell",
+          activeCol("total_volume"),
+        )}
+      >
+        {formatCompact(coin.total_volume, currency)}
+      </TableCell>
+      <TableCell
+        className={cn("text-right tabular-nums", activeCol("market_cap"))}
+      >
+        {formatCompact(coin.market_cap, currency)}
+      </TableCell>
+      <TableCell className="hidden lg:table-cell">
+        <div className="flex justify-end">
+          <Sparkline prices={coin.sparkline_in_7d?.price ?? EMPTY_PRICES} />
+        </div>
+      </TableCell>
+      <TableCell className="pl-0 text-right">
+        <AlertButton
+          compact
+          coinId={coin.id}
+          symbol={coin.symbol}
+          name={coin.name}
+          image={coin.image}
+          currentPrice={coin.current_price}
+        />
+      </TableCell>
+    </TableRow>
+  );
+});
 CoinRow.displayName = "CoinRow";
