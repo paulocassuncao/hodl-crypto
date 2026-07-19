@@ -487,11 +487,12 @@ const CoinCard = memo(({
         {coin.market_cap_rank ? ` · #${coin.market_cap_rank}` : ""}
       </div>
     </div>
-    <Sparkline
-      prices={coin.sparkline_in_7d?.price ?? EMPTY_PRICES}
-      width={56}
-      height={28}
-    />
+    {/*
+     * No inline sparkline here: at 375 it stole ~68px and crushed the coin
+     * name to 1–2 letters ("Bi…"/"Et…"), killing the one-glance identification
+     * this compact list exists for. Name + price + 24h move are the essentials;
+     * the 7-day trend lives on the coin detail page.
+     */}
     <div className="shrink-0 text-right">
       <div className="font-medium tabular-nums">
         {formatCurrency(coin.current_price, currency)}
