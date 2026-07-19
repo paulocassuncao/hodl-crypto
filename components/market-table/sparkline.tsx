@@ -14,10 +14,18 @@ export const Sparkline = memo(({
   prices,
   width = 130,
   height = 40,
+  color: colorOverride,
 }: {
   prices: number[];
   width?: number;
   height?: number;
+  /**
+   * Force the stroke/fill color instead of deriving it from the line's own
+   * up/down direction. Used by the Portfolio hero, where the line must agree
+   * with the P&L sign (a value line that trended up 7d while you're down since
+   * cost would otherwise glow green behind a red loss — a mixed signal).
+   */
+  color?: string;
 }): React.ReactNode => {
   const gradientId = useId();
 
@@ -26,7 +34,7 @@ export const Sparkline = memo(({
   }
 
   const isUp = prices[prices.length - 1] >= prices[0];
-  const color = isUp ? "var(--gain)" : "var(--loss)";
+  const color = colorOverride ?? (isUp ? "var(--gain)" : "var(--loss)");
 
   // Hand-rolled inline SVG instead of a charting library: this renders ~100× in
   // the market table, so plain SVG primitives are dramatically cheaper to mount

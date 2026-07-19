@@ -131,7 +131,15 @@ export const PortfolioSummary = ({
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 bottom-0 z-0 opacity-80 [mask-image:linear-gradient(90deg,transparent,#000_18%)]"
           >
-            <Sparkline prices={valueSpark} width={720} height={96} />
+            {/* Colored by the P&L sign, not the line's own 7d direction, so the
+                line agrees with the number + beacon instead of glowing green
+                behind a red loss. */}
+            <Sparkline
+              prices={valueSpark}
+              width={720}
+              height={96}
+              color={up ? "var(--gain)" : "var(--loss)"}
+            />
             <span className="absolute right-3 bottom-2 font-mono text-[0.6875rem] tracking-wider text-muted-foreground uppercase">
               Value · 7d
             </span>

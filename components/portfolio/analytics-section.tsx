@@ -22,10 +22,13 @@ const PerformerCard = ({
   label,
   icon,
   stat,
+  note,
 }: {
   label: string;
   icon: React.ReactNode;
   stat: PerformerStat;
+  /** Small clarifier, e.g. "still below cost" when the best holding is negative. */
+  note?: string;
 }): React.ReactNode => {
   const money = useMoney();
   return (
@@ -33,6 +36,7 @@ const PerformerCard = ({
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {icon}
       {label}
+      {note ? <span className="text-muted-foreground/70">· {note}</span> : null}
     </div>
     <div className="mt-2 flex items-center gap-2">
       {stat.image ? (
@@ -73,6 +77,7 @@ export const AnalyticsSection = ({
         label="Best performer"
         icon={<TrendingUp className="size-3.5 text-gain" />}
         stat={best}
+        note={best.pnlPct < 0 ? "still below cost" : undefined}
       />
       <PerformerCard
         label="Worst performer"
