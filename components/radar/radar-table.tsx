@@ -127,6 +127,7 @@ export const RadarTable = ({
                     coin={coin}
                     btc={btc}
                     currency={currency}
+                    sortKey={sortKey}
                     onOpenChart={onOpenChart}
                   />
                 ))}
@@ -165,7 +166,9 @@ const SortHeader = ({
   align?: "left" | "right";
   className?: string;
 }): React.ReactNode => (
-  <TableHead className={className}>
+  // Active/sorted column gets a faint neutral wash (header + cells) so the eye
+  // anchors on the timeframe in focus without muting the others' gain/loss color.
+  <TableHead className={cn(className, active && "bg-foreground/[0.04]")}>
     <button
       type="button"
       onClick={onClick}
@@ -219,18 +222,25 @@ const RadarRow = ({
   coin,
   btc,
   currency,
+  sortKey,
   onOpenChart,
 }: {
   coin: Coin;
   btc: Coin | undefined;
   currency: Currency;
+  sortKey: RadarSortKey;
   onOpenChart: (coin: Coin) => void;
 }): React.ReactNode => (
   <TableRow className="market-row group">
     <TableCell className="pr-0">
       <WatchlistStar id={coin.id} />
     </TableCell>
-    <TableCell className="font-mono text-muted-foreground tabular-nums">
+    <TableCell
+      className={cn(
+        "font-mono text-muted-foreground tabular-nums",
+        sortKey === "rank" && "bg-foreground/[0.04]",
+      )}
+    >
       {coin.market_cap_rank}
     </TableCell>
     <TableCell>
@@ -249,7 +259,13 @@ const RadarRow = ({
       {formatCurrency(coin.current_price, currency)}
     </TableCell>
     {METRICS.map((m) => (
-      <MetricCell key={m} coin={coin} btc={btc} metric={m} />
+      <MetricCell
+        key={m}
+        coin={coin}
+        btc={btc}
+        metric={m}
+        className={m === sortKey ? "bg-foreground/[0.04]" : undefined}
+      />
     ))}
     <TableCell className="hidden lg:table-cell">
       <div className="flex justify-end">

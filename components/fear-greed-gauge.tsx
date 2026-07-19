@@ -22,9 +22,10 @@ export const FearGreedGauge = (): React.ReactNode => {
           <Skeleton className="mx-auto h-[120px] w-full" />
         ) : (
           <div
-            className="relative"
+            className="fg-gauge relative"
             role="img"
             aria-label={`Fear & Greed index: ${data.value} out of 100 — ${zone.label}`}
+            style={{ "--fg-glow": zone.colorVar } as React.CSSProperties}
           >
             <ResponsiveContainer width="100%" height={130}>
               <RadialBarChart
@@ -41,7 +42,17 @@ export const FearGreedGauge = (): React.ReactNode => {
                   tick={false}
                   axisLine={false}
                 />
-                <RadialBar background dataKey="value" cornerRadius={8} />
+                {/*
+                 * The value arc carries the state — it lights in the zone color
+                 * (see `.fg-gauge` in globals.css). The empty track is a quiet
+                 * muted ring, never brighter than the fill (was the recharts
+                 * default near-white, which inverted the gauge's emphasis).
+                 */}
+                <RadialBar
+                  background={{ fill: "var(--muted)" }}
+                  dataKey="value"
+                  cornerRadius={8}
+                />
               </RadialBarChart>
             </ResponsiveContainer>
             <div className="pointer-events-none absolute inset-x-0 bottom-2 flex flex-col items-center">

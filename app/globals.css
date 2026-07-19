@@ -384,6 +384,17 @@
 }
 
 /*
+ * Fear & Greed gauge — the value arc is the only lit thing: a soft glow in the
+ * day's zone color (`--fg-glow`, set inline from the zone). The empty track is a
+ * quiet muted ring behind it, so emphasis reads filled > empty (the recharts
+ * default painted a near-white track that outshone the value). Rationed-Glow:
+ * the glow carries state, nothing decorative.
+ */
+.fg-gauge .recharts-radial-bar-sector {
+  filter: drop-shadow(0 0 6px var(--fg-glow, transparent));
+}
+
+/*
  * Sparkline draw-in — the line traces itself on mount and the area fades up
  * under it, so the market list "wakes up" rather than snapping in. `pathLength=1`
  * normalizes the dash to the line's own length regardless of data.
