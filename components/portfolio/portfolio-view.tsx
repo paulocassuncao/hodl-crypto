@@ -6,6 +6,7 @@ import {
   Download,
   FileDown,
   FileUp,
+  MoreHorizontal,
   Plus,
   RefreshCw,
   Upload,
@@ -20,6 +21,13 @@ import { TransactionForm } from "@/components/portfolio/transaction-form";
 import { TransactionsList } from "@/components/portfolio/transactions-list";
 import { WhatIfDialog } from "@/components/portfolio/whatif-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePortfolioPrices } from "@/hooks/use-portfolio-prices";
 import { parseTransactionsCsv, transactionsToCsv } from "@/lib/csv";
@@ -166,63 +174,61 @@ export const PortfolioView = (): React.ReactNode => {
               e.target.value = "";
             }}
           />
-          {/* Export actions need existing data; import/restore must stay
-              available when empty (e.g. first sign-in, restoring a backup). */}
-          {transactions.length > 0 ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={handleCsvExport}
+          {/*
+           * Data in/out (sync, import, export, restore) collapses into one
+           * labeled overflow menu — six sibling icon-buttons on desktop, and on
+           * mobile five near-identical up/down arrows, gave no way to tell
+           * Backup from Import from Restore. Only "Add transaction", the primary
+           * action, stays a button. Export items appear only with data; import
+           * and restore stay available when empty (first sign-in, restore).
+           */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  aria-label="Import, export, and sync data"
+                />
+              }
+            >
+              <MoreHorizontal className="size-4" />
+              <span className="hidden sm:inline">Data</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => void handleBybitSync()}
+                disabled={syncing}
               >
-                <FileDown className="size-4" />
-                <span className="hidden sm:inline">CSV</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={handleJsonExport}
-                title="Export a full JSON backup"
-              >
-                <Download className="size-4" />
-                <span className="hidden sm:inline">Backup</span>
-              </Button>
-            </>
-          ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1"
-            onClick={() => void handleBybitSync()}
-            disabled={syncing}
-            title="Import new spot buys from Bybit (append-only)"
-          >
-            <RefreshCw className={`size-4 ${syncing ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">
-              {syncing ? "Syncing…" : "Sync Bybit"}
-            </span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1"
-            onClick={() => csvInput.current?.click()}
-          >
-            <FileUp className="size-4" />
-            <span className="hidden sm:inline">Import CSV</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1"
-            onClick={() => jsonInput.current?.click()}
-            title="Restore from a JSON backup (replaces current data)"
-          >
-            <Upload className="size-4" />
-            <span className="hidden sm:inline">Restore</span>
-          </Button>
+                <RefreshCw
+                  className={`size-4 ${syncing ? "animate-spin" : ""}`}
+                />
+                {syncing ? "Syncing from Bybit…" : "Sync from Bybit"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => csvInput.current?.click()}>
+                <FileUp className="size-4" />
+                Import CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => jsonInput.current?.click()}>
+                <Upload className="size-4" />
+                Restore from backup
+              </DropdownMenuItem>
+              {transactions.length > 0 ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleCsvExport}>
+                    <FileDown className="size-4" />
+                    Export CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleJsonExport}>
+                    <Download className="size-4" />
+                    Download backup
+                  </DropdownMenuItem>
+                </>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <TransactionForm
             trigger={
               <Button size="sm" className="gap-1">
