@@ -16,6 +16,13 @@ import { toRow, toTransaction } from "@/lib/supabase/types";
  * the source of truth (see HODL-HANDOVER.md §6). Idempotent: re-running
  * inserts nothing new. Bybit keys stay server-side (lib/bybit.ts).
  */
+
+/**
+ * A first backfill scans months of 7-day windows across six pairs; give it
+ * room to finish, because a timeout leaves the watermark unwritten and the
+ * next attempt starts the whole scan over.
+ */
+export const maxDuration = 60;
 export const POST = async (): Promise<NextResponse> => {
   const supabase = await createSupabaseServerClient();
   const {
@@ -58,7 +65,11 @@ export const POST = async (): Promise<NextResponse> => {
 
     const fills = await fetchSpotBuys({ startTime, endTime });
     const candidates = fills.map(fillToTransaction);
-    const plan = planSync(existing, candidates);
+    // The scanned window is what bounds the import — NOT the ledger's latest
+    // date. A DCA row dated after a real Bybit fill used to drop that fill,
+    // and the watermark below then moved past it for good. Dedup against the
+    // existing rows is what keeps the re-scanned overlap from doubling up.
+    const plan = planSync(existing, candidates, { since: startTime });
 
     if (plan.toInsert.length > 0) {
       const { error: insertError } = await supabase
@@ -78,7 +89,8 @@ export const POST = async (): Promise<NextResponse> => {
     return {
       inserted: plan.toInsert.length,
       skipped: plan.skippedDuplicates.length,
-      cutoff: plan.cutoff,
+      scannedFrom: plan.since,
+      scannedTo: endTime,
     };
   });
 };

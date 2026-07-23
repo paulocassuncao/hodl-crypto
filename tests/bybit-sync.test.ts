@@ -1,5 +1,5 @@
 import { fillToTransaction, signBybit, type BybitFill } from "@/lib/bybit";
-import { planSync, syncCutoff } from "@/lib/bybit-sync";
+import { planSync } from "@/lib/bybit-sync";
 import type { Transaction } from "@/lib/types";
 
 const MIN = 60 * 1000;
@@ -18,41 +18,78 @@ const tx = (over: Partial<Transaction>): Transaction => ({
   ...over,
 });
 
-describe("syncCutoff", () => {
-  it("is the latest transaction date, or 0 when empty", () => {
-    expect(syncCutoff([])).toBe(0);
-    expect(syncCutoff([tx({ date: 5 }), tx({ date: 9 }), tx({ date: 7 })])).toBe(
-      9,
-    );
-  });
-});
-
 describe("planSync", () => {
   const existing = [
     tx({ date: 10 * MIN, quantity: 0.001 }),
     tx({ date: 20 * MIN, quantity: 0.002 }),
   ];
 
-  it("keeps only candidates strictly after the cutoff", () => {
-    const plan = planSync(existing, [
-      tx({ date: 20 * MIN }), // at cutoff → dropped
-      tx({ date: 15 * MIN }), // before cutoff → dropped
-      tx({ date: 25 * MIN, quantity: 0.003 }),
-    ]);
-    expect(plan.cutoff).toBe(20 * MIN);
+  it("drops candidates outside the scanned window", () => {
+    const plan = planSync(
+      existing,
+      [
+        tx({ date: 15 * MIN, quantity: 0.009 }), // before the window → dropped
+        tx({ date: 25 * MIN, quantity: 0.003 }),
+      ],
+      { since: 22 * MIN },
+    );
+    expect(plan.since).toBe(22 * MIN);
     expect(plan.toInsert).toHaveLength(1);
     expect(plan.toInsert[0].date).toBe(25 * MIN);
     expect(plan.skippedDuplicates).toHaveLength(0);
   });
 
-  it("skips a candidate matching an existing row within ±5min and qty epsilon", () => {
+  it("imports a fill older than the ledger's latest row", () => {
+    // The regression: the February DCA rows (and any manual entry) advance the
+    // ledger's max date without ever appearing in Bybit's execution API. A real
+    // fill timestamped before that row must still be imported — the watermark
+    // moves past this window right after, so a drop here is permanent.
+    const dcaRow = tx({ date: 60 * MIN, quantity: 0.05, id: "dca" });
+    const bybitFill = tx({ date: 40 * MIN, quantity: 0.004, id: "fill" });
+
+    const plan = planSync([...existing, dcaRow], [bybitFill], {
+      since: 30 * MIN,
+    });
+
+    expect(plan.toInsert).toHaveLength(1);
+    expect(plan.toInsert[0].id).toBe("fill");
+  });
+
+  it("still skips that older fill when the ledger already has it", () => {
+    const manual = tx({ date: 40 * MIN, quantity: 0.004 });
+    const dcaRow = tx({ date: 60 * MIN, quantity: 0.05 });
+    const plan = planSync([...existing, manual, dcaRow], [
+      tx({ date: 40 * MIN, quantity: 0.004 }),
+    ], { since: 30 * MIN });
+
+    expect(plan.toInsert).toHaveLength(0);
+    expect(plan.skippedDuplicates).toHaveLength(1);
+  });
+
+  it("does not treat a materially different quantity as a duplicate", () => {
+    const manual = tx({ date: 40 * MIN, quantity: 0.001 });
+    const plan = planSync([...existing, manual], [
+      tx({ date: 41 * MIN, quantity: 0.002 }),
+    ]);
+    expect(plan.toInsert).toHaveLength(1);
+  });
+
+  it("skips a candidate matching an existing row within ±5min and qty tolerance", () => {
     const manual = tx({ date: 30 * MIN, quantity: 0.005 });
     const plan = planSync([...existing, manual], [
-      // same coin, 4 minutes later, same qty within 1e-8 → duplicate
+      // same coin, 4 minutes later, same qty within tolerance → duplicate
       tx({ date: 34 * MIN, quantity: 0.005 + 1e-9 }),
     ]);
     expect(plan.toInsert).toHaveLength(0);
     expect(plan.skippedDuplicates).toHaveLength(1);
+  });
+
+  it("does not treat a fill six minutes from an existing row as a duplicate", () => {
+    const manual = tx({ date: 30 * MIN, quantity: 0.005 });
+    const plan = planSync([...existing, manual], [
+      tx({ date: 36 * MIN, quantity: 0.005 }),
+    ]);
+    expect(plan.toInsert).toHaveLength(1);
   });
 
   it("does not treat different coins or quantities as duplicates", () => {
@@ -89,7 +126,7 @@ describe("planSync", () => {
     const plan = planSync(existing, [tx({ date: 25 * MIN })]);
     expect(JSON.stringify(existing)).toBe(before);
     expect(Object.keys(plan).sort()).toEqual([
-      "cutoff",
+      "since",
       "skippedDuplicates",
       "toInsert",
     ]);

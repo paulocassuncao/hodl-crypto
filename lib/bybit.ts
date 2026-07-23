@@ -182,6 +182,33 @@ const fetchWindow = async (
 };
 
 /**
+ * Concurrent requests in flight. The scan is a product of symbols × 7-day
+ * windows — a full backfill is ~150 round-trips — and running it strictly
+ * sequentially took long enough to blow the serverless function's budget,
+ * after which nothing was written and the next click repeated all of it.
+ * Kept well under Bybit's per-endpoint rate limit.
+ */
+const MAX_CONCURRENCY = 5;
+
+/** Run `task` over every item, at most {@link MAX_CONCURRENCY} at a time. */
+const mapWithConcurrency = async <T, R>(
+  items: T[],
+  task: (item: T) => Promise<R>,
+): Promise<R[]> => {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    for (let i = next++; i < items.length; i = next++) {
+      results[i] = await task(items[i]);
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(MAX_CONCURRENCY, items.length) }, worker),
+  );
+  return results;
+};
+
+/**
  * All spot Buy executions across the tracked pairs since `startTime`,
  * paginated in 7-day windows (Bybit's per-request range cap), oldest first.
  */
@@ -192,14 +219,19 @@ export const fetchSpotBuys = async ({
   startTime: number;
   endTime?: number;
 }): Promise<BybitFill[]> => {
-  const fills: BybitFill[] = [];
+  if (startTime >= endTime) return [];
+
+  const requests: { symbol: string; from: number; to: number }[] = [];
   for (const symbol of SYMBOLS) {
     for (let from = startTime; from < endTime; from += WINDOW_MS) {
-      const to = Math.min(from + WINDOW_MS, endTime);
-      fills.push(...(await fetchWindow(symbol, from, to)));
+      requests.push({ symbol, from, to: Math.min(from + WINDOW_MS, endTime) });
     }
   }
-  return fills.sort((a, b) => a.execTime - b.execTime);
+
+  const pages = await mapWithConcurrency(requests, ({ symbol, from, to }) =>
+    fetchWindow(symbol, from, to),
+  );
+  return pages.flat().sort((a, b) => a.execTime - b.execTime);
 };
 
 /** Map a Bybit fill to a ledger {@link Transaction} tagged `source: "bybit"`. */
