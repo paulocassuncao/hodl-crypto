@@ -2,6 +2,7 @@
 
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 
+import { useAuth } from "@/lib/auth";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type {
   SleeveEquityRow,
@@ -20,10 +21,17 @@ export interface SleeveData {
  * The signed-in user's sleeve rows (state, trades, forward equity curve),
  * read directly through the RLS-scoped browser client — the sleeve is
  * written server-side by the daily cron, so the UI only ever reads.
+ *
+ * The user id is part of the key: these rows are private, and a cache entry
+ * that outlives its owner would render for whoever signs in next. The auth
+ * provider also clears the cache on a user change — this is the belt to that
+ * pair of braces, and it keeps the two users' entries apart while both exist.
  */
-export const useSleeve = (): UseQueryResult<SleeveData> =>
-  useQuery({
-    queryKey: ["sleeve"],
+export const useSleeve = (): UseQueryResult<SleeveData> => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["sleeve", user?.id ?? null],
+    enabled: user != null,
     queryFn: async (): Promise<SleeveData> => {
       const supabase = getSupabaseBrowserClient();
       const [states, trades, equity] = await Promise.all([
@@ -48,17 +56,22 @@ export const useSleeve = (): UseQueryResult<SleeveData> =>
     },
     staleTime: 60_000,
   });
+};
 
 /**
  * The signed-in user's sleeve signal-flip events, newest first. Written by
  * the daily cron, so a 5-minute refetch is plenty; shared by the sleeve page
  * and the app-wide signal watcher (React Query dedupes the fetch).
+ * User-scoped for the same reason as {@link useSleeve} — and here it also
+ * stops the watcher from toasting one user's signals at another.
  */
 export const useSleeveSignalEvents = (): UseQueryResult<
   SleeveSignalEventRow[]
-> =>
-  useQuery({
-    queryKey: ["sleeve-signal-events"],
+> => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["sleeve-signal-events", user?.id ?? null],
+    enabled: user != null,
     queryFn: async (): Promise<SleeveSignalEventRow[]> => {
       const supabase = getSupabaseBrowserClient();
       const { data, error } = await supabase
@@ -71,3 +84,4 @@ export const useSleeveSignalEvents = (): UseQueryResult<
     staleTime: 60_000,
     refetchInterval: 300_000,
   });
+};

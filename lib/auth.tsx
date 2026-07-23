@@ -4,10 +4,12 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
 import type { Session, User } from "@supabase/supabase-js";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -40,11 +42,14 @@ export const AuthProvider = ({
   children: ReactNode;
 }): ReactNode => {
   const supabase = getSupabaseBrowserClient();
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const previousUserId = useRef<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
+      previousUserId.current = data.session?.user.id ?? null;
       setSession(data.session);
       setLoading(false);
     });
@@ -52,11 +57,24 @@ export const AuthProvider = ({
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, next) => {
+      const nextUserId = next?.user.id ?? null;
+      // Sign-out (and sign-in as someone else) must not leave the previous
+      // user's rows in the query cache: the client survives the client-side
+      // navigation to /login, so anything keyed without a user id — the sleeve,
+      // its signal events — would render for whoever signs in next. Cleared
+      // here, once, instead of asking every future query to remember.
+      if (
+        previousUserId.current !== null &&
+        previousUserId.current !== nextUserId
+      ) {
+        queryClient.clear();
+      }
+      previousUserId.current = nextUserId;
       setSession(next);
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  }, [supabase, queryClient]);
 
   const signIn = async (
     email: string,
