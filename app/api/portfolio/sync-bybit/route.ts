@@ -16,6 +16,13 @@ import { toRow, toTransaction } from "@/lib/supabase/types";
  * the source of truth (see HODL-HANDOVER.md §6). Idempotent: re-running
  * inserts nothing new. Bybit keys stay server-side (lib/bybit.ts).
  */
+
+/**
+ * A first backfill scans months of 7-day windows across six pairs; give it
+ * room to finish, because a timeout leaves the watermark unwritten and the
+ * next attempt starts the whole scan over.
+ */
+export const maxDuration = 60;
 export const POST = async (): Promise<NextResponse> => {
   const supabase = await createSupabaseServerClient();
   const {
