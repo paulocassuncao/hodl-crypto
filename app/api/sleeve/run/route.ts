@@ -9,6 +9,7 @@ import {
   type SleeveState,
 } from "@/lib/sleeve";
 import {
+  buildSignalSeries,
   computeSignalFlips,
   signalSnapshotAt,
 } from "@/lib/strategy/attribution";
@@ -100,18 +101,26 @@ const run = async (request: NextRequest): Promise<NextResponse> => {
         startTimeMs: nowMs - LOOKBACK_BARS * DAY_MS,
       });
       const lastClosed = latestClosedBarIndex(candles, nowMs);
+      // Built once and shared: the snapshot and the flip scan read the same
+      // EMAs, channels, realized vol and ensemble over the same candles.
+      const series = buildSignalSeries(candles);
       const snapshot =
-        lastClosed >= 0 ? signalSnapshotAt(candles, lastClosed) : null;
+        lastClosed >= 0
+          ? signalSnapshotAt(candles, lastClosed, {}, series)
+          : null;
 
       // Signal flips over the trailing window (idempotent via the unique
       // constraint — see EVENT_LOOKBACK_BARS).
       let events = 0;
       if (lastClosed >= 1) {
         const fromIdx = Math.max(0, lastClosed - EVENT_LOOKBACK_BARS);
-        const flips = computeSignalFlips(asset, candles, {
-          afterTimeMs: candles[fromIdx].timeMs,
-          upToIndex: lastClosed,
-        });
+        const flips = computeSignalFlips(
+          asset,
+          candles,
+          { afterTimeMs: candles[fromIdx].timeMs, upToIndex: lastClosed },
+          {},
+          series,
+        );
         if (flips.length > 0) {
           const { error } = await supabase.from("sleeve_signal_events").upsert(
             flips.map((f) => ({
@@ -158,7 +167,9 @@ const run = async (request: NextRequest): Promise<NextResponse> => {
         continue;
       }
 
-      const advance = advanceSleeve(toState(stateRow), candles, nowMs);
+      const advance = advanceSleeve(toState(stateRow), candles, nowMs, {
+        vol: series.vol,
+      });
       if (advance.barsProcessed > 0) {
         if (advance.newTrades.length > 0) {
           const { error } = await supabase.from("sleeve_trades").insert(

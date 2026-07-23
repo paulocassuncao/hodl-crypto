@@ -13,7 +13,10 @@
 
 import { donchianPositions } from "@/lib/strategy/donchian";
 import { emaTrendPositions } from "@/lib/strategy/emaTrend";
-import { ensembleTarget } from "@/lib/strategy/ensemble";
+import {
+  ENSEMBLE_VOL_WINDOW,
+  ensembleTarget,
+} from "@/lib/strategy/ensemble";
 import { ema, realizedVol } from "@/lib/strategy/indicators";
 import type { Candle } from "@/lib/strategy/types";
 import type { SleeveSignalSnapshot } from "@/lib/supabase/types";
@@ -73,8 +76,16 @@ export const donchianChannels = (
   return { upper, lower };
 };
 
-/** All per-bar series the snapshot and flip detection read from. */
-const computeSeries = (
+/**
+ * All per-bar series the snapshot and flip detection read from.
+ *
+ * Exported because building it is the expensive part of this module — every
+ * EMA, both raw signals, the channels, realized vol and the ensemble. A caller
+ * that needs both a snapshot and the flips (the sleeve cron, the backtest
+ * report) should build it once and pass it to both instead of paying for the
+ * whole stack twice.
+ */
+export const buildSignalSeries = (
   candles: Candle[],
   {
     fast = 20,
@@ -87,6 +98,7 @@ const computeSeries = (
   }: AttributionParams = {},
 ) => {
   const closes = candles.map((c) => c.close);
+  const vol = realizedVol(closes, volWindow);
   return {
     closes,
     emaFast: ema(closes, fast),
@@ -95,14 +107,22 @@ const computeSeries = (
     emaRaw: emaTrendPositions(candles, { fast, slow, trendFilter }),
     donRaw: donchianPositions(candles, { entry, exit }),
     channels: donchianChannels(candles, { entry, exit }),
-    vol: realizedVol(closes, volWindow),
+    vol,
     // NOTE: ensembleTarget only takes targetVol — the strategy windows are
     // fixed at the validated 20/50/200 + 20/10 (HODL-HANDOVER.md §4.4), so
     // custom windows here (tests only) do not propagate into the ensemble.
-    ensemble: ensembleTarget(candles, { targetVol }),
+    // Which is exactly why `vol` is only handed over when it IS the ensemble's
+    // window: sharing a custom-window series would propagate it and break that.
+    ensemble: ensembleTarget(candles, {
+      targetVol,
+      vol: volWindow === ENSEMBLE_VOL_WINDOW ? vol : undefined,
+    }),
     params: { fast, slow, trendFilter, entry, exit, targetVol, volWindow },
   };
 };
+
+/** The series {@link buildSignalSeries} produces. */
+export type SignalSeries = ReturnType<typeof buildSignalSeries>;
 
 /** Vol-targeting fraction `min(1, targetVol / vol)`, or null during warm-up. */
 const sizingFrac = (vol: number | null, targetVol: number): number | null =>
@@ -116,11 +136,12 @@ export const signalSnapshotAt = (
   candles: Candle[],
   i: number,
   params: AttributionParams = {},
+  series?: SignalSeries,
 ): SleeveSignalSnapshot => {
   if (i < 0 || i >= candles.length) {
     throw new Error(`signalSnapshotAt: index ${i} out of range`);
   }
-  const s = computeSeries(candles, params);
+  const s = series ?? buildSignalSeries(candles, params);
   return {
     time_ms: candles[i].timeMs,
     close: candles[i].close,
@@ -138,11 +159,7 @@ export const signalSnapshotAt = (
 };
 
 /** Reason for an EMA-trend flip at bar `i`, naming what changed since i−1. */
-const emaTrendReason = (
-  s: ReturnType<typeof computeSeries>,
-  i: number,
-  on: boolean,
-): string => {
+const emaTrendReason = (s: SignalSeries, i: number, on: boolean): string => {
   const { fast, slow, trendFilter } = s.params;
   const f = s.emaFast[i] as number;
   const sl = s.emaSlow[i] as number;
@@ -192,8 +209,9 @@ export const computeSignalFlips = (
   candles: Candle[],
   { afterTimeMs, upToIndex }: { afterTimeMs: number; upToIndex: number },
   params: AttributionParams = {},
+  series?: SignalSeries,
 ): SignalFlipEvent[] => {
-  const s = computeSeries(candles, params);
+  const s = series ?? buildSignalSeries(candles, params);
   const { entry, exit, targetVol } = s.params;
   const events: SignalFlipEvent[] = [];
   const last = Math.min(upToIndex, candles.length - 1);
