@@ -14,13 +14,14 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { formatQuantity } from "@/lib/format";
 import { derivePositions } from "@/lib/portfolio-core";
+import { parseImport } from "@/lib/portfolio-import";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
   toRow,
   toTransaction,
   type TransactionRow,
 } from "@/lib/supabase/types";
-import type { Holding, Position, Transaction } from "@/lib/types";
+import type { Position, Transaction } from "@/lib/types";
 
 type NewTransaction = Omit<Transaction, "id" | "createdAt">;
 type TransactionPatch = Partial<
@@ -46,54 +47,6 @@ interface PortfolioContextValue {
 }
 
 const PortfolioContext = createContext<PortfolioContextValue | null>(null);
-
-const isTransactionArray = (value: unknown): value is Transaction[] =>
-  Array.isArray(value) &&
-  value.every(
-    (t): t is Transaction =>
-      typeof t === "object" &&
-      t !== null &&
-      typeof (t as Transaction).coinId === "string" &&
-      ((t as Transaction).type === "buy" ||
-        (t as Transaction).type === "sell") &&
-      typeof (t as Transaction).quantity === "number" &&
-      typeof (t as Transaction).amount === "number",
-  );
-
-/** Legacy single-position records (pre-ledger). */
-const isHoldingArray = (value: unknown): value is Holding[] =>
-  Array.isArray(value) &&
-  value.every(
-    (h): h is Holding =>
-      typeof h === "object" &&
-      h !== null &&
-      typeof (h as Holding).coinId === "string" &&
-      typeof (h as Holding).quantity === "number" &&
-      typeof (h as Holding).cost === "number" &&
-      !("type" in (h as object)),
-  );
-
-/** Convert a legacy holding into a single equivalent "buy" transaction. */
-const holdingToTransaction = (h: Holding): Transaction => ({
-  id: h.id || crypto.randomUUID(),
-  coinId: h.coinId,
-  symbol: h.symbol,
-  name: h.name,
-  image: h.image,
-  type: "buy",
-  quantity: h.quantity,
-  amount: h.cost,
-  date: h.createdAt,
-  createdAt: h.createdAt,
-});
-
-/** Parse imported JSON into transactions, migrating the legacy holding shape. */
-const parseImport = (raw: string): Transaction[] | null => {
-  const parsed = JSON.parse(raw) as unknown;
-  if (isTransactionArray(parsed)) return parsed;
-  if (isHoldingArray(parsed)) return parsed.map(holdingToTransaction);
-  return null;
-};
 
 /**
  * Provides the signed-in user's transaction ledger, persisted to Supabase
@@ -148,12 +101,24 @@ export const PortfolioProvider = ({
       toast.error("Sign in to save your portfolio.");
       return;
     }
-    void Promise.resolve(op()).then(({ error }) => {
-      if (error) {
-        toast.error("Couldn't save changes.", { description: error.message });
-        void reload();
-      }
-    });
+    const fail = (description: string): void => {
+      toast.error("Couldn't save changes.", { description });
+      void reload();
+    };
+    // `op()` can throw synchronously (an unserializable row reaches `toRow`)
+    // as well as reject — both must surface as a toast + resync, never as an
+    // unhandled rejection that leaves the UI showing a write that never landed.
+    try {
+      void Promise.resolve(op()).then(
+        ({ error }) => {
+          if (error) fail(error.message);
+        },
+        (error: unknown) =>
+          fail(error instanceof Error ? error.message : String(error)),
+      );
+    } catch (error) {
+      fail(error instanceof Error ? error.message : String(error));
+    }
   };
 
   const addTransaction = (tx: NewTransaction): void => {
@@ -242,23 +207,58 @@ export const PortfolioProvider = ({
       return false;
     }
     if (!parsed) return false;
-    // Replace: optimistic swap, then delete-all + insert in Supabase.
+    if (!userId) {
+      toast.error("Sign in to restore your portfolio.");
+      return false;
+    }
+
     const next = parsed.map((t) => ({
       ...t,
       id: t.id || crypto.randomUUID(),
     }));
+
+    // Serialize BEFORE touching the server. A restore is a delete-all followed
+    // by an insert, and Supabase gives us no transaction here — so anything
+    // that can fail must fail now, while the ledger is still intact.
+    let nextRows: ReturnType<typeof toRow>[];
+    let previousRows: ReturnType<typeof toRow>[];
+    const previous = transactions;
+    try {
+      nextRows = next.map((t) => toRow(t, userId));
+      previousRows = previous.map((t) => toRow(t, userId));
+    } catch {
+      return false;
+    }
+
     setTransactions(next);
-    persist(async () => {
-      if (!userId) return { error: { message: "Not signed in" } };
+    void (async () => {
       const del = await supabase
         .from("transactions")
         .delete()
         .eq("user_id", userId);
-      if (del.error) return del;
-      return supabase
-        .from("transactions")
-        .insert(next.map((t) => toRow(t, userId)));
-    });
+      if (del.error) {
+        // Nothing was deleted — just put the UI back.
+        toast.error("Couldn't restore your portfolio.", {
+          description: del.error.message,
+        });
+        setTransactions(previous);
+        return;
+      }
+
+      const ins = await supabase.from("transactions").insert(nextRows);
+      if (!ins.error) return;
+
+      // The delete already committed, so the old ledger only exists in memory:
+      // put it back rather than leaving the user with nothing.
+      const rollback = await supabase.from("transactions").insert(previousRows);
+      toast.error(
+        rollback.error
+          ? "Restore failed and the previous ledger could not be recovered — use your last backup."
+          : "Restore failed — your previous transactions were kept.",
+        { description: ins.error.message },
+      );
+      await reload();
+    })();
     return true;
   };
 
