@@ -111,6 +111,12 @@ export const advanceSleeve = (
   state: SleeveState,
   candles: Candle[],
   nowMs: number,
+  /**
+   * Realized vol for these candles, when the caller already has it. It depends
+   * only on the closes and the fixed window — not on `targetVol` — so sharing
+   * it is safe whatever risk dial this account is on.
+   */
+  { vol }: { vol?: (number | null)[] } = {},
 ): SleeveAdvance => {
   const lastClosed = latestClosedBarIndex(candles, nowMs);
   if (lastClosed + 1 < MIN_BARS) {
@@ -122,7 +128,7 @@ export const advanceSleeve = (
     };
   }
 
-  const target = ensembleTarget(candles, { targetVol: state.targetVol });
+  const target = ensembleTarget(candles, { targetVol: state.targetVol, vol });
   let { cash, units, position } = state;
   let lastTimeMs = state.lastTimeMs;
   const newTrades: SleeveTrade[] = [];

@@ -17,24 +17,32 @@ export interface RiskParams {
   targetVol?: number;
   volWindow?: number;
   maxFrac?: number;
+  /**
+   * Realized-vol series for these candles, when the caller already has it.
+   * Sizing two signals over one candle set otherwise recomputes an O(n·window)
+   * pass for the second one over identical input.
+   */
+  vol?: (number | null)[];
 }
 
 /** Sized exposures aligned to `raw`; 0 wherever the raw signal is flat. */
 export const applyRisk = (
   candles: Candle[],
   raw: number[],
-  { targetVol = 0.6, volWindow = 30, maxFrac = 1.0 }: RiskParams = {},
+  { targetVol = 0.6, volWindow = 30, maxFrac = 1.0, vol }: RiskParams = {},
 ): number[] => {
-  const rv = realizedVol(
-    candles.map((c) => c.close),
-    volWindow,
-  );
+  const rv =
+    vol ??
+    realizedVol(
+      candles.map((c) => c.close),
+      volWindow,
+    );
   const out = new Array<number>(candles.length).fill(0);
   for (let i = 0; i < candles.length; i++) {
     if (raw[i] <= 0) continue;
-    const vol = rv[i];
+    const v = rv[i];
     const frac =
-      vol !== null && vol > 0 ? Math.min(maxFrac, targetVol / vol) : maxFrac;
+      v !== null && v > 0 ? Math.min(maxFrac, targetVol / v) : maxFrac;
     out[i] = raw[i] * frac;
   }
   return out;

@@ -15,8 +15,11 @@ import {
   runBacktest,
   type BenchmarkResult,
 } from "@/lib/strategy/backtest";
-import { computeSignalFlips, type SignalFlipEvent } from "@/lib/strategy/attribution";
-import { ensembleTarget } from "@/lib/strategy/ensemble";
+import {
+  buildSignalSeries,
+  computeSignalFlips,
+  type SignalFlipEvent,
+} from "@/lib/strategy/attribution";
 import type { BacktestResult, Candle } from "@/lib/strategy/types";
 
 const DAY_MS = 86_400_000;
@@ -141,7 +144,11 @@ export const buildBacktestReport = (
   if (candles.length === 0) {
     throw new Error(`No candles for ${asset} (${period})`);
   }
-  const target = ensembleTarget(candles, { targetVol: TARGET_VOL });
+  // One pass over the indicator stack for the whole report: the ensemble the
+  // engine runs on and the series the flip scan reads are the same thing, and
+  // over a "max" window that stack is thousands of bars.
+  const series = buildSignalSeries(candles, { targetVol: TARGET_VOL });
+  const target = series.ensemble;
   const metrics = runBacktest(candles, target, { startCash: START_CASH });
   const bh = buyAndHold(candles, { startCash: START_CASH });
   const dca = dcaBenchmark(candles, { startCash: START_CASH });
@@ -153,10 +160,13 @@ export const buildBacktestReport = (
     dca: dca.equity[i],
   }));
 
-  const events = computeSignalFlips(asset, candles, {
-    afterTimeMs: candles[0].timeMs - 1,
-    upToIndex: candles.length - 1,
-  });
+  const events = computeSignalFlips(
+    asset,
+    candles,
+    { afterTimeMs: candles[0].timeMs - 1, upToIndex: candles.length - 1 },
+    { targetVol: TARGET_VOL },
+    series,
+  );
 
   return {
     asset,
