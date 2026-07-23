@@ -19,8 +19,13 @@ jest.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
+// Route-handler suites opt into the node environment (`@jest-environment node`)
+// so `NextResponse` has the real web Response; everything DOM-shaped below is
+// only meaningful under jsdom.
+const hasDom = typeof window !== "undefined";
+
 // next-themes reads matchMedia for system theme detection.
-if (!window.matchMedia) {
+if (hasDom && !window.matchMedia) {
   window.matchMedia = (query: string): MediaQueryList =>
     ({
       matches: false,

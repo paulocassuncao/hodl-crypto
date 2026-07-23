@@ -30,19 +30,22 @@ export const GET = async (request: NextRequest): Promise<NextResponse> => {
   const asset = (searchParams.get("asset") ?? "").toUpperCase();
   const period = searchParams.get("period") as BacktestPeriod | null;
 
-  const symbol = SYMBOLS[asset];
-  if (!symbol) {
+  // `Object.hasOwn`, not `in`/bracket-lookup: both walk the prototype chain, so
+  // `?period=constructor` (or toString, valueOf, hasOwnProperty) used to pass
+  // this guard and hand an Object.prototype method to PERIOD_START_MS below.
+  if (!Object.hasOwn(SYMBOLS, asset)) {
     return NextResponse.json(
       { error: "asset must be BTC or ETH" },
       { status: 400 },
     );
   }
-  if (!period || !(period in PERIOD_START_MS)) {
+  if (!period || !Object.hasOwn(PERIOD_START_MS, period)) {
     return NextResponse.json(
       { error: "period must be 1y, 3y, 5y or max" },
       { status: 400 },
     );
   }
+  const symbol = SYMBOLS[asset];
 
   return handleRoute(async () => {
     const startTimeMs = PERIOD_START_MS[period](Date.now());
