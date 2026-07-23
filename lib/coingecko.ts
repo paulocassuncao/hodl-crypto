@@ -4,6 +4,8 @@
  * rate limit (~30 calls/min). Never import this from client components.
  */
 
+import { RouteError } from "@/lib/route";
+
 const BASE_URL = "https://api.coingecko.com/api/v3";
 
 interface CgFetchOptions {
@@ -33,10 +35,14 @@ export const cgFetch = async <T>(
 
   if (!res.ok) {
     if (res.status === 429) {
-      throw new Error(
+      // Written for the user, and the one case the client should back off on —
+      // so it carries its own status instead of being guessed from the text.
+      throw new RouteError(
         "Rate limited by CoinGecko (429). Please wait a moment and try again.",
+        429,
       );
     }
+    // Internal: the path is a server detail, so this stays out of the response.
     throw new Error(`CoinGecko request failed (${res.status}) for ${path}`);
   }
 
