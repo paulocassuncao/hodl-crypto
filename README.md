@@ -26,9 +26,20 @@ Create one at <https://www.coingecko.com/en/developers/dashboard>.
 
 ```bash
 cp .env.example .env.local
-# then paste your key into .env.local:
-# COINGECKO_API_KEY=CG-xxxxxxxx
 ```
+
+Fill in the three variables under **Required to run the app** — the CoinGecko
+key plus your Supabase URL and anon key. The app will not boot without the
+Supabase pair.
+
+The remaining blocks in `.env.example` are per-feature and can stay empty: the
+Bybit spot sync and the trading-sleeve cron are the only things that need them,
+and each fails with a clear server-side error when its variables are missing.
+
+> Pulling from Vercel? `vercel env pull` reads the **development** target by
+> default and writes a literal `[SENSITIVE]` for any variable marked Sensitive
+> there — those are write-only and cannot be read back. Check the file for
+> `[SENSITIVE]` before assuming a pull gave you real values.
 
 ### 3. Install and run
 
