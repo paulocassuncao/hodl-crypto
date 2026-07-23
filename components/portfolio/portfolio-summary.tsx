@@ -120,6 +120,10 @@ export const PortfolioSummary = ({
   };
 
   const up = totals.pnl >= 0;
+  // A closed-out ledger renders here too (value 0, P&L exactly 0). Flat is not
+  // a gain — the beacon follows the same rule as `percentColorClass`.
+  const beaconTone =
+    totals.pnl === 0 ? "text-muted-foreground" : up ? "text-gain" : "text-loss";
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -159,10 +163,7 @@ export const PortfolioSummary = ({
           <div className="mt-3 flex flex-wrap items-center gap-2.5">
             <span
               aria-hidden="true"
-              className={cn(
-                "size-2 rounded-full bg-current",
-                up ? "text-gain" : "text-loss",
-              )}
+              className={cn("size-2 rounded-full bg-current", beaconTone)}
               style={{ animation: "beacon 2.6s ease-out infinite" }}
             />
             <span

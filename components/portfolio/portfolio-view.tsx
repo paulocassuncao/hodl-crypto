@@ -65,6 +65,11 @@ export const PortfolioView = (): React.ReactNode => {
   const { data: prices, isLoading } = usePortfolioPrices(
     open.map((p) => p.coinId),
   );
+  // With nothing open the price query is disabled, so it never resolves and
+  // `prices` stays undefined — waiting on it would pin the page to the skeleton
+  // forever. A closed-out ledger has nothing to price; go straight to the
+  // summary (realized P&L) and the transaction list.
+  const pricesReady = open.length === 0 || (!isLoading && prices !== undefined);
   const csvInput = useRef<HTMLInputElement>(null);
   const jsonInput = useRef<HTMLInputElement>(null);
 
@@ -258,17 +263,21 @@ export const PortfolioView = (): React.ReactNode => {
             }
           />
         </div>
-      ) : isLoading || !prices ? (
+      ) : !pricesReady ? (
         <Skeleton className="h-64 w-full" />
       ) : (
         <>
-          {open.length > 0 ? (
+          {/* Every position, not just the open ones: a fully-sold coin keeps
+              zero quantity but carries its realized P&L, and dropping it here
+              erased booked gains from the summary. Closed positions price at
+              zero, so value/cost/allocation are unchanged. */}
+          <PortfolioSummary
+            positions={positions}
+            prices={prices ?? {}}
+            symbolFor={symbolFor}
+          />
+          {open.length > 0 && prices ? (
             <>
-              <PortfolioSummary
-                positions={open}
-                prices={prices}
-                symbolFor={symbolFor}
-              />
               <AnalyticsSection positions={open} prices={prices} />
               <div className="flex justify-end gap-2">
                 <WhatIfDialog positions={open} prices={prices} />
