@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMoney } from "@/hooks/use-money";
+import { useMoney, type Money } from "@/hooks/use-money";
 import {
   formatPercent,
   formatQuantity,
@@ -89,9 +89,7 @@ export const TransactionsList = ({
           showAll && "scrollbar-subtle max-h-[60vh] overflow-y-auto",
         )}
       >
-        {visible.map((t) => {
-          const valued = transactionValue(t, prices);
-          return (
+        {visible.map((t) => (
           <li key={t.id} className="rounded-lg glass-panel p-3">
             <div className="flex items-center gap-2">
               {t.image ? (
@@ -112,21 +110,18 @@ export const TransactionsList = ({
               <div className="flex items-center gap-2">
                 <span className="text-right text-sm font-medium tabular-nums">
                   {money.format(t.amount)}
-                  {valued ? (
-                    <span className="block text-xs font-normal text-muted-foreground">
-                      now {money.format(valued.currentValue)}{" "}
-                      <span className={percentColorClass(valued.pnl)}>
-                        {formatPercent(valued.pnlPct)}
-                      </span>
-                    </span>
-                  ) : null}
+                  <TxValueNow
+                    transaction={t}
+                    prices={prices}
+                    money={money}
+                    inline
+                  />
                 </span>
                 <TxActions transaction={t} onRemove={removeTransaction} />
               </div>
             </div>
           </li>
-          );
-        })}
+        ))}
       </ul>
 
       {/* md+: full ledger table. When expanded, cap the container height and
@@ -151,9 +146,7 @@ export const TransactionsList = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visible.map((t) => {
-              const valued = transactionValue(t, prices);
-              return (
+            {visible.map((t) => (
               <TableRow key={t.id}>
                 <TableCell className="tabular-nums text-muted-foreground">
                   {formatDate(t.date)}
@@ -178,28 +171,14 @@ export const TransactionsList = ({
                 <TableCell className="text-right tabular-nums">
                   {money.format(t.amount)}
                 </TableCell>
-                {/* Sells have proceeds, not a holding to price — they stay
-                    blank rather than inviting a false comparison. */}
                 <TableCell className="text-right tabular-nums">
-                  {valued ? (
-                    <>
-                      <div>{money.format(valued.currentValue)}</div>
-                      <div
-                        className={cn("text-xs", percentColorClass(valued.pnl))}
-                      >
-                        {formatPercent(valued.pnlPct)}
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
+                  <TxValueNow transaction={t} prices={prices} money={money} />
                 </TableCell>
                 <TableCell className="text-right">
                   <TxActions transaction={t} onRemove={removeTransaction} />
                 </TableCell>
               </TableRow>
-              );
-            })}
+            ))}
           </TableBody>
         </Table>
       </div>
@@ -224,6 +203,50 @@ export const TransactionsList = ({
         </Button>
       ) : null}
     </section>
+  );
+};
+
+/**
+ * What a buy is worth at today's price, with its P&L against what it cost.
+ * Shared by the ledger row and the mobile card so the two never drift apart.
+ *
+ * Sells render a dash: they have proceeds, not a holding to price, and putting
+ * a number there would invite a comparison that doesn't hold. Coins with no
+ * known price (fully sold, so never quoted) read the same way. The card has no
+ * column to keep aligned, so it simply omits the line instead.
+ */
+const TxValueNow = ({
+  transaction: t,
+  prices,
+  money,
+  inline = false,
+}: {
+  transaction: Transaction;
+  prices: PriceMap;
+  money: Money;
+  /** Render as a sub-line under the amount (mobile card) rather than a cell. */
+  inline?: boolean;
+}): React.ReactNode => {
+  const valued = transactionValue(t, prices);
+  if (!valued) {
+    return inline ? null : <span className="text-muted-foreground">—</span>;
+  }
+
+  const pct = (
+    <span className={percentColorClass(valued.pnl)}>
+      {formatPercent(valued.pnlPct)}
+    </span>
+  );
+
+  return inline ? (
+    <span className="block text-xs font-normal text-muted-foreground">
+      now {money.format(valued.currentValue)} {pct}
+    </span>
+  ) : (
+    <>
+      <div>{money.format(valued.currentValue)}</div>
+      <div className="text-xs">{pct}</div>
+    </>
   );
 };
 
