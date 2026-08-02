@@ -15,8 +15,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMoney } from "@/hooks/use-money";
-import { formatQuantity } from "@/lib/format";
+import {
+  formatPercent,
+  formatQuantity,
+  percentColorClass,
+} from "@/lib/format";
 import { usePortfolio } from "@/lib/portfolio";
+import { transactionValue, type PriceMap } from "@/lib/portfolio-core";
 import type { Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -55,8 +60,11 @@ const TypeBadge = ({
 /** Full buy/sell ledger, newest first, with per-transaction edit/remove. */
 export const TransactionsList = ({
   transactions,
+  prices,
 }: {
   transactions: Transaction[];
+  /** Live prices, used to value each buy at today's price. */
+  prices: PriceMap;
 }): React.ReactNode => {
   const { removeTransaction } = usePortfolio();
   const money = useMoney();
@@ -81,7 +89,9 @@ export const TransactionsList = ({
           showAll && "scrollbar-subtle max-h-[60vh] overflow-y-auto",
         )}
       >
-        {visible.map((t) => (
+        {visible.map((t) => {
+          const valued = transactionValue(t, prices);
+          return (
           <li key={t.id} className="rounded-lg glass-panel p-3">
             <div className="flex items-center gap-2">
               {t.image ? (
@@ -100,14 +110,23 @@ export const TransactionsList = ({
                 {formatDate(t.date)} · {formatQuantity(t.quantity)} {t.symbol.toUpperCase()}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium tabular-nums">
+                <span className="text-right text-sm font-medium tabular-nums">
                   {money.format(t.amount)}
+                  {valued ? (
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      now {money.format(valued.currentValue)}{" "}
+                      <span className={percentColorClass(valued.pnl)}>
+                        {formatPercent(valued.pnlPct)}
+                      </span>
+                    </span>
+                  ) : null}
                 </span>
                 <TxActions transaction={t} onRemove={removeTransaction} />
               </div>
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       {/* md+: full ledger table. When expanded, cap the container height and
@@ -127,11 +146,14 @@ export const TransactionsList = ({
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Quantity</TableHead>
               <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right">Value Now</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visible.map((t) => (
+            {visible.map((t) => {
+              const valued = transactionValue(t, prices);
+              return (
               <TableRow key={t.id}>
                 <TableCell className="tabular-nums text-muted-foreground">
                   {formatDate(t.date)}
@@ -156,11 +178,28 @@ export const TransactionsList = ({
                 <TableCell className="text-right tabular-nums">
                   {money.format(t.amount)}
                 </TableCell>
+                {/* Sells have proceeds, not a holding to price — they stay
+                    blank rather than inviting a false comparison. */}
+                <TableCell className="text-right tabular-nums">
+                  {valued ? (
+                    <>
+                      <div>{money.format(valued.currentValue)}</div>
+                      <div
+                        className={cn("text-xs", percentColorClass(valued.pnl))}
+                      >
+                        {formatPercent(valued.pnlPct)}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <TxActions transaction={t} onRemove={removeTransaction} />
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
       </div>
