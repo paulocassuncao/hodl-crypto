@@ -186,6 +186,12 @@ export const PortfolioSummary = ({
               unrealized P&amp;L
             </span>
           </div>
+          {/* What went in, against what it's worth now. Secondary weight: the
+              hero's headline stays the current value, this is the reference
+              point that makes the P&L above readable without arithmetic. */}
+          <div className="mt-1.5 font-mono text-sm tabular-nums text-muted-foreground">
+            {money.format(totals.cost)} invested
+          </div>
         </div>
       </div>
 
