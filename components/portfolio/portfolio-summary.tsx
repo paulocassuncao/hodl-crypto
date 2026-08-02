@@ -189,14 +189,8 @@ export const PortfolioSummary = ({
                 that makes the P&L readable without arithmetic. Rides the P&L
                 row rather than a line of its own: below it the sparkline's
                 crest runs straight through the text. */}
-            <span
-              aria-hidden="true"
-              className="text-sm text-muted-foreground/50"
-            >
-              ·
-            </span>
             <span className="font-mono text-sm tabular-nums text-muted-foreground">
-              {money.format(totals.cost)} invested
+              · {money.format(totals.cost)} invested
             </span>
           </div>
         </div>
