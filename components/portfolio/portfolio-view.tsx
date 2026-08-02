@@ -286,7 +286,7 @@ export const PortfolioView = (): React.ReactNode => {
               <PositionsTable positions={open} prices={prices} />
             </>
           ) : null}
-          <TransactionsList transactions={transactions} />
+          <TransactionsList transactions={transactions} prices={prices ?? {}} />
         </>
       )}
     </div>

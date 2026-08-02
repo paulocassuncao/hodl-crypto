@@ -80,6 +80,44 @@ export const derivePositions = (transactions: Transaction[]): Position[] => {
   return [...byCoin.values()];
 };
 
+export interface TransactionValue {
+  /** USD paid for this buy. */
+  invested: number;
+  /** What the units bought would be worth at today's price. */
+  currentValue: number;
+  /** currentValue − invested. */
+  pnl: number;
+  /** P&L as a percentage of the amount invested. */
+  pnlPct: number;
+}
+
+/**
+ * How one *buy* has fared on its own: what it cost against what those units are
+ * worth now. Returns null for sells (a sell has proceeds, not a holding to
+ * price) and when no price is known for the coin.
+ *
+ * Note this is a per-buy lens, not a lot: positions use average cost, so after
+ * a sell these figures assume the bought units are still held and no longer sum
+ * to the portfolio total. That is intentional — the question it answers is
+ * "was *that* entry a good one", which average cost cannot show.
+ */
+export const transactionValue = (
+  tx: Transaction,
+  prices: PriceMap,
+): TransactionValue | null => {
+  if (tx.type !== "buy") return null;
+  const price = prices[tx.coinId]?.usd;
+  if (price === undefined) return null;
+
+  const currentValue = holdingValue(tx.quantity, price);
+  return {
+    invested: tx.amount,
+    currentValue,
+    pnl: currentValue - tx.amount,
+    pnlPct: pnlPct(currentValue, tx.amount),
+  };
+};
+
 export interface PortfolioTotals {
   /** Current total market value of held units. */
   value: number;

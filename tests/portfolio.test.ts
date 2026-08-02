@@ -5,6 +5,7 @@ import {
   holdingValue,
   pnlPct,
   portfolioTotals,
+  transactionValue,
   whatIf,
   type PriceMap,
 } from "@/lib/portfolio-core";
@@ -220,5 +221,50 @@ describe("whatIf", () => {
   it("returns null for a non-positive amount or unknown price", () => {
     expect(whatIf(positions, prices, "bitcoin", 0)).toBeNull();
     expect(whatIf(positions, {}, "bitcoin", 100)).toBeNull();
+  });
+});
+
+describe("transactionValue (per-buy invested vs current)", () => {
+  const prices: PriceMap = { bitcoin: { usd: 300 } };
+
+  it("values a buy's units at the current price", () => {
+    const v = transactionValue(
+      tx({ type: "buy", quantity: 2, amount: 400 }),
+      prices,
+    );
+    expect(v).toEqual({
+      invested: 400,
+      currentValue: 600,
+      pnl: 200,
+      pnlPct: 50,
+    });
+  });
+
+  it("reports a loss when the price fell below the entry", () => {
+    const v = transactionValue(
+      tx({ type: "buy", quantity: 1, amount: 500 }),
+      prices,
+    );
+    expect(v?.pnl).toBe(-200);
+    expect(v?.pnlPct).toBe(-40);
+  });
+
+  it("returns null for a sell", () => {
+    expect(
+      transactionValue(tx({ type: "sell", quantity: 1, amount: 400 }), prices),
+    ).toBeNull();
+  });
+
+  it("returns null when no price is known for the coin", () => {
+    expect(transactionValue(tx({ type: "buy" }), {})).toBeNull();
+  });
+
+  it("reports 0% rather than dividing by a zero-cost buy (airdrop)", () => {
+    const v = transactionValue(
+      tx({ type: "buy", quantity: 1, amount: 0 }),
+      prices,
+    );
+    expect(v?.currentValue).toBe(300);
+    expect(v?.pnlPct).toBe(0);
   });
 });

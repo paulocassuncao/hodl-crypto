@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { PortfolioView } from "@/components/portfolio/portfolio-view";
@@ -140,5 +140,50 @@ describe("PortfolioView with open positions", () => {
     expect(screen.getAllByText("$300.00").length).toBeGreaterThan(0);
     // BTC's booked +$80 is not silently dropped.
     expect(screen.getByText("+$80.00")).toBeInTheDocument();
+  });
+});
+
+describe("invested vs current value", () => {
+  it("shows the total invested in the summary alongside the current value", () => {
+    setup([tx({ quantity: 2, amount: 100 })], { bitcoin: { usd: 75 } });
+
+    // $100 in, 2 units now worth $75 each = $150. Both layouts render under
+    // jsdom (md:hidden is CSS only), so the figures appear more than once.
+    expect(screen.getAllByText("$150.00").length).toBeGreaterThan(0);
+    // Same wording in the hero and in the mobile position card.
+    expect(screen.getAllByText("$100.00 invested").length).toBeGreaterThan(0);
+  });
+
+  it("values each buy at today's price in the ledger", () => {
+    setup([tx({ quantity: 2, amount: 100 })], { bitcoin: { usd: 75 } });
+
+    // The buy's own units: $100 spent, worth $150 today → +50%.
+    expect(screen.getAllByText("+50.00%").length).toBeGreaterThan(0);
+  });
+
+  it("dashes a sell rather than pricing proceeds as a holding", () => {
+    setup(
+      [
+        tx({ type: "buy", quantity: 2, amount: 100, date: 1 }),
+        tx({ type: "sell", quantity: 1, amount: 90, date: 2 }),
+      ],
+      { bitcoin: { usd: 75 } },
+    );
+
+    // Scoped to the sell's own ledger row: other columns (Realized, 24h) also
+    // render a dash, so a bare document-wide query would pass either way.
+    // Both layouts render under jsdom, so reach for the table's badge.
+    const rowFor = (type: string): HTMLElement => {
+      const row = screen
+        .getAllByText(type)
+        .map((el) => el.closest("tr"))
+        .find((el): el is HTMLTableRowElement => el !== null);
+      if (!row) throw new Error(`no ledger row for a ${type}`);
+      return row;
+    };
+
+    expect(within(rowFor("sell")).getByText("—")).toBeInTheDocument();
+    // The buy in the same ledger still gets priced: 2 units at $75 = $150.
+    expect(within(rowFor("buy")).getByText("$150.00")).toBeInTheDocument();
   });
 });

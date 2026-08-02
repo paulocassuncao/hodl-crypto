@@ -96,6 +96,7 @@ export const PositionsTable = ({
           <TableHead className="text-right">Quantity</TableHead>
           <TableHead className="text-right">Avg Cost</TableHead>
           <TableHead className="text-right">Price</TableHead>
+          <TableHead className="text-right">Invested</TableHead>
           <TableHead className="text-right">Value</TableHead>
           <TableHead className="text-right">Unrealized P&L</TableHead>
           <TableHead className="text-right">Realized</TableHead>
@@ -133,6 +134,9 @@ export const PositionsTable = ({
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {money.format(price)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums text-muted-foreground">
+                {money.format(p.costBasis)}
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {money.format(value)}
@@ -250,6 +254,9 @@ const PositionCard = ({
           <div className="text-xs text-muted-foreground">Value</div>
           <div className="text-lg font-semibold tabular-nums">
             {money.format(value)}
+          </div>
+          <div className="text-xs tabular-nums text-muted-foreground">
+            {money.format(p.costBasis)} invested
           </div>
         </div>
         <div className="text-right">

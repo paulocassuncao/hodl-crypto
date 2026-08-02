@@ -14,9 +14,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMoney } from "@/hooks/use-money";
-import { formatQuantity } from "@/lib/format";
+import { useMoney, type Money } from "@/hooks/use-money";
+import {
+  formatPercent,
+  formatQuantity,
+  percentColorClass,
+} from "@/lib/format";
 import { usePortfolio } from "@/lib/portfolio";
+import { transactionValue, type PriceMap } from "@/lib/portfolio-core";
 import type { Transaction } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -55,8 +60,11 @@ const TypeBadge = ({
 /** Full buy/sell ledger, newest first, with per-transaction edit/remove. */
 export const TransactionsList = ({
   transactions,
+  prices,
 }: {
   transactions: Transaction[];
+  /** Live prices, used to value each buy at today's price. */
+  prices: PriceMap;
 }): React.ReactNode => {
   const { removeTransaction } = usePortfolio();
   const money = useMoney();
@@ -100,8 +108,14 @@ export const TransactionsList = ({
                 {formatDate(t.date)} · {formatQuantity(t.quantity)} {t.symbol.toUpperCase()}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium tabular-nums">
+                <span className="text-right text-sm font-medium tabular-nums">
                   {money.format(t.amount)}
+                  <TxValueNow
+                    transaction={t}
+                    prices={prices}
+                    money={money}
+                    inline
+                  />
                 </span>
                 <TxActions transaction={t} onRemove={removeTransaction} />
               </div>
@@ -127,6 +141,7 @@ export const TransactionsList = ({
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Quantity</TableHead>
               <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right">Value Now</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -155,6 +170,9 @@ export const TransactionsList = ({
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {money.format(t.amount)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  <TxValueNow transaction={t} prices={prices} money={money} />
                 </TableCell>
                 <TableCell className="text-right">
                   <TxActions transaction={t} onRemove={removeTransaction} />
@@ -185,6 +203,50 @@ export const TransactionsList = ({
         </Button>
       ) : null}
     </section>
+  );
+};
+
+/**
+ * What a buy is worth at today's price, with its P&L against what it cost.
+ * Shared by the ledger row and the mobile card so the two never drift apart.
+ *
+ * Sells render a dash: they have proceeds, not a holding to price, and putting
+ * a number there would invite a comparison that doesn't hold. Coins with no
+ * known price (fully sold, so never quoted) read the same way. The card has no
+ * column to keep aligned, so it simply omits the line instead.
+ */
+const TxValueNow = ({
+  transaction: t,
+  prices,
+  money,
+  inline = false,
+}: {
+  transaction: Transaction;
+  prices: PriceMap;
+  money: Money;
+  /** Render as a sub-line under the amount (mobile card) rather than a cell. */
+  inline?: boolean;
+}): React.ReactNode => {
+  const valued = transactionValue(t, prices);
+  if (!valued) {
+    return inline ? null : <span className="text-muted-foreground">—</span>;
+  }
+
+  const pct = (
+    <span className={percentColorClass(valued.pnl)}>
+      {formatPercent(valued.pnlPct)}
+    </span>
+  );
+
+  return inline ? (
+    <span className="block text-xs font-normal text-muted-foreground">
+      now {money.format(valued.currentValue)} {pct}
+    </span>
+  ) : (
+    <>
+      <div>{money.format(valued.currentValue)}</div>
+      <div className="text-xs">{pct}</div>
+    </>
   );
 };
 

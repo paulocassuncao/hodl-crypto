@@ -185,6 +185,13 @@ export const PortfolioSummary = ({
             <span className="text-sm text-muted-foreground">
               unrealized P&amp;L
             </span>
+            {/* What went in, against what it's worth now — the reference point
+                that makes the P&L readable without arithmetic. Rides the P&L
+                row rather than a line of its own: below it the sparkline's
+                crest runs straight through the text. */}
+            <span className="font-mono text-sm tabular-nums text-muted-foreground">
+              · {money.format(totals.cost)} invested
+            </span>
           </div>
         </div>
       </div>
