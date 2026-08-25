@@ -232,6 +232,7 @@ describe("radarEmptyMessage", () => {
     watchlist: false,
     watchedCount: 0,
     starredCount: 100,
+    searchedCount: 100,
     query: "",
   };
 
@@ -244,9 +245,9 @@ describe("radarEmptyMessage", () => {
   it("blames the search text, not the conditions, when the user typed", () => {
     // Telling someone to "adjust a condition" when they have none and simply
     // mistyped a ticker is the most common empty state, and it was wrong.
-    expect(radarEmptyMessage({ ...base, query: " zzz " })).toBe(
-      "No coins match “zzz”.",
-    );
+    expect(
+      radarEmptyMessage({ ...base, query: " zzz ", searchedCount: 0 }),
+    ).toBe("No coins match “zzz”.");
   });
 
   it("asks for a star when the watchlist is genuinely empty", () => {
@@ -256,6 +257,7 @@ describe("radarEmptyMessage", () => {
         watchlist: true,
         watchedCount: 0,
         starredCount: 0,
+        searchedCount: 0,
       }),
     ).toBe("No coins in your watchlist yet — tap ☆ to add.");
   });
@@ -267,6 +269,7 @@ describe("radarEmptyMessage", () => {
         watchlist: true,
         watchedCount: 3,
         starredCount: 0,
+        searchedCount: 0,
       }),
     ).toBe("None of your starred coins are in the top 100.");
   });
@@ -279,9 +282,19 @@ describe("radarEmptyMessage", () => {
         watchlist: true,
         watchedCount: 3,
         starredCount: 3,
+        searchedCount: 0,
         query: "zzz",
       }),
     ).toBe("No coins match “zzz”.");
+  });
+
+  it("blames the conditions when the search found something and they zeroed it", () => {
+    // "eth" matches Ethereum, then `1h ≥ +50%` removes it. Blaming the search
+    // sends the user to the wrong control, and contradicts the toolbar's own
+    // "Showing 0 of 1" line rendered right above.
+    expect(
+      radarEmptyMessage({ ...base, query: "eth", searchedCount: 1 }),
+    ).toBe("No coins match these filters — adjust a condition or clear them.");
   });
 });
 

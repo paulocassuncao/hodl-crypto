@@ -152,7 +152,8 @@ const isOperator = (v: string): v is RadarOperator =>
 
 /**
  * Serialize a condition as `metric:operator:value`, e.g. `24h:gte:10`.
- * Conditions join on `,`; the full state lives in `f`, `sort`, `dir`, and `q`.
+ * Conditions join on `,`; the full state lives in `f`, `sort`, `dir`, `q`, and
+ * `w` — see `RADAR_KEYS`, which is what actually enumerates them.
  */
 const encodeCondition = (c: FilterCondition): string =>
   `${c.metric}:${c.operator}:${c.value}`;
@@ -223,6 +224,7 @@ export const radarEmptyMessage = ({
   watchlist,
   watchedCount,
   starredCount,
+  searchedCount,
   query,
 }: {
   /** Is the view narrowed to starred coins? */
@@ -231,6 +233,8 @@ export const radarEmptyMessage = ({
   watchedCount: number;
   /** How many of those are in this dataset, before the text search. */
   starredCount: number;
+  /** How many survive the text search, before the metric conditions. */
+  searchedCount: number;
   query: string;
 }): string => {
   if (watchlist && watchedCount === 0) {
@@ -241,8 +245,11 @@ export const radarEmptyMessage = ({
   if (watchlist && starredCount === 0) {
     return "None of your starred coins are in the top 100.";
   }
+  // Only blame the search when the search is what emptied the list. A query
+  // that found something and was then zeroed by a condition is the filters'
+  // doing, and saying otherwise sends the user to fix the wrong control.
   const q = query.trim();
-  if (q) return `No coins match “${q}”.`;
+  if (q && searchedCount === 0) return `No coins match “${q}”.`;
   return "No coins match these filters — adjust a condition or clear them.";
 };
 

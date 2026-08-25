@@ -134,6 +134,7 @@ export const RadarView = ({
     watchlist: state.watchlist,
     watchedCount: watchedIds.size,
     starredCount: starred.length,
+    searchedCount: searched.length,
     query: state.q,
   });
 
