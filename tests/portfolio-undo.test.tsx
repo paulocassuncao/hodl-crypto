@@ -1,10 +1,34 @@
 import { act, render, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { useAuth } from "@/lib/auth";
 import { PortfolioProvider, usePortfolio } from "@/lib/portfolio";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { TransactionRow } from "@/lib/supabase/types";
+import type { Database, TransactionRow } from "@/lib/supabase/types";
+
+/**
+ * Never called — it exists so the fake client below is anchored to the *real*
+ * typed client instead of to whatever shape this file guesses. Each property
+ * is the exact expression the provider issues; the types derived from it fail
+ * the build if supabase-js changes a return shape or an insert payload, which
+ * is the one divergence a passing test could never catch on its own.
+ */
+// Type-only by design: the value is never called, only `typeof`-ed below.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const providerQueries = (client: SupabaseClient<Database>) => ({
+  load: client
+    .from("transactions")
+    .select("*")
+    .order("date", { ascending: false }),
+  write: client.from("transactions").delete().eq("id", ""),
+  table: client.from("transactions"),
+});
+
+type Queries = ReturnType<typeof providerQueries>;
+type LoadResult = Awaited<Queries["load"]>;
+type WriteResult = Awaited<Queries["write"]>;
+type InsertArg = Parameters<Queries["table"]["insert"]>[0];
 
 jest.mock("@/lib/supabase/client");
 jest.mock("@/lib/auth");
@@ -33,8 +57,18 @@ const row = (over: Partial<TransactionRow> = {}): TransactionRow => ({
 /** Writes the fake Supabase client recorded for the current test. */
 type Writes = {
   deleted: string[];
-  inserted: Record<string, unknown>[];
+  inserted: InsertArg[];
 };
+
+/** A successful PostgREST envelope, built to the real response type. */
+const ok = <T,>(data: T) => ({
+  success: true as const,
+  data,
+  error: null,
+  count: null,
+  status: 200,
+  statusText: "OK",
+});
 
 /**
  * Mount the real PortfolioProvider over a fake Supabase client seeded with
@@ -52,17 +86,17 @@ const mountPortfolio = async (
   (getSupabaseBrowserClient as jest.Mock).mockReturnValue({
     from: () => ({
       select: () => ({
-        order: () => Promise.resolve({ data: rows, error: null }),
+        order: (): Promise<LoadResult> => Promise.resolve(ok(rows)),
       }),
       delete: () => ({
-        eq: (_column: string, value: string) => {
+        eq: (_column: string, value: string): Promise<WriteResult> => {
           writes.deleted.push(value);
-          return Promise.resolve({ error: null });
+          return Promise.resolve(ok(null));
         },
       }),
-      insert: (payload: Record<string, unknown>) => {
+      insert: (payload: InsertArg): Promise<WriteResult> => {
         writes.inserted.push(payload);
-        return Promise.resolve({ error: null });
+        return Promise.resolve(ok(null));
       },
     }),
   });
