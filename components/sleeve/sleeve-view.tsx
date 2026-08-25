@@ -16,7 +16,7 @@ import { formatCurrency, formatPercent, percentColorClass } from "@/lib/format";
 import type { SleeveStateRow } from "@/lib/supabase/types";
 
 /**
- * Trading-sleeve page body: a PAPER simulation on fictitious capital, kept
+ * Trading-sleeve lens body: a PAPER simulation on fictitious capital, kept
  * deliberately separate from the real-money portfolio — its dollars are never
  * summed into net worth, and every figure is labelled as paper. (Do not
  * import anything from lib/portfolio* here, or sleeve components there.)

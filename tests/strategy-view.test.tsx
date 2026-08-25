@@ -98,22 +98,32 @@ describe("StrategyView", () => {
     );
   });
 
-  it("writes the lens to the URL, and keeps the default out of it", async () => {
+  it("writes the lens to the URL when it leaves the default", async () => {
     setup("");
-    fireEvent.click(screen.getByRole("tab", { name: "Backtest" }));
+    fireEvent.click(await screen.findByRole("tab", { name: "Backtest" }));
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith("/sleeve?lens=backtest", {
         scroll: false,
       }),
     );
+  });
 
-    replace.mockClear();
+  // Its own `it` on purpose: rendering twice inside one case leaves both
+  // instances mounted, and the click lands on the stale first one — which
+  // starts at the default, so the param it should strip was never there.
+  it("strips the param on the way back to the default", async () => {
     setup("lens=backtest");
-    fireEvent.click(screen.getAllByRole("tab", { name: "Live" })[0]);
-    // Back to the default: the param goes away rather than reading `lens=live`.
+    fireEvent.click(await screen.findByRole("tab", { name: "Live" }));
+    // `/sleeve`, not `/sleeve?lens=live`.
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith("/sleeve", { scroll: false }),
     );
+  });
+
+  it("mounts one lens at a time, never both", async () => {
+    setup("lens=backtest");
+    await screen.findByText(/historical · in-sample/);
+    expect(screen.queryByText(/paper · validating/)).toBeNull();
   });
 
   it("preserves foreign params when the lens changes", async () => {
