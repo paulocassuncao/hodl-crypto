@@ -29,13 +29,15 @@ export const safeRedirect = (next: string | null | undefined): string => {
   // `//host` and `/\host` are absolute to a browser, despite the leading slash.
   if (next.startsWith("//") || next.startsWith("/\\")) return DEFAULT_REDIRECT;
   // Whitespace and control characters are header/URL-splitting material.
-  // Split in two so neither needs a control escape inside a regex: `\s`
-  // covers the space/tab/newline family, the scan covers the rest of C0.
+  // Split in two so neither needs a control escape inside a regex: `\s` covers
+  // the space/tab/newline family, the scan covers the control ranges — C0 and
+  // DEL, and C1 too, so the comment and the code agree about what "control
+  // character" means here.
   if (/\s/.test(next)) return DEFAULT_REDIRECT;
   if (
     [...next].some((ch) => {
       const code = ch.charCodeAt(0);
-      return code < 0x20 || code === 0x7f;
+      return code < 0x20 || (code >= 0x7f && code <= 0x9f);
     })
   ) {
     return DEFAULT_REDIRECT;

@@ -38,6 +38,8 @@ describe("safeRedirect", () => {
     ["raw control character", "/ok\u0001evil"],
     ["null byte", "/ok\u0000evil"],
     ["DEL", "/ok\u007fevil"],
+    ["C1 NEL", "/ok\u0085evil"],
+    ["C1 upper bound", "/ok\u009fevil"],
     // Path normalisation smuggles an authority past a check on the INPUT:
     // `/..//evil.com` starts with `/.`, so the `//` test passes, and the
     // parsed origin is still ours — but the normalised pathname is
