@@ -34,6 +34,15 @@ describe("safeRedirect", () => {
     ["raw control character", "/ok\u0001evil"],
     ["null byte", "/ok\u0000evil"],
     ["DEL", "/ok\u007fevil"],
+    // Path normalisation smuggles an authority past a check on the INPUT:
+    // `/..//evil.com` starts with `/.`, so the `//` test passes, and the
+    // parsed origin is still ours — but the normalised pathname is
+    // `//evil.com`, which the browser reads as a host.
+    ["dot-dot collapsing into an authority", "/..//evil.com"],
+    ["dot-slash collapsing into an authority", "/.//evil.com"],
+    ["deep traversal into an authority", "/a/b/../../..//evil.com"],
+    ["backslash traversal", "/..\\\\/evil.com"],
+    ["triple slash", "/..///evil.com"],
   ])("refuses %s", (_name, hostile) => {
     expect(safeRedirect(hostile)).toBe(DEFAULT_REDIRECT);
   });
@@ -50,6 +59,11 @@ describe("safeRedirect", () => {
       "//evil.com",
       "/\\evil.com",
       "https://evil.com/x",
+      "/..//evil.com",
+      "/.//evil.com",
+      "/a/b/../../..//evil.com",
+      "/..///evil.com",
+      "/..\\\\/evil.com",
     ];
     for (const input of hostile) {
       const out = safeRedirect(input);
