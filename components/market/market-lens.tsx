@@ -6,14 +6,14 @@ import { Grid3x3, Layers, Table2, TrendingUp } from "lucide-react";
 
 import { CategoriesTable } from "@/components/categories-table";
 import { MarketHeatmap } from "@/components/heatmap/market-heatmap";
+import { LensSwitch, type LensOption } from "@/components/lens-switch";
 import { MarketTable } from "@/components/market-table/market-table";
 import { RadarView } from "@/components/radar/radar-view";
 import { stripRadarState } from "@/lib/radar";
-import { cn } from "@/lib/utils";
 
 type Lens = "table" | "relative" | "heatmap" | "sectors";
 
-const LENSES: { id: Lens; label: string; icon: typeof Table2 }[] = [
+const LENSES: LensOption<Lens>[] = [
   { id: "table", label: "Table", icon: Table2 },
   { id: "relative", label: "Relative to BTC", icon: TrendingUp },
   { id: "heatmap", label: "Heatmap", icon: Grid3x3 },
@@ -60,33 +60,12 @@ export const MarketLens = (): React.ReactNode => {
     <section aria-label="Market" className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-xl font-bold tracking-tight">Market</h2>
-        <div
-          role="tablist"
-          aria-label="Market view"
-          className="glass-panel inline-flex gap-1 rounded-xl p-1"
-        >
-          {LENSES.map(({ id, label, icon: Icon }) => {
-            const active = lens === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setLens(id)}
-                className={cn(
-                  "focus-ring inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors",
-                  active
-                    ? "bg-glass-high text-foreground shadow-[inset_0_0_0_1px_var(--glass-border)]"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <Icon className="size-4" aria-hidden="true" />
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            );
-          })}
-        </div>
+        <LensSwitch
+          value={lens}
+          options={LENSES}
+          onChange={setLens}
+          ariaLabel="Market view"
+        />
       </div>
 
       <div className="min-h-[70vh]">

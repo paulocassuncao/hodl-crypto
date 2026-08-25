@@ -217,21 +217,18 @@ export const BacktestView = (): React.ReactNode => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="font-display flex items-center gap-2 text-2xl font-semibold">
-          Backtest
-          <Badge variant="outline" className="gap-1">
-            <FlaskConical aria-hidden />
-            historical · in-sample
-          </Badge>
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          The deployed trend ensemble (EMA 20/50/200 + Donchian 20/10, vol
-          target 0.6) simulated over past data, against buy &amp; hold and DCA.
-          Past results don&apos;t guarantee future ones. Costs modeled: 0.10%
-          fee + 0.05% slippage per trade. Fictitious capital — not the live
-          Sleeve.
-        </p>
+      {/* Same note as the live lens: StrategyView's header already names the
+          strategy. Only the backtest's own caveats belong here. */}
+      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Badge variant="outline" className="gap-1">
+          <FlaskConical aria-hidden />
+          historical · in-sample
+        </Badge>
+        <span>
+          Simulated over past data against buy &amp; hold and DCA, with 0.10%
+          fee + 0.05% slippage per trade. Past results don&apos;t guarantee
+          future ones.
+        </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

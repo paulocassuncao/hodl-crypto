@@ -16,7 +16,7 @@ import { formatCurrency, formatPercent, percentColorClass } from "@/lib/format";
 import type { SleeveStateRow } from "@/lib/supabase/types";
 
 /**
- * Trading-sleeve page body: a PAPER simulation on fictitious capital, kept
+ * Trading-sleeve lens body: a PAPER simulation on fictitious capital, kept
  * deliberately separate from the real-money portfolio — its dollars are never
  * summed into net worth, and every figure is labelled as paper. (Do not
  * import anything from lib/portfolio* here, or sleeve components there.)
@@ -102,21 +102,15 @@ export const SleeveView = (): React.ReactNode => {
     // O ritmo vertical aqui separa seções tituladas (cada uma com seu h2:
     // Signals, Equity curve, Signal events), não linhas de um mesmo grid de cards.
     <div className="space-y-6">{/* design-lint-ignore grid-rhythm */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display flex items-center gap-2 text-2xl font-semibold">
-            Trading Sleeve
-            <Badge variant="outline" className="gap-1">
-              <FlaskConical aria-hidden />
-              paper · validating
-            </Badge>
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Systematic trend ensemble (EMA 20/50/200 + Donchian 20/10, vol
-            target 0.6) running forward on fictitious capital. Not real money —
-            never counted in your net worth.
-          </p>
-        </div>
+      {/* The strategy itself is stated once, by StrategyView's header. What
+          belongs here is only what separates this lens from the backtest:
+          this one is running forward, on paper, right now. */}
+      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Badge variant="outline" className="gap-1">
+          <FlaskConical aria-hidden />
+          paper · validating
+        </Badge>
+        <span>Running forward on fictitious capital, one bar per day.</span>
       </div>
 
       {error ? (

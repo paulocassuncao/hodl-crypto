@@ -4,7 +4,8 @@
  * Slimmed to the redesigned information architecture (see the redesign plan):
  * Explore (Market, Compare) and Operate (Portfolio, Strategy, Alerts). The
  * former Coins / Radar / Heatmap / Categories screens are folded into Market as
- * lenses (see components/market/market-lens.tsx); /dex and /derivatives were cut.
+ * lenses (see components/market/market-lens.tsx), and Backtest into Strategy
+ * (components/strategy/strategy-view.tsx); /dex and /derivatives were cut.
  */
 export type NavLink = { href: string; label: string; group: "explore" | "operate" };
 
@@ -13,6 +14,5 @@ export const NAV_LINKS: NavLink[] = [
   { href: "/compare", label: "Compare", group: "explore" },
   { href: "/portfolio", label: "Portfolio", group: "operate" },
   { href: "/sleeve", label: "Strategy", group: "operate" },
-  { href: "/backtest", label: "Backtest", group: "operate" },
   { href: "/alerts", label: "Alerts", group: "operate" },
 ];
