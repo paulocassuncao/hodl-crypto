@@ -16,7 +16,7 @@ import { useCurrency } from "@/lib/currency";
 import {
   applyFilters,
   decodeRadarState,
-  encodeRadarState,
+  mergeRadarState,
   metricValue,
   type FilterCondition,
   type RadarSortKey,
@@ -25,16 +25,13 @@ import {
 import type { Coin } from "@/lib/types";
 
 /**
- * The Radar screener: a market-context HUD over a dense relative-strength table
- * — every coin's momentum measured against Bitcoin (the "BTC vs Altcoins"
- * view). Filtering is consolidated behind one toolbar + modal, and the whole
- * state lives in the URL so any view is shareable.
- */
-/**
- * The relative-strength screener. Standalone at /radar (with its own title +
- * HUD); when `embedded` (as the "Relative to BTC" lens inside the Market
- * screen) the header and HUD are suppressed, since the Market hero already
- * carries the global readings.
+ * The relative-strength screener — every coin's momentum measured against
+ * Bitcoin (the "BTC vs Altcoins" view), filtered through one toolbar + modal,
+ * with the whole state in the URL so any view is shareable.
+ *
+ * It renders as the Market screen's "Relative to BTC" lens (`embedded`), which
+ * suppresses the header and HUD since the Market hero already carries the
+ * global readings. The standalone branch is left from the retired /radar route.
  */
 export const RadarView = ({
   embedded = false,
@@ -60,14 +57,16 @@ export const RadarView = ({
     }
   }, [isError, error]);
 
-  // Write state to whatever path this view lives on — /radar standalone, or the
-  // Market screen ("/") when embedded — so the relative lens never navigates away.
+  // Write state to whatever path this view lives on — the Market screen ("/")
+  // when embedded — so the relative lens never navigates away. Merged, not
+  // encoded from scratch: the Market URL also carries `lens`, and dropping it
+  // would kick the user back to the table on the next sort.
   const commit = useCallback(
     (next: RadarState): void => {
-      const qs = encodeRadarState(next);
+      const qs = mergeRadarState(searchParams, next);
       router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
     },
-    [router, pathname],
+    [router, pathname, searchParams],
   );
 
   const btc = useMemo(() => data?.find((c) => c.id === "bitcoin"), [data]);
@@ -106,7 +105,11 @@ export const RadarView = ({
       commit({ ...state, sortDir: state.sortDir === "asc" ? "desc" : "asc" });
     } else {
       // Rank reads low→high; momentum reads high→low by default.
-      commit({ ...state, sortKey: key, sortDir: key === "rank" ? "asc" : "desc" });
+      commit({
+        ...state,
+        sortKey: key,
+        sortDir: key === "rank" ? "asc" : "desc",
+      });
     }
   };
 
@@ -147,7 +150,10 @@ export const RadarView = ({
 
       {/* The % columns are performance vs Bitcoin, so BTC itself reads 0. */}
       <p className="text-xs text-muted-foreground">
-        % change is each coin&apos;s move <strong className="font-medium text-foreground">relative to Bitcoin</strong>{" "}
+        % change is each coin&apos;s move{" "}
+        <strong className="font-medium text-foreground">
+          relative to Bitcoin
+        </strong>{" "}
         over the period — Bitcoin is the 0% baseline.
       </p>
 

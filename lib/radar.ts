@@ -44,7 +44,11 @@ export const METRIC_LABEL: Record<RadarMetric, string> = {
   "30d": "30d",
 };
 
-export const OPERATORS: { value: RadarOperator; label: string; symbol: string }[] = [
+export const OPERATORS: {
+  value: RadarOperator;
+  label: string;
+  symbol: string;
+}[] = [
   { value: "gte", label: "≥", symbol: "≥" },
   { value: "lte", label: "≤", symbol: "≤" },
   { value: "gt", label: ">", symbol: ">" },
@@ -142,8 +146,7 @@ export const DEFAULT_STATE: RadarState = {
 
 const isMetric = (v: string): v is RadarMetric =>
   (METRICS as string[]).includes(v);
-const isSortKey = (v: string): v is RadarSortKey =>
-  v === "rank" || isMetric(v);
+const isSortKey = (v: string): v is RadarSortKey => v === "rank" || isMetric(v);
 const isOperator = (v: string): v is RadarOperator =>
   OPERATORS.some((o) => o.value === v);
 
@@ -178,6 +181,26 @@ export const encodeRadarState = (state: RadarState): string => {
   return params.toString();
 };
 
+/** Query keys this module owns; everything else in the URL belongs to someone. */
+const RADAR_KEYS = ["f", "sort", "dir", "q"] as const;
+
+/**
+ * Radar state written *into* an existing query string instead of replacing it.
+ * The screener renders standalone and as the Market screen's "Relative to BTC"
+ * lens, where the URL also carries `lens` — encoding from scratch would drop
+ * it and bounce the user back to the table on the next sort.
+ */
+export const mergeRadarState = (
+  current: URLSearchParams,
+  state: RadarState,
+): string => {
+  const params = new URLSearchParams(current);
+  for (const key of RADAR_KEYS) params.delete(key);
+  const own = new URLSearchParams(encodeRadarState(state));
+  for (const [key, value] of own) params.set(key, value);
+  return params.toString();
+};
+
 /** Query params → state, falling back to defaults for anything missing/invalid. */
 export const decodeRadarState = (
   params: URLSearchParams | { get: (key: string) => string | null },
@@ -206,7 +229,8 @@ export const decodeRadarState = (
 
 /** Human label for a condition chip, e.g. `24h ≥ +10%`. */
 export const conditionLabel = (c: FilterCondition): string => {
-  const op = OPERATORS.find((o) => o.value === c.operator)?.symbol ?? c.operator;
+  const op =
+    OPERATORS.find((o) => o.value === c.operator)?.symbol ?? c.operator;
   const sign = c.value > 0 ? "+" : "";
   return `${METRIC_LABEL[c.metric]} ${op} ${sign}${c.value}%`;
 };

@@ -1,8 +1,10 @@
 import {
   applyFilters,
   conditionLabel,
+  DEFAULT_STATE,
   decodeRadarState,
   encodeRadarState,
+  mergeRadarState,
   metricValue,
   PRESETS,
   tvSymbol,
@@ -117,7 +119,10 @@ describe("applyFilters (relative to BTC)", () => {
       { metric: "24h", operator: "gt", value: 0 },
     ];
     // a (12 > 2) and b (3 > 2) beat BTC; c (−5) lags.
-    expect(applyFilters(coins, conds, btc).map((c) => c.id)).toEqual(["a", "b"]);
+    expect(applyFilters(coins, conds, btc).map((c) => c.id)).toEqual([
+      "a",
+      "b",
+    ]);
   });
 });
 
@@ -142,7 +147,9 @@ describe("URL state encode/decode round-trip", () => {
       sortDir: "desc",
       q: "sol",
     };
-    const decoded = decodeRadarState(new URLSearchParams(encodeRadarState(state)));
+    const decoded = decodeRadarState(
+      new URLSearchParams(encodeRadarState(state)),
+    );
     expect(decoded).toEqual(state);
   });
 
@@ -154,14 +161,14 @@ describe("URL state encode/decode round-trip", () => {
       q: "",
     };
     // rank+asc is the default, so the query is empty but still decodes to it.
-    expect(decodeRadarState(new URLSearchParams(encodeRadarState(asc)))).toEqual(
-      asc,
-    );
+    expect(
+      decodeRadarState(new URLSearchParams(encodeRadarState(asc))),
+    ).toEqual(asc);
 
     const desc: RadarState = { ...asc, sortDir: "desc" };
-    expect(decodeRadarState(new URLSearchParams(encodeRadarState(desc)))).toEqual(
-      desc,
-    );
+    expect(
+      decodeRadarState(new URLSearchParams(encodeRadarState(desc))),
+    ).toEqual(desc);
   });
 
   it("drops malformed conditions and falls back to defaults", () => {
@@ -171,6 +178,40 @@ describe("URL state encode/decode round-trip", () => {
     expect(decoded.conditions).toEqual([
       { metric: "24h", operator: "gte", value: 10 },
     ]);
+  });
+});
+
+describe("mergeRadarState", () => {
+  const state: RadarState = {
+    conditions: [{ metric: "24h", operator: "gte", value: 10 }],
+    sortKey: "7d",
+    sortDir: "desc",
+    q: "sol",
+  };
+
+  it("keeps foreign params so the Market lens survives a sort", () => {
+    const merged = new URLSearchParams(
+      mergeRadarState(new URLSearchParams("lens=relative"), state),
+    );
+    expect(merged.get("lens")).toBe("relative");
+    expect(decodeRadarState(merged)).toEqual(state);
+  });
+
+  it("clears its own stale params instead of stacking them", () => {
+    const merged = new URLSearchParams(
+      mergeRadarState(
+        new URLSearchParams("lens=relative&f=1h:lt:-5&sort=1h&dir=asc&q=old"),
+        DEFAULT_STATE,
+      ),
+    );
+    expect(merged.get("lens")).toBe("relative");
+    expect([...merged.keys()]).toEqual(["lens"]);
+  });
+
+  it("matches encodeRadarState when there is nothing foreign to keep", () => {
+    expect(mergeRadarState(new URLSearchParams(), state)).toBe(
+      encodeRadarState(state),
+    );
   });
 });
 
@@ -206,6 +247,8 @@ describe("tvSymbol", () => {
   });
 
   it("uses the override map for special-cased ids", () => {
-    expect(tvSymbol({ id: "usd-coin", symbol: "usdc" })).toBe("BINANCE:USDCUSD");
+    expect(tvSymbol({ id: "usd-coin", symbol: "usdc" })).toBe(
+      "BINANCE:USDCUSD",
+    );
   });
 });
