@@ -6,16 +6,21 @@ const nextConfig: NextConfig = {
   // redirect would have landed on the default lens and only pretended to honour
   // the link; #48 removed that premise, and lenses are URL-addressable now.
   //
-  // /backtest was a 307 while its destination still carried the legacy /sleeve
-  // name; that name is gone, so all four are permanent.
+  // `permanent` tracks the DESTINATION, not the source. A 308 is cached by the
+  // browser for good: once a client has followed it, there is no live request
+  // left to correct, so it may only point somewhere that cannot move. `/` is
+  // that; `/strategy` is only the current name for a screen whose shape has
+  // changed three times — the last time being the rename that retired
+  // `/sleeve`, which the previous version of this comment predicted and then
+  // suffered. A 307 costs one round trip on a path almost nobody hits.
   redirects: async () => [
     { source: "/radar", destination: "/?lens=relative", permanent: true },
     { source: "/heatmap", destination: "/?lens=heatmap", permanent: true },
-    { source: "/sleeve", destination: "/strategy", permanent: true },
+    { source: "/sleeve", destination: "/strategy", permanent: false },
     {
       source: "/backtest",
       destination: "/strategy?lens=backtest",
-      permanent: true,
+      permanent: false,
     },
   ],
   images: {
