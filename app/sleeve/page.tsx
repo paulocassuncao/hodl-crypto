@@ -1,13 +1,21 @@
+import { Suspense } from "react";
+
 import type { Metadata } from "next";
 
-import { SleeveView } from "@/components/sleeve/sleeve-view";
+import { StrategyView } from "@/components/strategy/strategy-view";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
-  title: "Trading Sleeve — HODL",
+  title: "Strategy — HODL",
   description:
-    "Paper-trading sleeve: systematic trend strategy running forward on fictitious capital.",
+    "Systematic trend ensemble on fictitious capital: the paper sleeve running forward, and its historical backtest.",
 };
 
-const SleevePage = (): React.ReactNode => <SleeveView />;
+/** StrategyView reads the active lens from the URL, so it renders under Suspense. */
+const StrategyPage = (): React.ReactNode => (
+  <Suspense fallback={<Skeleton className="min-h-[70vh] w-full rounded-lg" />}>
+    <StrategyView />
+  </Suspense>
+);
 
-export default SleevePage;
+export default StrategyPage;
