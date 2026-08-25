@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createServerClient } from "@supabase/ssr";
 
-import { DEFAULT_REDIRECT, safeRedirect } from "@/lib/safe-redirect";
+import {
+  applyRedirectTarget,
+  DEFAULT_REDIRECT,
+  safeRedirect,
+} from "@/lib/safe-redirect";
 import type { Database } from "@/lib/supabase/types";
 
 /**
@@ -61,12 +65,9 @@ export const proxy = async (request: NextRequest): Promise<NextResponse> => {
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
     // `next` is attacker-controlled — it arrived in a URL. safeRedirect only
-    // lets a same-origin relative path through.
-    const target = safeRedirect(url.searchParams.get("next"));
-    url.search = "";
-    const [pathOnly, query] = target.split("?");
-    url.pathname = pathOnly;
-    if (query) url.search = `?${query}`;
+    // lets a same-origin relative path through; applyRedirectTarget keeps its
+    // path, query and fragment apart instead of splitting the string by hand.
+    applyRedirectTarget(url, safeRedirect(url.searchParams.get("next")));
     return NextResponse.redirect(url);
   }
 

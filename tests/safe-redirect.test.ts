@@ -1,4 +1,8 @@
-import { DEFAULT_REDIRECT, safeRedirect } from "@/lib/safe-redirect";
+import {
+  applyRedirectTarget,
+  DEFAULT_REDIRECT,
+  safeRedirect,
+} from "@/lib/safe-redirect";
 
 describe("safeRedirect", () => {
   it("keeps a same-origin path, with its query and hash", () => {
@@ -43,6 +47,7 @@ describe("safeRedirect", () => {
     ["deep traversal into an authority", "/a/b/../../..//evil.com"],
     ["backslash traversal", "/..\\\\/evil.com"],
     ["triple slash", "/..///evil.com"],
+    ["percent-encoded dot segments", "/%2e%2e//evil.com"],
   ])("refuses %s", (_name, hostile) => {
     expect(safeRedirect(hostile)).toBe(DEFAULT_REDIRECT);
   });
@@ -54,22 +59,58 @@ describe("safeRedirect", () => {
   });
 
   it("never returns anything a browser would read as another origin", () => {
-    const hostile = [
-      "http://evil.com",
-      "//evil.com",
-      "/\\evil.com",
-      "https://evil.com/x",
-      "/..//evil.com",
-      "/.//evil.com",
-      "/a/b/../../..//evil.com",
-      "/..///evil.com",
-      "/..\\\\/evil.com",
+    // Generated rather than listed: the fixed list was the reason the
+    // `..`-normalisation bypass shipped — every entry in it failed at the
+    // first guard, so none of them ever reached the output. Crossing these
+    // parts builds inputs that pass the early checks and only misbehave once
+    // the path has been normalised.
+    const prefixes = ["/", "/.", "/..", "/a/..", "/a/b/../..", "/%2e%2e"];
+    const separators = ["/", "//", "///", "/\\\\", "\\\\/"];
+    const hosts = [
+      "evil.com",
+      "evil.com/steal",
+      "user@evil.com",
+      "evil.com:80",
     ];
-    for (const input of hostile) {
-      const out = safeRedirect(input);
-      expect(new URL(out, "https://hodl.test").origin).toBe(
-        "https://hodl.test",
-      );
+
+    for (const prefix of prefixes) {
+      for (const separator of separators) {
+        for (const host of hosts) {
+          const input = `${prefix}${separator}${host}`;
+          const out = safeRedirect(input);
+          expect(new URL(out, "https://hodl.test").origin).toBe(
+            "https://hodl.test",
+          );
+        }
+      }
     }
+  });
+
+  describe("applyRedirectTarget", () => {
+    const applied = (target: string): string => {
+      const url = new URL("https://hodl.test/login?next=whatever");
+      applyRedirectTarget(url, target);
+      return `${url.pathname}${url.search}${url.hash}`;
+    };
+
+    it("keeps a fragment a fragment", () => {
+      // Splitting on "?" by hand baked the `#` into the path as %23, giving a
+      // 404 instead of an anchor.
+      expect(applied("/coins/bitcoin#chart")).toBe("/coins/bitcoin#chart");
+    });
+
+    it("keeps query and fragment apart when both are present", () => {
+      expect(applied("/strategy?lens=backtest#panel")).toBe(
+        "/strategy?lens=backtest#panel",
+      );
+    });
+
+    it("does not drop anything after a second question mark", () => {
+      expect(applied("/a?b=1?c=2")).toBe("/a?b=1?c=2");
+    });
+
+    it("clears a stale query when the target has none", () => {
+      expect(applied("/portfolio")).toBe("/portfolio");
+    });
   });
 });

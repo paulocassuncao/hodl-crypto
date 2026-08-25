@@ -54,24 +54,30 @@ export const safeRedirect = (next: string | null | undefined): string => {
   // Returning to the login page is a loop, not a destination.
   if (parsed.pathname === "/login") return DEFAULT_REDIRECT;
 
-  const target = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  // The OUTPUT needs its own check: every test above read the input, and the
+  // input is not this string. Path normalisation collapses `..` segments, so
+  // `/..//evil.com` passes the `//` test (it starts `/.`), parses same-origin
+  // (it is relative), and still normalises to a pathname of `//evil.com` — an
+  // authority the browser honours. This one guard is enough on its own: a
+  // parsed `pathname` has had its backslashes rewritten to `/` already, and a
+  // path with a single leading slash can only ever replace the path when it is
+  // resolved, never the authority. So `//` is the whole attack surface here.
+  if (parsed.pathname.startsWith("//")) return DEFAULT_REDIRECT;
 
-  // The output gets its own check, because every test above looked at the
-  // INPUT and they are not the same string. Path normalisation collapses `..`
-  // segments, so `/..//evil.com` — which passes the `//` test, since it starts
-  // `/.` — normalises to a pathname of `//evil.com`, an authority the browser
-  // honours. Re-parse what we are about to hand back and require that it, too,
-  // stays on the throwaway origin.
-  if (target.startsWith("//") || target.startsWith("/\\")) {
-    return DEFAULT_REDIRECT;
-  }
-  try {
-    if (new URL(target, "http://localhost").origin !== "http://localhost") {
-      return DEFAULT_REDIRECT;
-    }
-  } catch {
-    return DEFAULT_REDIRECT;
-  }
+  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+};
 
-  return target;
+/**
+ * Point `url` at a validated target, keeping path, query and fragment apart.
+ *
+ * Splitting the target by hand loses data: `String.split("?")` does not stop
+ * at `#`, so a fragment ends up percent-encoded inside the path
+ * (`/coins/bitcoin#chart` → `/coins/bitcoin%23chart`), and a second `?` in the
+ * query is dropped on the floor. Let the URL parser do it.
+ */
+export const applyRedirectTarget = (url: URL, target: string): void => {
+  const resolved = new URL(target, "http://localhost");
+  url.pathname = resolved.pathname;
+  url.search = resolved.search;
+  url.hash = resolved.hash;
 };
