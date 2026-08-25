@@ -53,8 +53,15 @@ export const safeRedirect = (next: string | null | undefined): string => {
   }
   if (parsed.origin !== "http://localhost") return DEFAULT_REDIRECT;
 
-  // Returning to the login page is a loop, not a destination.
+  // Same-origin is not the same as "somewhere to put a person". Returning to
+  // the login page is a loop, and an API route has no page to render — the
+  // auth gate covers `/api/*` too, so an unauthenticated hit on one (a stale
+  // bookmark, a mistyped URL) would otherwise capture it as `next` and dump
+  // the user on raw JSON right after they signed in.
   if (parsed.pathname === "/login") return DEFAULT_REDIRECT;
+  if (parsed.pathname === "/api" || parsed.pathname.startsWith("/api/")) {
+    return DEFAULT_REDIRECT;
+  }
 
   // The OUTPUT needs its own check: every test above read the input, and the
   // input is not this string. Path normalisation collapses `..` segments, so

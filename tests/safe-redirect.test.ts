@@ -60,6 +60,16 @@ describe("safeRedirect", () => {
     expect(safeRedirect("/login?next=/portfolio")).toBe(DEFAULT_REDIRECT);
   });
 
+  it("refuses an API route, which has no page to land on", () => {
+    // The auth gate covers /api/* too, so a stale bookmark to one would
+    // otherwise be captured as `next` and serve raw JSON post-login.
+    expect(safeRedirect("/api/markets")).toBe(DEFAULT_REDIRECT);
+    expect(safeRedirect("/api/coins/bitcoin?vs=usd")).toBe(DEFAULT_REDIRECT);
+    expect(safeRedirect("/api")).toBe(DEFAULT_REDIRECT);
+    // A page whose name merely starts with those letters is not an API route.
+    expect(safeRedirect("/apiary")).toBe("/apiary");
+  });
+
   it("never returns anything a browser would read as another origin", () => {
     // Generated rather than listed: the fixed list was the reason the
     // `..`-normalisation bypass shipped — every entry in it failed at the
