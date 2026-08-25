@@ -2,11 +2,19 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createServerClient } from "@supabase/ssr";
 
+import {
+  applyRedirectTarget,
+  capturesReturnTo,
+  DEFAULT_REDIRECT,
+  safeRedirect,
+} from "@/lib/safe-redirect";
 import type { Database } from "@/lib/supabase/types";
 
 /**
  * Refreshes the Supabase auth session on every request and gates the whole app:
- * unauthenticated users are redirected to /login. The matcher below excludes
+ * unauthenticated users are redirected to /login with a `next` param naming
+ * where they were headed, which the login page returns them to on success.
+ * The matcher below excludes
  * Next internals and static assets; /login itself is allowed through.
  * (Next 16 "proxy" convention, formerly "middleware".)
  */
@@ -46,12 +54,28 @@ export const proxy = async (request: NextRequest): Promise<NextResponse> => {
   if (!user && !isAuthRoute && !isCronRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    // Carry where they were going, so signing in returns them there instead of
+    // dumping them on the home screen. The original query rides inside `next`
+    // rather than staying on the login URL, where it meant nothing — and only
+    // when a person was actually navigating, so an image or an XHR that the
+    // gate also intercepts never becomes somewhere to land.
+    const next = `${pathname}${request.nextUrl.search}`;
+    url.search = "";
+    if (
+      next !== DEFAULT_REDIRECT &&
+      capturesReturnTo(request.headers.get("sec-fetch-dest"))
+    ) {
+      url.searchParams.set("next", next);
+    }
     return NextResponse.redirect(url);
   }
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    // `next` is attacker-controlled — it arrived in a URL. safeRedirect only
+    // lets a same-origin relative path through; applyRedirectTarget keeps its
+    // path, query and fragment apart instead of splitting the string by hand.
+    applyRedirectTarget(url, safeRedirect(url.searchParams.get("next")));
     return NextResponse.redirect(url);
   }
 
