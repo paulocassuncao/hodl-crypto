@@ -58,6 +58,7 @@ const renderTable = (
         sortDir="desc"
         onSort={jest.fn()}
         onOpenChart={jest.fn()}
+        emptyMessage="No coins match these filters."
         isLoading={false}
         {...props}
       />
@@ -97,6 +98,8 @@ describe("RadarTable", () => {
 
   it("shows a teaching empty state when no rows match", () => {
     renderTable({ rows: [] });
-    expect(screen.getAllByText(/no coins match these filters/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/no coins match these filters/i).length,
+    ).toBeGreaterThan(0);
   });
 });

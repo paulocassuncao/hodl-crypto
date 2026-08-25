@@ -133,6 +133,7 @@ describe("URL state encode/decode round-trip", () => {
       sortKey: "rank",
       sortDir: "asc",
       q: "",
+      watchlist: false,
     };
     expect(encodeRadarState(state)).toBe("");
   });
@@ -146,6 +147,7 @@ describe("URL state encode/decode round-trip", () => {
       sortKey: "7d",
       sortDir: "desc",
       q: "sol",
+      watchlist: false,
     };
     const decoded = decodeRadarState(
       new URLSearchParams(encodeRadarState(state)),
@@ -159,6 +161,7 @@ describe("URL state encode/decode round-trip", () => {
       sortKey: "rank",
       sortDir: "asc",
       q: "",
+      watchlist: false,
     };
     // rank+asc is the default, so the query is empty but still decodes to it.
     expect(
@@ -187,6 +190,7 @@ describe("mergeRadarState", () => {
     sortKey: "7d",
     sortDir: "desc",
     q: "sol",
+    watchlist: false,
   };
 
   it("keeps foreign params so the Market lens survives a sort", () => {
@@ -208,6 +212,17 @@ describe("mergeRadarState", () => {
     expect([...merged.keys()]).toEqual(["lens"]);
   });
 
+  it("round-trips the watchlist flag", () => {
+    const starred: RadarState = { ...DEFAULT_STATE, watchlist: true };
+    const qs = encodeRadarState(starred);
+    expect(qs).toBe("w=1");
+    expect(decodeRadarState(new URLSearchParams(qs))).toEqual(starred);
+    // Anything but the literal "1" is not the flag being set.
+    expect(decodeRadarState(new URLSearchParams("w=true")).watchlist).toBe(
+      false,
+    );
+  });
+
   it("matches encodeRadarState when there is nothing foreign to keep", () => {
     expect(mergeRadarState(new URLSearchParams(), state)).toBe(
       encodeRadarState(state),
@@ -223,6 +238,7 @@ describe("presets", () => {
         sortKey: "rank",
         sortDir: "asc",
         q: "",
+        watchlist: false,
       });
       const decoded = decodeRadarState(new URLSearchParams(qs));
       expect(decoded.conditions).toEqual(preset.conditions);

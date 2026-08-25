@@ -33,6 +33,8 @@ export interface RadarState {
   sortDir: "asc" | "desc";
   /** Free-text filter on coin name/symbol. */
   q: string;
+  /** Narrow to the coins the user starred. */
+  watchlist: boolean;
 }
 
 export const METRICS: RadarMetric[] = ["1h", "24h", "7d", "30d"];
@@ -142,6 +144,7 @@ export const DEFAULT_STATE: RadarState = {
   sortKey: "rank",
   sortDir: "asc",
   q: "",
+  watchlist: false,
 };
 
 const isMetric = (v: string): v is RadarMetric =>
@@ -178,11 +181,12 @@ export const encodeRadarState = (state: RadarState): string => {
     params.set("dir", state.sortDir);
   }
   if (state.q.trim()) params.set("q", state.q.trim());
+  if (state.watchlist) params.set("w", "1");
   return params.toString();
 };
 
 /** Query keys this module owns; everything else in the URL belongs to someone. */
-const RADAR_KEYS = ["f", "sort", "dir", "q"] as const;
+const RADAR_KEYS = ["f", "sort", "dir", "q", "w"] as const;
 
 /**
  * Radar state written *into* an existing query string instead of replacing it.
@@ -223,8 +227,9 @@ export const decodeRadarState = (
   const sortDir: "asc" | "desc" = dirRaw === "desc" ? "desc" : "asc";
 
   const q = params.get("q") ?? "";
+  const watchlist = params.get("w") === "1";
 
-  return { conditions, sortKey, sortDir, q };
+  return { conditions, sortKey, sortDir, q, watchlist };
 };
 
 /** Human label for a condition chip, e.g. `24h ≥ +10%`. */

@@ -13,6 +13,9 @@ import { TradingViewChartDialog } from "@/components/radar/tradingview-chart-dia
 import { ShareButton } from "@/components/share-button";
 import { useMarkets } from "@/hooks/use-markets";
 import { useCurrency } from "@/lib/currency";
+import { download } from "@/lib/download";
+import { radarToCsv } from "@/lib/radar-csv";
+import { useWatchlist } from "@/lib/watchlist";
 import {
   applyFilters,
   decodeRadarState,
@@ -42,6 +45,7 @@ export const RadarView = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { currency } = useCurrency();
+  const { ids: watchedIds } = useWatchlist();
   const { data, isLoading, isError, error } = useMarkets();
 
   const state = useMemo(() => decodeRadarState(searchParams), [searchParams]);
@@ -71,16 +75,20 @@ export const RadarView = ({
 
   const btc = useMemo(() => data?.find((c) => c.id === "bitcoin"), [data]);
 
-  // Search is matched here so the toolbar count and the table agree.
+  // Watchlist and search are matched here so the toolbar count and the table
+  // agree; the metric conditions are applied on top in `rows`.
   const searched = useMemo(() => {
     if (!data) return [];
+    const starred = state.watchlist
+      ? data.filter((c) => watchedIds.has(c.id))
+      : data;
     const q = state.q.trim().toLowerCase();
-    if (!q) return data;
-    return data.filter(
+    if (!q) return starred;
+    return starred.filter(
       (c) =>
         c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q),
     );
-  }, [data, state.q]);
+  }, [data, state.q, state.watchlist, watchedIds]);
 
   const rows = useMemo(() => {
     const filtered = applyFilters(searched, state.conditions, btc);
@@ -121,6 +129,19 @@ export const RadarView = ({
     commit({ ...state, conditions: [] });
   };
 
+  const emptyMessage =
+    state.watchlist && watchedIds.size === 0
+      ? "No coins in your watchlist yet — tap ☆ to add."
+      : "No coins match these filters — adjust a condition or clear them.";
+
+  const handleExportCsv = (): void => {
+    download(
+      `hodl-relative-${currency}.csv`,
+      radarToCsv(rows, btc, currency),
+      "text/csv;charset=utf-8",
+    );
+  };
+
   return (
     <section className="space-y-5">
       {!embedded && (
@@ -146,6 +167,10 @@ export const RadarView = ({
         onClear={handleClear}
         shownCount={rows.length}
         totalCount={data?.length ?? 0}
+        watchlist={state.watchlist}
+        onWatchlistChange={(watchlist) => commit({ ...state, watchlist })}
+        watchedCount={watchedIds.size}
+        onExportCsv={handleExportCsv}
       />
 
       {/* The % columns are performance vs Bitcoin, so BTC itself reads 0. */}
@@ -166,6 +191,7 @@ export const RadarView = ({
         onSort={handleSort}
         onOpenChart={setChartCoin}
         isLoading={isLoading}
+        emptyMessage={emptyMessage}
       />
 
       <RadarFilterDialog
