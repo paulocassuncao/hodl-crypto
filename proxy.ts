@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import {
   applyRedirectTarget,
+  capturesReturnTo,
   DEFAULT_REDIRECT,
   safeRedirect,
 } from "@/lib/safe-redirect";
@@ -55,10 +56,17 @@ export const proxy = async (request: NextRequest): Promise<NextResponse> => {
     url.pathname = "/login";
     // Carry where they were going, so signing in returns them there instead of
     // dumping them on the home screen. The original query rides inside `next`
-    // rather than staying on the login URL, where it meant nothing.
+    // rather than staying on the login URL, where it meant nothing — and only
+    // when a person was actually navigating, so an image or an XHR that the
+    // gate also intercepts never becomes somewhere to land.
     const next = `${pathname}${request.nextUrl.search}`;
     url.search = "";
-    if (next !== DEFAULT_REDIRECT) url.searchParams.set("next", next);
+    if (
+      next !== DEFAULT_REDIRECT &&
+      capturesReturnTo(request.headers.get("sec-fetch-dest"))
+    ) {
+      url.searchParams.set("next", next);
+    }
     return NextResponse.redirect(url);
   }
 

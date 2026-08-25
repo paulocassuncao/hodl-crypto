@@ -1,5 +1,6 @@
 import {
   applyRedirectTarget,
+  capturesReturnTo,
   DEFAULT_REDIRECT,
   safeRedirect,
 } from "@/lib/safe-redirect";
@@ -60,16 +61,6 @@ describe("safeRedirect", () => {
     expect(safeRedirect("/login?next=/portfolio")).toBe(DEFAULT_REDIRECT);
   });
 
-  it("refuses an API route, which has no page to land on", () => {
-    // The auth gate covers /api/* too, so a stale bookmark to one would
-    // otherwise be captured as `next` and serve raw JSON post-login.
-    expect(safeRedirect("/api/markets")).toBe(DEFAULT_REDIRECT);
-    expect(safeRedirect("/api/coins/bitcoin?vs=usd")).toBe(DEFAULT_REDIRECT);
-    expect(safeRedirect("/api")).toBe(DEFAULT_REDIRECT);
-    // A page whose name merely starts with those letters is not an API route.
-    expect(safeRedirect("/apiary")).toBe("/apiary");
-  });
-
   it("never returns anything a browser would read as another origin", () => {
     // Generated rather than listed: the fixed list was the reason the
     // `..`-normalisation bypass shipped — every entry in it failed at the
@@ -123,6 +114,26 @@ describe("safeRedirect", () => {
 
     it("clears a stale query when the target has none", () => {
       expect(applied("/portfolio")).toBe("/portfolio");
+    });
+  });
+
+  describe("capturesReturnTo", () => {
+    it("remembers a page navigation", () => {
+      expect(capturesReturnTo("document")).toBe(true);
+    });
+
+    it("does not remember what a person was not navigating to", () => {
+      // The gate intercepts these too. Without this, an unauthenticated hit
+      // on /api/markets or /coins/x/opengraph-image became somewhere to land
+      // after signing in — raw JSON, or a PNG.
+      for (const dest of ["empty", "image", "script", "style", "font"]) {
+        expect(capturesReturnTo(dest)).toBe(false);
+      }
+    });
+
+    it("assumes a navigation when the browser sends no header", () => {
+      // Older Safari omits it; degrade to today's behaviour, not to nothing.
+      expect(capturesReturnTo(null)).toBe(true);
     });
   });
 });

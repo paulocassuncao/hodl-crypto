@@ -9,17 +9,45 @@
  * Pure, so the hostile inputs can be enumerated in a test.
  */
 
+/**
+ * Should this request's path be remembered as somewhere to return to?
+ *
+ * Only if a person was navigating there. `Sec-Fetch-Dest: document` is what a
+ * browser sends for a real page navigation; an image, a script, a stylesheet
+ * or an XHR sends something else. Asking this once is worth more than a list
+ * of path prefixes: it rules out `/api/*`, the file-based metadata routes like
+ * `opengraph-image`, and every future non-page route, without anyone having to
+ * remember to add them. A browser that omits the header (older Safari) is
+ * treated as a navigation, so return-to keeps working there rather than
+ * silently degrading.
+ */
+export const capturesReturnTo = (secFetchDest: string | null): boolean =>
+  secFetchDest === null || secFetchDest === "document";
+
 /** Where an unusable or missing `next` sends the user instead. */
 export const DEFAULT_REDIRECT = "/";
 
 /**
  * The path a validated `next` should navigate to, or {@link DEFAULT_REDIRECT}.
  *
- * Rejects: absolute URLs (`https://evil.com`), protocol-relative ones
- * (`//evil.com`, which a browser treats as absolute), backslash variants that
- * some parsers normalise into `//`, anything with a control character or
- * whitespace that could split a header, and `/login` itself — sending someone
- * back to the page they just left is a loop, not a return.
+ * Two kinds of rule live here, and a future reader should know which is which.
+ *
+ * **Security, do not relax:** absolute URLs (`https://evil.com`),
+ * protocol-relative ones (`//evil.com`, which a browser treats as absolute),
+ * backslash variants some parsers normalise into `//`, control characters or
+ * whitespace that could split a header, and — the one that already bit us —
+ * anything whose *normalised* path starts with `//`.
+ *
+ * **Product sense, safe to revisit:** `/login`, because returning someone to
+ * the page they just left is a loop.
+ *
+ * Deliberately NOT here: a list of non-page routes (`/api/*`,
+ * `opengraph-image`, …). That list is never finished — every route convention
+ * Next adds would need remembering, and `opengraph-image` had already slipped
+ * past an earlier version of it. The gate stops *manufacturing* those return
+ * targets instead, at the source (see {@link capturesReturnTo}). What remains
+ * is someone hand-writing `?next=/api/markets` and landing on their own JSON:
+ * same-origin, self-inflicted, harmless.
  */
 export const safeRedirect = (next: string | null | undefined): string => {
   if (!next) return DEFAULT_REDIRECT;
@@ -53,15 +81,10 @@ export const safeRedirect = (next: string | null | undefined): string => {
   }
   if (parsed.origin !== "http://localhost") return DEFAULT_REDIRECT;
 
-  // Same-origin is not the same as "somewhere to put a person". Returning to
-  // the login page is a loop, and an API route has no page to render — the
-  // auth gate covers `/api/*` too, so an unauthenticated hit on one (a stale
-  // bookmark, a mistyped URL) would otherwise capture it as `next` and dump
-  // the user on raw JSON right after they signed in.
+  // Returning to the login page is a loop, not a return — and unlike the
+  // non-page routes, this one the gate really can manufacture, since `/login`
+  // is itself a document navigation.
   if (parsed.pathname === "/login") return DEFAULT_REDIRECT;
-  if (parsed.pathname === "/api" || parsed.pathname.startsWith("/api/")) {
-    return DEFAULT_REDIRECT;
-  }
 
   // The OUTPUT needs its own check: every test above read the input, and the
   // input is not this string. Path normalisation collapses `..` segments, so
