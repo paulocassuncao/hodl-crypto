@@ -10,11 +10,18 @@
  */
 
 /**
- * Destinations whose response can actually become the page the user is looking
- * at: a full navigation, and the `fetch` the App Router uses for a soft one
- * (RSC payloads travel as `empty`). Everything else — `image`, `script`,
- * `style`, `font`, … — is a subresource: the gate still intercepts it, but the
- * browser never shows the redirect, so its path is not somewhere to return to.
+ * Destinations whose response can become the *top-level* page: a full
+ * navigation, and the `fetch` the App Router uses for a soft one (RSC payloads
+ * travel as `empty`). Everything else — `image`, `script`, `style`, `font`, …
+ * — is a subresource: the gate still intercepts it, but the browser never
+ * shows the redirect, so its path is not somewhere to return to.
+ *
+ * `iframe` is deliberately out, and the word "top-level" is doing that work.
+ * An embedded navigation does render a document a person can see, so by the
+ * looser reading it belongs — but this app is not built to be embedded and
+ * sets no `frame-ancestors`, so quietly teaching the gate to return users into
+ * someone else's frame is a product decision nobody has taken. An embedded
+ * session that expires falls back to `/`, the same graceful loss as an image.
  */
 const PAGE_BEARING_DESTINATIONS = new Set(["document", "empty"]);
 

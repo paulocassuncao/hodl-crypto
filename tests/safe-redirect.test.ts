@@ -138,6 +138,14 @@ describe("safeRedirect", () => {
       }
     });
 
+    it("does not remember an embedded navigation", () => {
+      // An iframe does render a document, so this is a choice, not an
+      // oversight: the app sets no frame-ancestors and is not built to be
+      // embedded, so it declines to return anyone into someone else's frame.
+      expect(capturesReturnTo("iframe")).toBe(false);
+      expect(capturesReturnTo("frame")).toBe(false);
+    });
+
     it("assumes page-bearing when the browser sends no header", () => {
       // Older Safari omits it; degrade to today's behaviour, not to nothing.
       expect(capturesReturnTo(null)).toBe(true);
