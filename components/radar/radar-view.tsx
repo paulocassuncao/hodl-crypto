@@ -21,6 +21,7 @@ import {
   decodeRadarState,
   mergeRadarState,
   metricValue,
+  radarEmptyMessage,
   type FilterCondition,
   type RadarSortKey,
   type RadarState,
@@ -75,20 +76,24 @@ export const RadarView = ({
 
   const btc = useMemo(() => data?.find((c) => c.id === "bitcoin"), [data]);
 
-  // Watchlist and search are matched here so the toolbar count and the table
-  // agree; the metric conditions are applied on top in `rows`.
-  const searched = useMemo(() => {
+  // The watchlist narrows first, on its own, because the empty state has to
+  // tell "nothing starred is in the top 100" apart from "your search matched
+  // none of them" — one list can't answer both.
+  const starred = useMemo(() => {
     if (!data) return [];
-    const starred = state.watchlist
-      ? data.filter((c) => watchedIds.has(c.id))
-      : data;
+    return state.watchlist ? data.filter((c) => watchedIds.has(c.id)) : data;
+  }, [data, state.watchlist, watchedIds]);
+
+  // Search is matched here so the toolbar count and the table agree; the
+  // metric conditions are applied on top in `rows`.
+  const searched = useMemo(() => {
     const q = state.q.trim().toLowerCase();
     if (!q) return starred;
     return starred.filter(
       (c) =>
         c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q),
     );
-  }, [data, state.q, state.watchlist, watchedIds]);
+  }, [starred, state.q]);
 
   const rows = useMemo(() => {
     const filtered = applyFilters(searched, state.conditions, btc);
@@ -125,23 +130,12 @@ export const RadarView = ({
     commit({ ...state, conditions: [] });
   };
 
-  // Three different dead ends, three different things to say. Sharing one
-  // message would tell someone to "adjust a condition" when they have no
-  // conditions, only an empty watchlist.
-  const emptyMessage = (): string => {
-    if (!state.watchlist) {
-      return "No coins match these filters — adjust a condition or clear them.";
-    }
-    if (watchedIds.size === 0) {
-      return "No coins in your watchlist yet — tap ☆ to add.";
-    }
-    // Stars can be set from a coin page, which reaches all of CoinGecko — a
-    // starred coin outside the top 100 simply isn't in this dataset.
-    if (searched.length === 0) {
-      return "None of your starred coins are in the top 100.";
-    }
-    return "No starred coin matches these filters — adjust a condition or clear them.";
-  };
+  const emptyMessage = radarEmptyMessage({
+    watchlist: state.watchlist,
+    watchedCount: watchedIds.size,
+    starredCount: starred.length,
+    query: state.q,
+  });
 
   const handleExportCsv = (): void => {
     download(
@@ -197,7 +191,7 @@ export const RadarView = ({
         onSort={handleSort}
         onOpenChart={setChartCoin}
         isLoading={isLoading}
-        emptyMessage={emptyMessage()}
+        emptyMessage={emptyMessage}
       />
 
       <RadarFilterDialog

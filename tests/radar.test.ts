@@ -7,6 +7,7 @@ import {
   mergeRadarState,
   metricValue,
   PRESETS,
+  radarEmptyMessage,
   stripRadarState,
   tvSymbol,
   type FilterCondition,
@@ -223,6 +224,64 @@ describe("mergeRadarState", () => {
     expect(mergeRadarState(new URLSearchParams(), state)).toBe(
       encodeRadarState(state),
     );
+  });
+});
+
+describe("radarEmptyMessage", () => {
+  const base = {
+    watchlist: false,
+    watchedCount: 0,
+    starredCount: 100,
+    query: "",
+  };
+
+  it("blames the conditions only when there is no search text", () => {
+    expect(radarEmptyMessage(base)).toBe(
+      "No coins match these filters — adjust a condition or clear them.",
+    );
+  });
+
+  it("blames the search text, not the conditions, when the user typed", () => {
+    // Telling someone to "adjust a condition" when they have none and simply
+    // mistyped a ticker is the most common empty state, and it was wrong.
+    expect(radarEmptyMessage({ ...base, query: " zzz " })).toBe(
+      "No coins match “zzz”.",
+    );
+  });
+
+  it("asks for a star when the watchlist is genuinely empty", () => {
+    expect(
+      radarEmptyMessage({
+        ...base,
+        watchlist: true,
+        watchedCount: 0,
+        starredCount: 0,
+      }),
+    ).toBe("No coins in your watchlist yet — tap ☆ to add.");
+  });
+
+  it("explains the top-100 boundary when stars exist but none are here", () => {
+    expect(
+      radarEmptyMessage({
+        ...base,
+        watchlist: true,
+        watchedCount: 3,
+        starredCount: 0,
+      }),
+    ).toBe("None of your starred coins are in the top 100.");
+  });
+
+  it("blames the search, not the top 100, when a starred coin is in view", () => {
+    // The bug this guards: a starred top-100 coin filtered out by the search
+    // box used to read as "none of your starred coins are in the top 100".
+    expect(
+      radarEmptyMessage({
+        watchlist: true,
+        watchedCount: 3,
+        starredCount: 3,
+        query: "zzz",
+      }),
+    ).toBe("No coins match “zzz”.");
   });
 });
 

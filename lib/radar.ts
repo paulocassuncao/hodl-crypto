@@ -212,6 +212,40 @@ export const mergeRadarState = (
   return params.toString();
 };
 
+/**
+ * What to say when the screener shows nothing. Four dead ends reach the same
+ * blank table and they are not interchangeable: telling someone to "adjust a
+ * condition" when they have none, or blaming the top 100 when it was their own
+ * search text, is worse than saying nothing. Ordered by cause, most specific
+ * first. Pure so the branches can be tested without mounting the view.
+ */
+export const radarEmptyMessage = ({
+  watchlist,
+  watchedCount,
+  starredCount,
+  query,
+}: {
+  /** Is the view narrowed to starred coins? */
+  watchlist: boolean;
+  /** How many coins the user has starred, anywhere in the app. */
+  watchedCount: number;
+  /** How many of those are in this dataset, before the text search. */
+  starredCount: number;
+  query: string;
+}): string => {
+  if (watchlist && watchedCount === 0) {
+    return "No coins in your watchlist yet — tap ☆ to add.";
+  }
+  // Stars can be set from a coin page, which reaches all of CoinGecko, so a
+  // full watchlist can still have nothing in the top 100.
+  if (watchlist && starredCount === 0) {
+    return "None of your starred coins are in the top 100.";
+  }
+  const q = query.trim();
+  if (q) return `No coins match “${q}”.`;
+  return "No coins match these filters — adjust a condition or clear them.";
+};
+
 /** Query params → state, falling back to defaults for anything missing/invalid. */
 export const decodeRadarState = (
   params: URLSearchParams | { get: (key: string) => string | null },
