@@ -66,7 +66,7 @@ describe("StrategyView", () => {
   // the live one alone can't see the backtest drifting back.
   it.each([
     ["live", ""],
-    ["backtest", "view=backtest"],
+    ["backtest", "lens=backtest"],
   ])("names the ensemble once in the %s lens", async (_name, query) => {
     setup(query);
     await screen.findByRole("heading", { level: 1, name: "Strategy" });
@@ -83,7 +83,7 @@ describe("StrategyView", () => {
   });
 
   it("opens on the backtest when the URL asks for it", async () => {
-    setup("view=backtest");
+    setup("lens=backtest");
     expect(
       await screen.findByRole("tab", { name: "Backtest" }),
     ).toHaveAttribute("aria-selected", "true");
@@ -91,7 +91,7 @@ describe("StrategyView", () => {
   });
 
   it("falls back to live for a lens the app does not have", async () => {
-    setup("view=bogus");
+    setup("lens=bogus");
     expect(await screen.findByRole("tab", { name: "Live" })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -102,15 +102,15 @@ describe("StrategyView", () => {
     setup("");
     fireEvent.click(screen.getByRole("tab", { name: "Backtest" }));
     await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith("/sleeve?view=backtest", {
+      expect(replace).toHaveBeenCalledWith("/sleeve?lens=backtest", {
         scroll: false,
       }),
     );
 
     replace.mockClear();
-    setup("view=backtest");
+    setup("lens=backtest");
     fireEvent.click(screen.getAllByRole("tab", { name: "Live" })[0]);
-    // Back to the default: the param goes away rather than reading `view=live`.
+    // Back to the default: the param goes away rather than reading `lens=live`.
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith("/sleeve", { scroll: false }),
     );
@@ -120,7 +120,7 @@ describe("StrategyView", () => {
     setup("ref=email");
     fireEvent.click(screen.getByRole("tab", { name: "Backtest" }));
     await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith("/sleeve?ref=email&view=backtest", {
+      expect(replace).toHaveBeenCalledWith("/sleeve?ref=email&lens=backtest", {
         scroll: false,
       }),
     );

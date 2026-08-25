@@ -26,22 +26,23 @@ const isLens = (value: string | null): value is StrategyLens =>
  * strategies. The shared header states the strategy once; each lens keeps only
  * the caveat that is actually its own.
  *
- * The lens lives in the URL (`?view=`), like the Market screen's, so a view
- * survives a reload and can be sent to someone.
+ * The lens lives in the URL (`?lens=`) — the same key the Market screen uses,
+ * because it is the same control doing the same job — so a view survives a
+ * reload and can be sent to someone.
  */
 export const StrategyView = (): React.ReactNode => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const raw = searchParams.get("view");
+  const raw = searchParams.get("lens");
   const lens: StrategyLens = isLens(raw) ? raw : DEFAULT_LENS;
 
   const setLens = (next: StrategyLens): void => {
     const params = new URLSearchParams(searchParams);
     // The default stays off the URL so the screen keeps its clean address.
-    if (next === DEFAULT_LENS) params.delete("view");
-    else params.set("view", next);
+    if (next === DEFAULT_LENS) params.delete("lens");
+    else params.set("lens", next);
     const qs = params.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
   };
@@ -53,8 +54,7 @@ export const StrategyView = (): React.ReactNode => {
           <h1 className="font-display text-2xl font-semibold">Strategy</h1>
           <p className="max-w-2xl text-sm text-muted-foreground">
             A systematic trend ensemble — EMA 20/50/200 + Donchian 20/10, vol
-            target 0.6 — on fictitious capital. Never counted in your net
-            worth.
+            target 0.6 — on fictitious capital. Never counted in your net worth.
           </p>
         </div>
         <LensSwitch
