@@ -69,7 +69,7 @@ describe("SleeveSignalWatcher", () => {
     expect(mockNotify).toHaveBeenCalledWith(
       "HODL · Sleeve BTC",
       expect.stringContaining("Donchian breakout"),
-      "/sleeve",
+      "/strategy",
     );
     expect(localStorage.getItem(SIGNALS_SEEN_KEY)).toBe(String(T0 + DAY));
   });
