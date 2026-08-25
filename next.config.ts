@@ -9,10 +9,15 @@ const nextConfig: NextConfig = {
   redirects: async () => [
     { source: "/radar", destination: "/?lens=relative", permanent: true },
     { source: "/heatmap", destination: "/?lens=heatmap", permanent: true },
+    // Temporary on purpose, unlike the two above. A 308 is cached by the
+    // browser for good, and `/sleeve` is a legacy route name that already
+    // disagrees with its own nav label and page title ("Strategy") — if it is
+    // ever renamed, a cached 308 here would keep sending old links straight to
+    // a path we no longer control, with no live request left to intercept.
     {
       source: "/backtest",
       destination: "/sleeve?lens=backtest",
-      permanent: true,
+      permanent: false,
     },
   ],
   images: {
