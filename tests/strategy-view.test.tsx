@@ -19,7 +19,7 @@ let search = "";
 const replace = jest.fn();
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ replace, push: jest.fn() }),
-  usePathname: () => "/sleeve",
+  usePathname: () => "/strategy",
   useSearchParams: () => new URLSearchParams(search),
 }));
 
@@ -102,7 +102,7 @@ describe("StrategyView", () => {
     setup("");
     fireEvent.click(await screen.findByRole("tab", { name: "Backtest" }));
     await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith("/sleeve?lens=backtest", {
+      expect(replace).toHaveBeenCalledWith("/strategy?lens=backtest", {
         scroll: false,
       }),
     );
@@ -114,9 +114,9 @@ describe("StrategyView", () => {
   it("strips the param on the way back to the default", async () => {
     setup("lens=backtest");
     fireEvent.click(await screen.findByRole("tab", { name: "Live" }));
-    // `/sleeve`, not `/sleeve?lens=live`.
+    // `/strategy`, not `/strategy?lens=live`.
     await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith("/sleeve", { scroll: false }),
+      expect(replace).toHaveBeenCalledWith("/strategy", { scroll: false }),
     );
   });
 
@@ -130,9 +130,12 @@ describe("StrategyView", () => {
     setup("ref=email");
     fireEvent.click(screen.getByRole("tab", { name: "Backtest" }));
     await waitFor(() =>
-      expect(replace).toHaveBeenCalledWith("/sleeve?ref=email&lens=backtest", {
-        scroll: false,
-      }),
+      expect(replace).toHaveBeenCalledWith(
+        "/strategy?ref=email&lens=backtest",
+        {
+          scroll: false,
+        },
+      ),
     );
   });
 });

@@ -37,7 +37,7 @@ export const SleeveSignalWatcher = (): null => {
       const flip = e.signal_after === 1 ? "entry" : "exit";
       const title = `Sleeve signal: ${e.asset} — ${STRATEGY_LABEL[e.strategy] ?? e.strategy} ${flip}`;
       toast(title, { description: e.reason });
-      notify(`HODL · Sleeve ${e.asset}`, e.reason, "/sleeve");
+      notify(`HODL · Sleeve ${e.asset}`, e.reason, "/strategy");
     }
     if (watermark !== null) {
       localStorage.setItem(SIGNALS_SEEN_KEY, String(watermark));
