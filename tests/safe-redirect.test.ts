@@ -118,20 +118,27 @@ describe("safeRedirect", () => {
   });
 
   describe("capturesReturnTo", () => {
-    it("remembers a page navigation", () => {
+    it("remembers a full page navigation", () => {
       expect(capturesReturnTo("document")).toBe(true);
     });
 
-    it("does not remember what a person was not navigating to", () => {
-      // The gate intercepts these too. Without this, an unauthenticated hit
-      // on /api/markets or /coins/x/opengraph-image became somewhere to land
-      // after signing in — raw JSON, or a PNG.
-      for (const dest of ["empty", "image", "script", "style", "font"]) {
+    it("remembers a client-side navigation", () => {
+      // The App Router fetches the RSC payload for a soft navigation, and that
+      // fetch is `empty`. Dropping it lost the return-to on the most ordinary
+      // journey there is: a session expiring mid-browse, then a link click.
+      expect(capturesReturnTo("empty")).toBe(true);
+    });
+
+    it("does not remember a subresource", () => {
+      // The gate intercepts these too, but the browser never shows their
+      // redirect — nobody lands on a PNG, so remembering the PNG only strands
+      // them there after signing in.
+      for (const dest of ["image", "script", "style", "font", "audio"]) {
         expect(capturesReturnTo(dest)).toBe(false);
       }
     });
 
-    it("assumes a navigation when the browser sends no header", () => {
+    it("assumes page-bearing when the browser sends no header", () => {
       // Older Safari omits it; degrade to today's behaviour, not to nothing.
       expect(capturesReturnTo(null)).toBe(true);
     });

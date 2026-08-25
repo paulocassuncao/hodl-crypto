@@ -10,19 +10,38 @@
  */
 
 /**
+ * Destinations whose response can actually become the page the user is looking
+ * at: a full navigation, and the `fetch` the App Router uses for a soft one
+ * (RSC payloads travel as `empty`). Everything else — `image`, `script`,
+ * `style`, `font`, … — is a subresource: the gate still intercepts it, but the
+ * browser never shows the redirect, so its path is not somewhere to return to.
+ */
+const PAGE_BEARING_DESTINATIONS = new Set(["document", "empty"]);
+
+/**
  * Should this request's path be remembered as somewhere to return to?
  *
- * Only if a person was navigating there. `Sec-Fetch-Dest: document` is what a
- * browser sends for a real page navigation; an image, a script, a stylesheet
- * or an XHR sends something else. Asking this once is worth more than a list
- * of path prefixes: it rules out `/api/*`, the file-based metadata routes like
- * `opengraph-image`, and every future non-page route, without anyone having to
- * remember to add them. A browser that omits the header (older Safari) is
- * treated as a navigation, so return-to keeps working there rather than
- * silently degrading.
+ * The question is not "is this a page URL" — that was a list of route shapes
+ * (`/api/*`, `opengraph-image`, …) that was never going to be complete. It is
+ * "can this request's response end up in front of the user", because that is
+ * when a bad return target actually hurts: an `image` request for
+ * `opengraph-image` is intercepted by the gate too, but nobody ever lands on
+ * the PNG, so remembering it only serves to strand them there after login.
+ *
+ * `empty` has to be in: a client-side navigation fetches its RSC payload that
+ * way, and dropping it would lose the return-to on the most ordinary journey
+ * there is — a session expiring while someone is browsing, then a link click.
+ * An XHR to an API route is `empty` too and does get remembered, which is
+ * harmless: that response is consumed by code, never rendered, so nobody is
+ * standing on it when the redirect happens.
+ *
+ * A client that sends no header at all (older Safari, non-browser callers) is
+ * treated as page-bearing. That keeps return-to working there, at the cost of
+ * re-admitting the subresource case for those clients — a narrow reopening of
+ * a bug this file already fixed, not a clean fallback.
  */
 export const capturesReturnTo = (secFetchDest: string | null): boolean =>
-  secFetchDest === null || secFetchDest === "document";
+  secFetchDest === null || PAGE_BEARING_DESTINATIONS.has(secFetchDest);
 
 /** Where an unusable or missing `next` sends the user instead. */
 export const DEFAULT_REDIRECT = "/";
@@ -45,9 +64,18 @@ export const DEFAULT_REDIRECT = "/";
  * `opengraph-image`, …). That list is never finished — every route convention
  * Next adds would need remembering, and `opengraph-image` had already slipped
  * past an earlier version of it. The gate stops *manufacturing* those return
- * targets instead, at the source (see {@link capturesReturnTo}). What remains
- * is someone hand-writing `?next=/api/markets` and landing on their own JSON:
- * same-origin, self-inflicted, harmless.
+ * targets instead, at the source (see {@link capturesReturnTo}).
+ *
+ * What that leaves is a hand-written `?next=/api/markets` — and note it is not
+ * only self-inflicted: someone can send that link to a signed-in victim, who
+ * is redirected straight there. It is harmless because of what those routes
+ * are, not because of who asked. Every handler under `app/api/*` is a
+ * side-effect-free GET returning data the signed-in user could fetch anyway,
+ * with two exceptions that are both already covered: `portfolio/sync-bybit`
+ * is POST-only, so a navigation 405s; and `sleeve/run` does have a GET with a
+ * side effect, but it demands `Authorization: Bearer $CRON_SECRET` and a
+ * browser navigation cannot send that header. If any API route ever gains an
+ * unauthenticated side effect on GET, this reasoning needs revisiting.
  */
 export const safeRedirect = (next: string | null | undefined): string => {
   if (!next) return DEFAULT_REDIRECT;
