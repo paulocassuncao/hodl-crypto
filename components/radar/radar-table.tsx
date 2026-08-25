@@ -36,6 +36,9 @@ interface RadarTableProps {
   onSort: (key: RadarSortKey) => void;
   onOpenChart: (coin: Coin) => void;
   isLoading: boolean;
+  /** What to say when nothing survives — filters and an empty watchlist are
+   *  different dead ends and must not share a message. */
+  emptyMessage: string;
 }
 
 /**
@@ -48,6 +51,7 @@ export const RadarTable = ({
   rows,
   btc,
   currency,
+  emptyMessage,
   sortKey,
   sortDir,
   onSort,
@@ -65,7 +69,7 @@ export const RadarTable = ({
             <Skeleton key={i} className="h-20 w-full rounded-lg" />
           ))
         ) : isEmpty ? (
-          <EmptyState />
+          <EmptyState message={emptyMessage} />
         ) : (
           <ul className="divide-y rounded-lg border">
             {rows.map((coin) => (
@@ -134,7 +138,7 @@ export const RadarTable = ({
             {isEmpty ? (
               <TableRow>
                 <TableCell colSpan={10} className="p-0">
-                  <EmptyState />
+                  <EmptyState message={emptyMessage} />
                 </TableCell>
               </TableRow>
             ) : null}
@@ -145,9 +149,9 @@ export const RadarTable = ({
   );
 };
 
-const EmptyState = (): React.ReactNode => (
+const EmptyState = ({ message }: { message: string }): React.ReactNode => (
   <p className="rounded-lg py-10 text-center text-sm text-muted-foreground">
-    No coins match these filters — adjust a condition or clear them.
+    {message}
   </p>
 );
 

@@ -33,6 +33,8 @@ export interface RadarState {
   sortDir: "asc" | "desc";
   /** Free-text filter on coin name/symbol. */
   q: string;
+  /** Narrow to the coins the user starred. */
+  watchlist: boolean;
 }
 
 export const METRICS: RadarMetric[] = ["1h", "24h", "7d", "30d"];
@@ -138,6 +140,7 @@ export const DEFAULT_STATE: RadarState = {
   sortKey: "rank",
   sortDir: "asc",
   q: "",
+  watchlist: false,
 };
 
 const isMetric = (v: string): v is RadarMetric =>
@@ -149,7 +152,8 @@ const isOperator = (v: string): v is RadarOperator =>
 
 /**
  * Serialize a condition as `metric:operator:value`, e.g. `24h:gte:10`.
- * Conditions join on `,`; the full state lives in `f`, `sort`, `dir`, and `q`.
+ * Conditions join on `,`; the full state lives in `f`, `sort`, `dir`, `q`, and
+ * `w` — see `RADAR_KEYS`, which is what actually enumerates them.
  */
 const encodeCondition = (c: FilterCondition): string =>
   `${c.metric}:${c.operator}:${c.value}`;
@@ -175,7 +179,78 @@ export const encodeRadarState = (state: RadarState): string => {
     params.set("dir", state.sortDir);
   }
   if (state.q.trim()) params.set("q", state.q.trim());
+  if (state.watchlist) params.set("w", "1");
   return params.toString();
+};
+
+/** Query keys this module owns; everything else in the URL belongs to someone. */
+const RADAR_KEYS = ["f", "sort", "dir", "q", "w"] as const;
+
+/**
+ * Drop the screener's keys from a query string. The Market screen calls this
+ * when it leaves the relative lens: those params describe a view that is no
+ * longer on screen, and leaving them behind both dirties the home address and
+ * makes a shared link carry filters that silently do nothing.
+ */
+export const stripRadarState = (params: URLSearchParams): void => {
+  for (const key of RADAR_KEYS) params.delete(key);
+};
+
+/**
+ * Radar state written *into* an existing query string instead of replacing it.
+ * The screener renders standalone and as the Market screen's "Relative to BTC"
+ * lens, where the URL also carries `lens` — encoding from scratch would drop
+ * it and bounce the user back to the table on the next sort.
+ */
+export const mergeRadarState = (
+  current: URLSearchParams,
+  state: RadarState,
+): string => {
+  const params = new URLSearchParams(current);
+  for (const key of RADAR_KEYS) params.delete(key);
+  const own = new URLSearchParams(encodeRadarState(state));
+  for (const [key, value] of own) params.set(key, value);
+  return params.toString();
+};
+
+/**
+ * What to say when the screener shows nothing. Four dead ends reach the same
+ * blank table and they are not interchangeable: telling someone to "adjust a
+ * condition" when they have none, or blaming the top 100 when it was their own
+ * search text, is worse than saying nothing. Ordered by cause, most specific
+ * first. Pure so the branches can be tested without mounting the view.
+ */
+export const radarEmptyMessage = ({
+  watchlist,
+  watchedCount,
+  starredCount,
+  searchedCount,
+  query,
+}: {
+  /** Is the view narrowed to starred coins? */
+  watchlist: boolean;
+  /** How many coins the user has starred, anywhere in the app. */
+  watchedCount: number;
+  /** How many of those are in this dataset, before the text search. */
+  starredCount: number;
+  /** How many survive the text search, before the metric conditions. */
+  searchedCount: number;
+  query: string;
+}): string => {
+  if (watchlist && watchedCount === 0) {
+    return "No coins in your watchlist yet — tap ☆ to add.";
+  }
+  // Stars can be set from a coin page, which reaches all of CoinGecko, so a
+  // full watchlist can still have nothing in the top 100.
+  if (watchlist && starredCount === 0) {
+    return "None of your starred coins are in the top 100.";
+  }
+  // Only blame the search when the search is what emptied the list. A query
+  // that found something and was then zeroed by a condition is the filters'
+  // doing, and saying otherwise sends the user to fix the wrong control.
+  const q = query.trim();
+  if (q && searchedCount === 0) return `No coins match “${q}”.`;
+  return "No coins match these filters — adjust a condition or clear them.";
 };
 
 /** Query params → state, falling back to defaults for anything missing/invalid. */
@@ -200,8 +275,9 @@ export const decodeRadarState = (
   const sortDir: "asc" | "desc" = dirRaw === "desc" ? "desc" : "asc";
 
   const q = params.get("q") ?? "";
+  const watchlist = params.get("w") === "1";
 
-  return { conditions, sortKey, sortDir, q };
+  return { conditions, sortKey, sortDir, q, watchlist };
 };
 
 /** Human label for a condition chip, e.g. `24h ≥ +10%`. */

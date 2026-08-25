@@ -1,10 +1,14 @@
 import {
   applyFilters,
   conditionLabel,
+  DEFAULT_STATE,
   decodeRadarState,
   encodeRadarState,
+  mergeRadarState,
   metricValue,
   PRESETS,
+  radarEmptyMessage,
+  stripRadarState,
   tvSymbol,
   type FilterCondition,
   type RadarState,
@@ -128,6 +132,7 @@ describe("URL state encode/decode round-trip", () => {
       sortKey: "rank",
       sortDir: "asc",
       q: "",
+      watchlist: false,
     };
     expect(encodeRadarState(state)).toBe("");
   });
@@ -141,6 +146,7 @@ describe("URL state encode/decode round-trip", () => {
       sortKey: "7d",
       sortDir: "desc",
       q: "sol",
+      watchlist: false,
     };
     const decoded = decodeRadarState(new URLSearchParams(encodeRadarState(state)));
     expect(decoded).toEqual(state);
@@ -152,6 +158,7 @@ describe("URL state encode/decode round-trip", () => {
       sortKey: "rank",
       sortDir: "asc",
       q: "",
+      watchlist: false,
     };
     // rank+asc is the default, so the query is empty but still decodes to it.
     expect(decodeRadarState(new URLSearchParams(encodeRadarState(asc)))).toEqual(
@@ -174,6 +181,136 @@ describe("URL state encode/decode round-trip", () => {
   });
 });
 
+describe("mergeRadarState", () => {
+  const state: RadarState = {
+    conditions: [{ metric: "24h", operator: "gte", value: 10 }],
+    sortKey: "7d",
+    sortDir: "desc",
+    q: "sol",
+    watchlist: false,
+  };
+
+  it("keeps foreign params so the Market lens survives a sort", () => {
+    const merged = new URLSearchParams(
+      mergeRadarState(new URLSearchParams("lens=relative"), state),
+    );
+    expect(merged.get("lens")).toBe("relative");
+    expect(decodeRadarState(merged)).toEqual(state);
+  });
+
+  it("clears its own stale params instead of stacking them", () => {
+    const merged = new URLSearchParams(
+      mergeRadarState(
+        new URLSearchParams("lens=relative&f=1h:lt:-5&sort=1h&dir=asc&q=old"),
+        DEFAULT_STATE,
+      ),
+    );
+    expect(merged.get("lens")).toBe("relative");
+    expect([...merged.keys()]).toEqual(["lens"]);
+  });
+
+  it("round-trips the watchlist flag", () => {
+    const starred: RadarState = { ...DEFAULT_STATE, watchlist: true };
+    const qs = encodeRadarState(starred);
+    expect(qs).toBe("w=1");
+    expect(decodeRadarState(new URLSearchParams(qs))).toEqual(starred);
+    // Anything but the literal "1" is not the flag being set.
+    expect(decodeRadarState(new URLSearchParams("w=true")).watchlist).toBe(
+      false,
+    );
+  });
+
+  it("matches encodeRadarState when there is nothing foreign to keep", () => {
+    expect(mergeRadarState(new URLSearchParams(), state)).toBe(
+      encodeRadarState(state),
+    );
+  });
+});
+
+describe("radarEmptyMessage", () => {
+  const base = {
+    watchlist: false,
+    watchedCount: 0,
+    starredCount: 100,
+    searchedCount: 100,
+    query: "",
+  };
+
+  it("blames the conditions only when there is no search text", () => {
+    expect(radarEmptyMessage(base)).toBe(
+      "No coins match these filters — adjust a condition or clear them.",
+    );
+  });
+
+  it("blames the search text, not the conditions, when the user typed", () => {
+    // Telling someone to "adjust a condition" when they have none and simply
+    // mistyped a ticker is the most common empty state, and it was wrong.
+    expect(
+      radarEmptyMessage({ ...base, query: " zzz ", searchedCount: 0 }),
+    ).toBe("No coins match “zzz”.");
+  });
+
+  it("asks for a star when the watchlist is genuinely empty", () => {
+    expect(
+      radarEmptyMessage({
+        ...base,
+        watchlist: true,
+        watchedCount: 0,
+        starredCount: 0,
+        searchedCount: 0,
+      }),
+    ).toBe("No coins in your watchlist yet — tap ☆ to add.");
+  });
+
+  it("explains the top-100 boundary when stars exist but none are here", () => {
+    expect(
+      radarEmptyMessage({
+        ...base,
+        watchlist: true,
+        watchedCount: 3,
+        starredCount: 0,
+        searchedCount: 0,
+      }),
+    ).toBe("None of your starred coins are in the top 100.");
+  });
+
+  it("blames the search, not the top 100, when a starred coin is in view", () => {
+    // The bug this guards: a starred top-100 coin filtered out by the search
+    // box used to read as "none of your starred coins are in the top 100".
+    expect(
+      radarEmptyMessage({
+        watchlist: true,
+        watchedCount: 3,
+        starredCount: 3,
+        searchedCount: 0,
+        query: "zzz",
+      }),
+    ).toBe("No coins match “zzz”.");
+  });
+
+  it("blames the conditions when the search found something and they zeroed it", () => {
+    // "eth" matches Ethereum, then `1h ≥ +50%` removes it. Blaming the search
+    // sends the user to the wrong control, and contradicts the toolbar's own
+    // "Showing 0 of 1" line rendered right above.
+    expect(
+      radarEmptyMessage({ ...base, query: "eth", searchedCount: 1 }),
+    ).toBe("No coins match these filters — adjust a condition or clear them.");
+  });
+});
+
+describe("stripRadarState", () => {
+  it("removes every screener key and leaves the rest alone", () => {
+    const params = new URLSearchParams(
+      "lens=heatmap&f=24h:gte:10&sort=7d&dir=desc&q=sol&w=1&other=keep",
+    );
+    stripRadarState(params);
+    expect([...params.entries()]).toEqual([
+      ["lens", "heatmap"],
+      ["other", "keep"],
+    ]);
+  });
+});
+
 describe("presets", () => {
   it("every preset decodes back to itself through the URL", () => {
     for (const preset of PRESETS) {
@@ -182,6 +319,7 @@ describe("presets", () => {
         sortKey: "rank",
         sortDir: "asc",
         q: "",
+        watchlist: false,
       });
       const decoded = decodeRadarState(new URLSearchParams(qs));
       expect(decoded.conditions).toEqual(preset.conditions);

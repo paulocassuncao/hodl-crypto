@@ -1,8 +1,11 @@
+import { Suspense } from "react";
+
 import { GainersLosers } from "@/components/gainers-losers";
 import { MarketHero } from "@/components/market-hero";
 import { MarketLens } from "@/components/market/market-lens";
 import { NewsFeed } from "@/components/news-feed";
 import { TrendingSection } from "@/components/trending-section";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Market — the app's home. A living hero (total cap + global readings), the
@@ -18,7 +21,13 @@ const MarketPage = (): React.ReactNode => (
       <GainersLosers />
       <NewsFeed className="lg:col-span-3" />
     </div>
-    <MarketLens />
+    {/* MarketLens reads the active lens from the URL, so it renders under
+        Suspense (the rest of the page prerenders as before). */}
+    <Suspense
+      fallback={<Skeleton className="min-h-[70vh] w-full rounded-lg" />}
+    >
+      <MarketLens />
+    </Suspense>
   </div>
 );
 

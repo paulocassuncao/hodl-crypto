@@ -58,6 +58,7 @@ const renderTable = (
         sortDir="desc"
         onSort={jest.fn()}
         onOpenChart={jest.fn()}
+        emptyMessage="No coins match these filters."
         isLoading={false}
         {...props}
       />

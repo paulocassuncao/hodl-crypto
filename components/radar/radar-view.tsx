@@ -13,11 +13,15 @@ import { TradingViewChartDialog } from "@/components/radar/tradingview-chart-dia
 import { ShareButton } from "@/components/share-button";
 import { useMarkets } from "@/hooks/use-markets";
 import { useCurrency } from "@/lib/currency";
+import { download } from "@/lib/download";
+import { radarToCsv } from "@/lib/radar-csv";
+import { useWatchlist } from "@/lib/watchlist";
 import {
   applyFilters,
   decodeRadarState,
-  encodeRadarState,
+  mergeRadarState,
   metricValue,
+  radarEmptyMessage,
   type FilterCondition,
   type RadarSortKey,
   type RadarState,
@@ -25,16 +29,13 @@ import {
 import type { Coin } from "@/lib/types";
 
 /**
- * The Radar screener: a market-context HUD over a dense relative-strength table
- * — every coin's momentum measured against Bitcoin (the "BTC vs Altcoins"
- * view). Filtering is consolidated behind one toolbar + modal, and the whole
- * state lives in the URL so any view is shareable.
- */
-/**
- * The relative-strength screener. Standalone at /radar (with its own title +
- * HUD); when `embedded` (as the "Relative to BTC" lens inside the Market
- * screen) the header and HUD are suppressed, since the Market hero already
- * carries the global readings.
+ * The relative-strength screener — every coin's momentum measured against
+ * Bitcoin (the "BTC vs Altcoins" view), filtered through one toolbar + modal,
+ * with the whole state in the URL so any view is shareable.
+ *
+ * It renders as the Market screen's "Relative to BTC" lens (`embedded`), which
+ * suppresses the header and HUD since the Market hero already carries the
+ * global readings. The standalone branch is left from the retired /radar route.
  */
 export const RadarView = ({
   embedded = false,
@@ -45,6 +46,7 @@ export const RadarView = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { currency } = useCurrency();
+  const { ids: watchedIds } = useWatchlist();
   const { data, isLoading, isError, error } = useMarkets();
 
   const state = useMemo(() => decodeRadarState(searchParams), [searchParams]);
@@ -60,28 +62,38 @@ export const RadarView = ({
     }
   }, [isError, error]);
 
-  // Write state to whatever path this view lives on — /radar standalone, or the
-  // Market screen ("/") when embedded — so the relative lens never navigates away.
+  // Write state to whatever path this view lives on — the Market screen ("/")
+  // when embedded — so the relative lens never navigates away. Merged, not
+  // encoded from scratch: the Market URL also carries `lens`, and dropping it
+  // would kick the user back to the table on the next sort.
   const commit = useCallback(
     (next: RadarState): void => {
-      const qs = encodeRadarState(next);
+      const qs = mergeRadarState(searchParams, next);
       router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
     },
-    [router, pathname],
+    [router, pathname, searchParams],
   );
 
   const btc = useMemo(() => data?.find((c) => c.id === "bitcoin"), [data]);
 
-  // Search is matched here so the toolbar count and the table agree.
-  const searched = useMemo(() => {
+  // The watchlist narrows first, on its own, because the empty state has to
+  // tell "nothing starred is in the top 100" apart from "your search matched
+  // none of them" — one list can't answer both.
+  const starred = useMemo(() => {
     if (!data) return [];
+    return state.watchlist ? data.filter((c) => watchedIds.has(c.id)) : data;
+  }, [data, state.watchlist, watchedIds]);
+
+  // Search is matched here so the toolbar count and the table agree; the
+  // metric conditions are applied on top in `rows`.
+  const searched = useMemo(() => {
     const q = state.q.trim().toLowerCase();
-    if (!q) return data;
-    return data.filter(
+    if (!q) return starred;
+    return starred.filter(
       (c) =>
         c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q),
     );
-  }, [data, state.q]);
+  }, [starred, state.q]);
 
   const rows = useMemo(() => {
     const filtered = applyFilters(searched, state.conditions, btc);
@@ -118,6 +130,22 @@ export const RadarView = ({
     commit({ ...state, conditions: [] });
   };
 
+  const emptyMessage = radarEmptyMessage({
+    watchlist: state.watchlist,
+    watchedCount: watchedIds.size,
+    starredCount: starred.length,
+    searchedCount: searched.length,
+    query: state.q,
+  });
+
+  const handleExportCsv = (): void => {
+    download(
+      `hodl-relative-${currency}.csv`,
+      radarToCsv(rows, btc, currency),
+      "text/csv;charset=utf-8",
+    );
+  };
+
   return (
     <section className="space-y-5">
       {!embedded && (
@@ -142,7 +170,11 @@ export const RadarView = ({
         onOpenFilters={() => setFiltersOpen(true)}
         onClear={handleClear}
         shownCount={rows.length}
-        totalCount={data?.length ?? 0}
+        totalCount={searched.length}
+        watchlist={state.watchlist}
+        onWatchlistChange={(watchlist) => commit({ ...state, watchlist })}
+        watchedCount={watchedIds.size}
+        onExportCsv={handleExportCsv}
       />
 
       {/* The % columns are performance vs Bitcoin, so BTC itself reads 0. */}
@@ -160,6 +192,7 @@ export const RadarView = ({
         onSort={handleSort}
         onOpenChart={setChartCoin}
         isLoading={isLoading}
+        emptyMessage={emptyMessage}
       />
 
       <RadarFilterDialog
