@@ -46,11 +46,7 @@ export const METRIC_LABEL: Record<RadarMetric, string> = {
   "30d": "30d",
 };
 
-export const OPERATORS: {
-  value: RadarOperator;
-  label: string;
-  symbol: string;
-}[] = [
+export const OPERATORS: { value: RadarOperator; label: string; symbol: string }[] = [
   { value: "gte", label: "≥", symbol: "≥" },
   { value: "lte", label: "≤", symbol: "≤" },
   { value: "gt", label: ">", symbol: ">" },
@@ -149,7 +145,8 @@ export const DEFAULT_STATE: RadarState = {
 
 const isMetric = (v: string): v is RadarMetric =>
   (METRICS as string[]).includes(v);
-const isSortKey = (v: string): v is RadarSortKey => v === "rank" || isMetric(v);
+const isSortKey = (v: string): v is RadarSortKey =>
+  v === "rank" || isMetric(v);
 const isOperator = (v: string): v is RadarOperator =>
   OPERATORS.some((o) => o.value === v);
 
@@ -187,6 +184,16 @@ export const encodeRadarState = (state: RadarState): string => {
 
 /** Query keys this module owns; everything else in the URL belongs to someone. */
 const RADAR_KEYS = ["f", "sort", "dir", "q", "w"] as const;
+
+/**
+ * Drop the screener's keys from a query string. The Market screen calls this
+ * when it leaves the relative lens: those params describe a view that is no
+ * longer on screen, and leaving them behind both dirties the home address and
+ * makes a shared link carry filters that silently do nothing.
+ */
+export const stripRadarState = (params: URLSearchParams): void => {
+  for (const key of RADAR_KEYS) params.delete(key);
+};
 
 /**
  * Radar state written *into* an existing query string instead of replacing it.
@@ -234,8 +241,7 @@ export const decodeRadarState = (
 
 /** Human label for a condition chip, e.g. `24h ≥ +10%`. */
 export const conditionLabel = (c: FilterCondition): string => {
-  const op =
-    OPERATORS.find((o) => o.value === c.operator)?.symbol ?? c.operator;
+  const op = OPERATORS.find((o) => o.value === c.operator)?.symbol ?? c.operator;
   const sign = c.value > 0 ? "+" : "";
   return `${METRIC_LABEL[c.metric]} ${op} ${sign}${c.value}%`;
 };

@@ -7,6 +7,7 @@ import {
   mergeRadarState,
   metricValue,
   PRESETS,
+  stripRadarState,
   tvSymbol,
   type FilterCondition,
   type RadarState,
@@ -119,10 +120,7 @@ describe("applyFilters (relative to BTC)", () => {
       { metric: "24h", operator: "gt", value: 0 },
     ];
     // a (12 > 2) and b (3 > 2) beat BTC; c (−5) lags.
-    expect(applyFilters(coins, conds, btc).map((c) => c.id)).toEqual([
-      "a",
-      "b",
-    ]);
+    expect(applyFilters(coins, conds, btc).map((c) => c.id)).toEqual(["a", "b"]);
   });
 });
 
@@ -149,9 +147,7 @@ describe("URL state encode/decode round-trip", () => {
       q: "sol",
       watchlist: false,
     };
-    const decoded = decodeRadarState(
-      new URLSearchParams(encodeRadarState(state)),
-    );
+    const decoded = decodeRadarState(new URLSearchParams(encodeRadarState(state)));
     expect(decoded).toEqual(state);
   });
 
@@ -164,14 +160,14 @@ describe("URL state encode/decode round-trip", () => {
       watchlist: false,
     };
     // rank+asc is the default, so the query is empty but still decodes to it.
-    expect(
-      decodeRadarState(new URLSearchParams(encodeRadarState(asc))),
-    ).toEqual(asc);
+    expect(decodeRadarState(new URLSearchParams(encodeRadarState(asc)))).toEqual(
+      asc,
+    );
 
     const desc: RadarState = { ...asc, sortDir: "desc" };
-    expect(
-      decodeRadarState(new URLSearchParams(encodeRadarState(desc))),
-    ).toEqual(desc);
+    expect(decodeRadarState(new URLSearchParams(encodeRadarState(desc)))).toEqual(
+      desc,
+    );
   });
 
   it("drops malformed conditions and falls back to defaults", () => {
@@ -230,6 +226,19 @@ describe("mergeRadarState", () => {
   });
 });
 
+describe("stripRadarState", () => {
+  it("removes every screener key and leaves the rest alone", () => {
+    const params = new URLSearchParams(
+      "lens=heatmap&f=24h:gte:10&sort=7d&dir=desc&q=sol&w=1&other=keep",
+    );
+    stripRadarState(params);
+    expect([...params.entries()]).toEqual([
+      ["lens", "heatmap"],
+      ["other", "keep"],
+    ]);
+  });
+});
+
 describe("presets", () => {
   it("every preset decodes back to itself through the URL", () => {
     for (const preset of PRESETS) {
@@ -263,8 +272,6 @@ describe("tvSymbol", () => {
   });
 
   it("uses the override map for special-cased ids", () => {
-    expect(tvSymbol({ id: "usd-coin", symbol: "usdc" })).toBe(
-      "BINANCE:USDCUSD",
-    );
+    expect(tvSymbol({ id: "usd-coin", symbol: "usdc" })).toBe("BINANCE:USDCUSD");
   });
 });

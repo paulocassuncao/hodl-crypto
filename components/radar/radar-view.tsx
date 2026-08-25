@@ -113,11 +113,7 @@ export const RadarView = ({
       commit({ ...state, sortDir: state.sortDir === "asc" ? "desc" : "asc" });
     } else {
       // Rank reads low→high; momentum reads high→low by default.
-      commit({
-        ...state,
-        sortKey: key,
-        sortDir: key === "rank" ? "asc" : "desc",
-      });
+      commit({ ...state, sortKey: key, sortDir: key === "rank" ? "asc" : "desc" });
     }
   };
 
@@ -129,10 +125,23 @@ export const RadarView = ({
     commit({ ...state, conditions: [] });
   };
 
-  const emptyMessage =
-    state.watchlist && watchedIds.size === 0
-      ? "No coins in your watchlist yet — tap ☆ to add."
-      : "No coins match these filters — adjust a condition or clear them.";
+  // Three different dead ends, three different things to say. Sharing one
+  // message would tell someone to "adjust a condition" when they have no
+  // conditions, only an empty watchlist.
+  const emptyMessage = (): string => {
+    if (!state.watchlist) {
+      return "No coins match these filters — adjust a condition or clear them.";
+    }
+    if (watchedIds.size === 0) {
+      return "No coins in your watchlist yet — tap ☆ to add.";
+    }
+    // Stars can be set from a coin page, which reaches all of CoinGecko — a
+    // starred coin outside the top 100 simply isn't in this dataset.
+    if (searched.length === 0) {
+      return "None of your starred coins are in the top 100.";
+    }
+    return "No starred coin matches these filters — adjust a condition or clear them.";
+  };
 
   const handleExportCsv = (): void => {
     download(
@@ -166,7 +175,7 @@ export const RadarView = ({
         onOpenFilters={() => setFiltersOpen(true)}
         onClear={handleClear}
         shownCount={rows.length}
-        totalCount={data?.length ?? 0}
+        totalCount={searched.length}
         watchlist={state.watchlist}
         onWatchlistChange={(watchlist) => commit({ ...state, watchlist })}
         watchedCount={watchedIds.size}
@@ -175,10 +184,7 @@ export const RadarView = ({
 
       {/* The % columns are performance vs Bitcoin, so BTC itself reads 0. */}
       <p className="text-xs text-muted-foreground">
-        % change is each coin&apos;s move{" "}
-        <strong className="font-medium text-foreground">
-          relative to Bitcoin
-        </strong>{" "}
+        % change is each coin&apos;s move <strong className="font-medium text-foreground">relative to Bitcoin</strong>{" "}
         over the period — Bitcoin is the 0% baseline.
       </p>
 
@@ -191,7 +197,7 @@ export const RadarView = ({
         onSort={handleSort}
         onOpenChart={setChartCoin}
         isLoading={isLoading}
-        emptyMessage={emptyMessage}
+        emptyMessage={emptyMessage()}
       />
 
       <RadarFilterDialog

@@ -98,8 +98,6 @@ describe("RadarTable", () => {
 
   it("shows a teaching empty state when no rows match", () => {
     renderTable({ rows: [] });
-    expect(
-      screen.getAllByText(/no coins match these filters/i).length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/no coins match these filters/i).length).toBeGreaterThan(0);
   });
 });

@@ -8,6 +8,7 @@ import { CategoriesTable } from "@/components/categories-table";
 import { MarketHeatmap } from "@/components/heatmap/market-heatmap";
 import { MarketTable } from "@/components/market-table/market-table";
 import { RadarView } from "@/components/radar/radar-view";
+import { stripRadarState } from "@/lib/radar";
 import { cn } from "@/lib/utils";
 
 type Lens = "table" | "relative" | "heatmap" | "sectors";
@@ -45,6 +46,9 @@ export const MarketLens = (): React.ReactNode => {
 
   const setLens = (next: Lens): void => {
     const params = new URLSearchParams(searchParams);
+    // The relative lens owns f/sort/dir/q/w. Leaving them behind would dirty
+    // the home address and hand out links whose filters silently do nothing.
+    if (next !== "relative") stripRadarState(params);
     // The default stays off the URL so the home address keeps its clean form.
     if (next === DEFAULT_LENS) params.delete("lens");
     else params.set("lens", next);
@@ -55,9 +59,7 @@ export const MarketLens = (): React.ReactNode => {
   return (
     <section aria-label="Market" className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-bold tracking-tight">
-          Market
-        </h2>
+        <h2 className="font-display text-xl font-bold tracking-tight">Market</h2>
         <div
           role="tablist"
           aria-label="Market view"
