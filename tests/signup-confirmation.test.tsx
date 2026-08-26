@@ -19,28 +19,11 @@ jest.mock("next/navigation", () => ({
 const signUp = jest.fn();
 const signInWithPassword = jest.fn();
 
-/**
- * The provider's initial `getSession()` is resolved by hand so the setup can
- * await it inside `act()`. The previous version waited on
- * `getSupabaseBrowserClient` having been called, which the provider does
- * synchronously in its component body — satisfied before `getSession()`
- * settles, so it waited for nothing while its comment claimed otherwise.
- *
- * Worth being straight about what this does and does not buy: no assertion
- * below depends on the session resolving, because `LoginForm` renders the same
- * whether the provider is still loading or not. Blocking the release entirely
- * leaves every test green. This exists so the provider's first state update
- * lands inside `act()` instead of racing the assertions on a slower runner —
- * `act()` hygiene, not coverage. Do not read it as the latter.
- */
-let releaseSession: () => void;
-
+/** A signed-out Supabase client: nobody is logged in, so /login renders. */
 const supabaseMock = () => ({
   auth: {
-    getSession: () =>
-      new Promise<{ data: { session: Session | null } }>((resolve) => {
-        releaseSession = () => resolve({ data: { session: null } });
-      }),
+    getSession: (): Promise<{ data: { session: Session | null } }> =>
+      Promise.resolve({ data: { session: null } }),
     onAuthStateChange: () => ({
       data: { subscription: { unsubscribe: jest.fn() } },
     }),
@@ -71,11 +54,16 @@ const mountForm = async (): Promise<void> => {
       </AuthProvider>
     </QueryClientProvider>,
   );
-  // Resolve the session the provider is waiting on, inside act(), so its
-  // loading -> resolved transition is flushed before anything is clicked.
-  await act(async () => {
-    releaseSession();
-  });
+  // Flush the provider's pending getSession() before anything is clicked.
+  //
+  // Nothing below actually depends on it — `LoginForm` renders the same while
+  // the provider is loading — and no act warning appears without it. It is
+  // here because the settle has to happen somewhere, and inside act() is the
+  // one place it cannot land mid-assertion. The version this replaced waited
+  // on `getSupabaseBrowserClient` having been called, which the provider does
+  // synchronously in its own body: already true when render() returned, so it
+  // waited for nothing while its comment said otherwise.
+  await act(async () => {});
 };
 
 /** Fill the form in sign-up mode and submit it. */
@@ -169,6 +157,21 @@ describe("sign-up when the project requires email confirmation", () => {
     expect(noticeText()).not.toContain("typo@elsewhere.com");
   });
 
+  it("keeps the idle live region in the accessibility tree", async () => {
+    await mountForm();
+
+    // Asserted by class because jsdom loads no stylesheet, so a computed-style
+    // check would pass for anything. The distinction is the whole point of the
+    // region being mounted up front: `sr-only` is clipped but still exposed to
+    // assistive tech, while `hidden` is `display: none` and drops it from the
+    // accessibility tree — which would silently undo the live region and leave
+    // screen-reader users with the same silence this file exists to remove.
+    const region = screen.getByRole("status");
+    expect(region).toHaveClass("sr-only");
+    expect(region).not.toHaveClass("hidden");
+    expect(region).not.toHaveAttribute("aria-hidden", "true");
+  });
+
   it("clears the notice when the person switches back to sign in", async () => {
     signUp.mockResolvedValue({
       data: { user: { id: "u1" }, session: null },
@@ -219,9 +222,6 @@ describe("AuthProvider signUp contract", () => {
       </QueryClientProvider>,
     );
 
-    await act(async () => {
-      releaseSession();
-    });
     await act(async () => {
       result = await probe!("someone@example.com", "short");
     });
