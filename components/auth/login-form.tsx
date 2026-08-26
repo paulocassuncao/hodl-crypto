@@ -33,17 +33,30 @@ export const LoginForm = (): React.ReactNode => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [checkEmail, setCheckEmail] = useState(false);
   const [pending, setPending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setError(null);
+    setCheckEmail(false);
     setPending(true);
     const action = mode === "signin" ? signIn : signUp;
-    const { error: authError } = await action(email, password);
+    const { error: authError, awaitingEmailConfirmation } = await action(
+      email,
+      password,
+    );
     setPending(false);
     if (authError) {
       setError(authError);
+      return;
+    }
+    // The account exists but nobody is signed in yet. Navigating here would
+    // hand the person straight back to the gate, which would return them to
+    // this page with no explanation — the trip that made sign-up look broken.
+    if (awaitingEmailConfirmation) {
+      setCheckEmail(true);
+      setPassword("");
       return;
     }
     router.replace(safeRedirect(searchParams.get("next")));
@@ -66,6 +79,7 @@ export const LoginForm = (): React.ReactNode => {
           onValueChange={(v) => {
             setMode(v as Mode);
             setError(null);
+            setCheckEmail(false);
           }}
         >
           <TabsList className="grid w-full grid-cols-2">
@@ -112,6 +126,13 @@ export const LoginForm = (): React.ReactNode => {
             {error ? (
               <p role="alert" className="text-sm font-medium text-destructive">
                 {error}
+              </p>
+            ) : null}
+
+            {checkEmail ? (
+              <p role="status" className="text-sm font-medium text-gain-ink">
+                Check your email — we sent a link to {email} to confirm your
+                account. You can sign in once you have followed it.
               </p>
             ) : null}
 
