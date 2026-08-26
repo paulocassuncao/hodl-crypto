@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import { safeRedirect } from "@/lib/safe-redirect";
 
 type Mode = "signin" | "signup";
@@ -33,13 +34,19 @@ export const LoginForm = (): React.ReactNode => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [checkEmail, setCheckEmail] = useState(false);
+  // The address the confirmation was actually sent to, captured at the moment
+  // it was sent. Reading the live `email` state here instead would let a later
+  // edit of the field rewrite the notice into a claim about an address nothing
+  // was ever sent to.
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(
+    null,
+  );
   const [pending, setPending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setError(null);
-    setCheckEmail(false);
+    setConfirmationEmail(null);
     setPending(true);
     const action = mode === "signin" ? signIn : signUp;
     const { error: authError, awaitingEmailConfirmation } = await action(
@@ -55,7 +62,7 @@ export const LoginForm = (): React.ReactNode => {
     // hand the person straight back to the gate, which would return them to
     // this page with no explanation — the trip that made sign-up look broken.
     if (awaitingEmailConfirmation) {
-      setCheckEmail(true);
+      setConfirmationEmail(email);
       setPassword("");
       return;
     }
@@ -79,7 +86,7 @@ export const LoginForm = (): React.ReactNode => {
           onValueChange={(v) => {
             setMode(v as Mode);
             setError(null);
-            setCheckEmail(false);
+            setConfirmationEmail(null);
           }}
         >
           <TabsList className="grid w-full grid-cols-2">
@@ -129,12 +136,24 @@ export const LoginForm = (): React.ReactNode => {
               </p>
             ) : null}
 
-            {checkEmail ? (
-              <p role="status" className="text-sm font-medium text-gain-ink">
-                Check your email — we sent a link to {email} to confirm your
-                account. You can sign in once you have followed it.
-              </p>
-            ) : null}
+            {/*
+              Mounted unconditionally, and only its text changes. A polite live
+              region that is inserted into the DOM already carrying its message
+              is not reliably announced — the region has to be there first for
+              the change to be a change. While empty it is `sr-only`, so it sits
+              out of flow and adds no gap above the button.
+            */}
+            <p
+              role="status"
+              className={cn(
+                "text-sm font-medium text-gain-ink",
+                confirmationEmail === null && "sr-only",
+              )}
+            >
+              {confirmationEmail === null
+                ? ""
+                : `Check your email — we sent a link to ${confirmationEmail} to confirm your account. You can sign in once you have followed it.`}
+            </p>
 
             <Button type="submit" className="w-full" disabled={pending}>
               {pending ? (

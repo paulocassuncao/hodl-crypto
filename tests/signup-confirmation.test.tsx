@@ -20,33 +20,62 @@ const signUp = jest.fn();
 const signInWithPassword = jest.fn();
 
 /**
+ * The provider's initial `getSession()` is resolved by hand so the setup can
+ * await it inside `act()`. The previous version waited on
+ * `getSupabaseBrowserClient` having been called, which the provider does
+ * synchronously in its component body — satisfied before `getSession()`
+ * settles, so it waited for nothing while its comment claimed otherwise.
+ *
+ * Worth being straight about what this does and does not buy: no assertion
+ * below depends on the session resolving, because `LoginForm` renders the same
+ * whether the provider is still loading or not. Blocking the release entirely
+ * leaves every test green. This exists so the provider's first state update
+ * lands inside `act()` instead of racing the assertions on a slower runner —
+ * `act()` hygiene, not coverage. Do not read it as the latter.
+ */
+let releaseSession: () => void;
+
+const supabaseMock = () => ({
+  auth: {
+    getSession: () =>
+      new Promise<{ data: { session: Session | null } }>((resolve) => {
+        releaseSession = () => resolve({ data: { session: null } });
+      }),
+    onAuthStateChange: () => ({
+      data: { subscription: { unsubscribe: jest.fn() } },
+    }),
+    signUp,
+    signInWithPassword,
+  },
+});
+
+/** The live region is always mounted; "no notice" means it carries no text. */
+const noticeText = (): string => screen.getByRole("status").textContent ?? "";
+
+/**
  * Sign-up has three outcomes and only two of them used to be distinguishable.
  * These mount the real form over the real AuthProvider so the assertion is
  * about what a person sees, not about the shape the provider returns.
  */
 const mountForm = async (): Promise<void> => {
-  (getSupabaseBrowserClient as jest.Mock).mockReturnValue({
-    auth: {
-      getSession: () => Promise.resolve({ data: { session: null } }),
-      onAuthStateChange: () => ({
-        data: { subscription: { unsubscribe: jest.fn() } },
-      }),
-      signUp,
-      signInWithPassword,
-    },
-  });
+  (getSupabaseBrowserClient as jest.Mock).mockReturnValue(supabaseMock());
 
   render(
     <QueryClientProvider
-      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
     >
       <AuthProvider>
         <LoginForm />
       </AuthProvider>
     </QueryClientProvider>,
   );
-  // The provider resolves its initial getSession() before anything is clicked.
-  await waitFor(() => expect(getSupabaseBrowserClient).toHaveBeenCalled());
+  // Resolve the session the provider is waiting on, inside act(), so its
+  // loading -> resolved transition is flushed before anything is clicked.
+  await act(async () => {
+    releaseSession();
+  });
 };
 
 /** Fill the form in sign-up mode and submit it. */
@@ -81,9 +110,8 @@ describe("sign-up when the project requires email confirmation", () => {
     await mountForm();
     await submitSignUp();
 
-    const notice = await screen.findByRole("status");
-    expect(notice).toHaveTextContent(/check your email/i);
-    expect(notice).toHaveTextContent("someone@example.com");
+    await waitFor(() => expect(noticeText()).toMatch(/check your email/i));
+    expect(noticeText()).toContain("someone@example.com");
     // The whole point: no navigation, because nothing is signed in. Navigating
     // is what sent people back to /login in silence.
     expect(replace).not.toHaveBeenCalled();
@@ -100,7 +128,7 @@ describe("sign-up when the project requires email confirmation", () => {
     await submitSignUp();
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(noticeText()).toBe("");
   });
 
   it("shows the error, and no notice, when sign-up actually fails", async () => {
@@ -116,8 +144,29 @@ describe("sign-up when the project requires email confirmation", () => {
       "Password is too short",
     );
     // A failure also has no session; the notice must not fire on it too.
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(noticeText()).toBe("");
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("keeps naming the address the link was actually sent to", async () => {
+    signUp.mockResolvedValue({
+      data: { user: { id: "u1" }, session: null },
+      error: null,
+    });
+
+    await mountForm();
+    await submitSignUp();
+    await waitFor(() => expect(noticeText()).toContain("someone@example.com"));
+
+    // Someone re-reads the notice, thinks they mistyped, and corrects the
+    // field. Nothing was sent to the new address, so the notice must not
+    // start claiming otherwise.
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: "typo@elsewhere.com" },
+    });
+
+    expect(noticeText()).toContain("someone@example.com");
+    expect(noticeText()).not.toContain("typo@elsewhere.com");
   });
 
   it("clears the notice when the person switches back to sign in", async () => {
@@ -128,10 +177,10 @@ describe("sign-up when the project requires email confirmation", () => {
 
     await mountForm();
     await submitSignUp();
-    expect(await screen.findByRole("status")).toBeInTheDocument();
+    await waitFor(() => expect(noticeText()).toMatch(/check your email/i));
 
     fireEvent.click(screen.getByRole("tab", { name: /sign in/i }));
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(noticeText()).toBe("");
   });
 });
 
@@ -156,16 +205,7 @@ describe("AuthProvider signUp contract", () => {
       return null;
     };
 
-    (getSupabaseBrowserClient as jest.Mock).mockReturnValue({
-      auth: {
-        getSession: () => Promise.resolve({ data: { session: null } }),
-        onAuthStateChange: () => ({
-          data: { subscription: { unsubscribe: jest.fn() } },
-        }),
-        signUp,
-        signInWithPassword,
-      },
-    });
+    (getSupabaseBrowserClient as jest.Mock).mockReturnValue(supabaseMock());
 
     render(
       <QueryClientProvider
@@ -179,6 +219,9 @@ describe("AuthProvider signUp contract", () => {
       </QueryClientProvider>,
     );
 
+    await act(async () => {
+      releaseSession();
+    });
     await act(async () => {
       result = await probe!("someone@example.com", "short");
     });
