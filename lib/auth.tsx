@@ -17,6 +17,17 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 interface AuthResult {
   /** Supabase error message, or null on success. */
   error: string | null;
+  /**
+   * True when the call succeeded but produced no session, so nothing is signed
+   * in and navigating away would be a lie. Only `signUp` can return it, and
+   * only when the Supabase project requires email confirmation — `signIn`
+   * either hands back a session or an error, never this.
+   *
+   * Not optional on purpose: the caller has to decide what to do with the
+   * third outcome instead of falling into the success branch by omission,
+   * which is the bug this field exists to close.
+   */
+  awaitingEmailConfirmation: boolean;
 }
 
 interface AuthContextValue {
@@ -84,15 +95,32 @@ export const AuthProvider = ({
       email,
       password,
     });
-    return { error: error?.message ?? null };
+    return { error: error?.message ?? null, awaitingEmailConfirmation: false };
   };
 
+  /**
+   * Sign-up has three outcomes, not two, and Supabase reports the third one
+   * without an error: when the project requires email confirmation it answers
+   * `{ user, session: null }`, and reading only `error` makes that look
+   * identical to a signed-in account. The caller then navigates, the gate finds
+   * no session and bounces the person back to `/login` with nothing said.
+   *
+   * The session is what decides, not the user. It is also the answer that
+   * stays correct when the project has email-enumeration protection on and
+   * Supabase returns a decoy `{ user, session: null }` for an address that is
+   * already registered — the caller says "check your email" either way, which
+   * is both true for a new account and the answer that refuses to confirm the
+   * address exists.
+   */
   const signUp = async (
     email: string,
     password: string,
   ): Promise<AuthResult> => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    return {
+      error: error?.message ?? null,
+      awaitingEmailConfirmation: error === null && data.session === null,
+    };
   };
 
   const signOut = async (): Promise<void> => {
