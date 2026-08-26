@@ -23,6 +23,29 @@ const nextConfig: NextConfig = {
       permanent: false,
     },
   ],
+  // Framing is refused, and refused twice. `frame-ancestors` is the directive
+  // that actually decides it in a current browser; `X-Frame-Options` is the
+  // older header that browsers ignore once a CSP carries `frame-ancestors`, and
+  // is here for the ones that do not, and for the scanners that only look for
+  // it. Nothing else is asserted: a real CSP for scripts and styles is a
+  // separate change with its own way of breaking the app quietly.
+  //
+  // This is the premise `lib/safe-redirect.ts` was waiting on. Now that no
+  // third party can frame the app, an embedded navigation can only come from
+  // this origin — but the gate still leaves `iframe` out, because returning a
+  // user into a frame is a product decision, not a security one.
+  headers: async () => [
+    {
+      source: "/:path*",
+      headers: [
+        {
+          key: "Content-Security-Policy",
+          value: "frame-ancestors 'none'",
+        },
+        { key: "X-Frame-Options", value: "DENY" },
+      ],
+    },
+  ],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "coin-images.coingecko.com" },

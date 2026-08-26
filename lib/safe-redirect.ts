@@ -18,10 +18,13 @@
  *
  * `iframe` is deliberately out, and the word "top-level" is doing that work.
  * An embedded navigation does render a document a person can see, so by the
- * looser reading it belongs — but this app is not built to be embedded and
- * sets no `frame-ancestors`, so quietly teaching the gate to return users into
- * someone else's frame is a product decision nobody has taken. An embedded
- * session that expires falls back to `/`, the same graceful loss as an image.
+ * looser reading it belongs — but this app is not built to be embedded, and
+ * `next.config.ts` now refuses framing outright with `frame-ancestors 'none'`,
+ * so an embedded navigation can no longer be someone else's frame anyway.
+ * Teaching the gate to return users into one stays a product decision nobody
+ * has taken; the header removed the security argument, not the product one.
+ * An embedded session that expires falls back to `/`, the same graceful loss
+ * as an image.
  */
 const PAGE_BEARING_DESTINATIONS = new Set(["document", "empty"]);
 
